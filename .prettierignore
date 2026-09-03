@@ -1,0 +1,6 @@
+.next
+node_modules
+public
+coverage
+playwright-report
+*.min.js

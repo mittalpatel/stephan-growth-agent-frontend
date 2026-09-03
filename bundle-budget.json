@@ -1,0 +1,14 @@
+{
+  "comment": "Committed bundle-size baselines (gzipped bytes). CI fails if a build exceeds baseline * (1 + tolerancePct). Refresh intentionally with `npm run bundle:update` and commit the diff so size regressions are reviewed, not silent.",
+  "tolerancePct": 5,
+  "baselines": {
+    "sharedFirstLoadJs": {
+      "label": "Shared first-load JS (every route pays this)",
+      "bytes": 286529
+    },
+    "totalClientJs": {
+      "label": "Total client JS across all chunks",
+      "bytes": 941195
+    }
+  }
+}

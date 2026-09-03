@@ -1,0 +1,50 @@
+name: Deploy
+
+# SSH-based deploy: the runner connects to the target host and runs `deploy.sh`
+# there, which pulls, builds, restarts, health-checks, and rolls back on failure.
+#
+# The original of this workflow reached the host over a Tailscale tunnel so the
+# server needed no public inbound SSH port. That is a good default and worth
+# restoring — see the commented step below — but it is left out here because a
+# template cannot assume a tailnet, and a workflow referencing secrets nobody has
+# fails confusingly on the first push.
+#
+# Required repository secrets:
+#   DEPLOY_HOST  DEPLOY_USER  DEPLOY_SSH_KEY  DEPLOY_PATH
+
+on:
+  push:
+    branches: [staging]
+  workflow_dispatch:
+
+concurrency:
+  # Never run two deploys at once, and never cancel one mid-flight — an
+  # interrupted deploy leaves the server in a state neither release owns.
+  group: deploy-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Deploy over SSH
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      # Recommended: reach the host over a private tunnel instead of exposing
+      # SSH to the internet. Uncomment, add the TS_AUTHKEY secret, and set
+      # DEPLOY_HOST to the tailnet name.
+      #
+      # - name: Connect to Tailscale
+      #   uses: tailscale/github-action@v3
+      #   with:
+      #     authkey: ${{ secrets.TS_AUTHKEY }}
+      #     # Ephemeral, tagged node so it self-cleans and stays ACL-scoped.
+      #     tags: tag:ci
+
+      - name: Run deploy script on the server
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.DEPLOY_HOST }}
+          username: ${{ secrets.DEPLOY_USER }}
+          key: ${{ secrets.DEPLOY_SSH_KEY }}
+          command_timeout: 15m
+          script: bash ${{ secrets.DEPLOY_PATH }}/deploy.sh

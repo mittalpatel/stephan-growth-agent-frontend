@@ -1,0 +1,4 @@
+#!/bin/sh
+npm run secrets:staged
+npx lint-staged
+npm run validate

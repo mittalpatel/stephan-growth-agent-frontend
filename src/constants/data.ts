@@ -1,0 +1,2 @@
+export const DEFAULT_PAGINATION_PER_PAGE_LIMIT = 10;
+export const ROW_LIMIT_OPTIONS = [5, 10, 25, 50, 100];

@@ -1,0 +1,8 @@
+# Generated / vendored / non-source — not our code to scan.
+.next/
+out/
+build/
+coverage/
+node_modules/
+src/components/ui/
+*.min.js

@@ -1,0 +1,63 @@
+{
+  "actions": [
+    "access_manage",
+    "billing",
+    "create",
+    "delete",
+    "execute",
+    "export",
+    "manage",
+    "transfer",
+    "update",
+    "view"
+  ],
+  "algebra": {
+    "manage_excludes": [
+      "delete",
+      "execute",
+      "export",
+      "billing",
+      "transfer",
+      "access_manage"
+    ],
+    "manage_subsumes": [
+      "view",
+      "create",
+      "update"
+    ],
+    "separator": ":"
+  },
+  "codes": [
+    "apikey:manage",
+    "apikey:view",
+    "audit:view",
+    "member:manage",
+    "member:view",
+    "organization:billing",
+    "organization:delete",
+    "organization:manage",
+    "organization:transfer",
+    "organization:view",
+    "project:access_manage",
+    "project:create",
+    "project:delete",
+    "project:execute",
+    "project:export",
+    "project:manage",
+    "project:update",
+    "project:view",
+    "rbac:manage",
+    "rbac:view",
+    "user:manage",
+    "user:view"
+  ],
+  "resources": [
+    "apikey",
+    "audit",
+    "member",
+    "organization",
+    "project",
+    "rbac",
+    "user"
+  ]
+}

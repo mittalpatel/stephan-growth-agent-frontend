@@ -1,0 +1,45 @@
+# Everything here is either rebuilt inside the image, irrelevant to it, or must
+# never enter it. Keeping the build context small also keeps `docker build` fast:
+# the whole context is sent to the daemon before the first instruction runs.
+
+# Rebuilt in the image
+node_modules
+.next
+out
+build
+
+# Secrets — these must never reach an image layer. A file deleted in a later
+# layer is still readable in the one that added it.
+.env
+.env.*
+!.env.example
+!.env.e2e.example
+
+# Local tooling output
+coverage
+playwright-report
+test-results
+sbom.json
+*.tsbuildinfo
+
+# VCS and editor
+.git
+.gitignore
+.github
+.husky
+.vscode
+.idea
+
+# Not needed at runtime
+e2e
+docs
+context
+changelog
+README.md
+CHANGELOG.md
+**/__tests__
+**/*.test.ts
+**/*.test.tsx
+**/*.spec.ts
+Dockerfile
+.dockerignore

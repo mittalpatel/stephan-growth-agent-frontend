@@ -1,0 +1,99 @@
+export const dateRangePicker = {
+  startDate: 'Start date',
+  endDate: 'End date',
+  selectedDays: 'Selected days',
+} as const;
+
+export const common = {
+  // Rename these two when you brand the app. They drive <title> and the
+  // meta description via src/app/layout.tsx.
+  appName: 'Enterprise App',
+  appDescription: 'An application generated from the enterprise starter template.',
+
+  loading: 'Loading...',
+  pageShort: 'Pg.',
+  sortShort: 'Sort',
+  clearFilters: 'Clear filters',
+  dateRangeInfo: 'Date range help',
+  reset: 'Reset',
+  csv: 'CSV',
+  resetFiltersTitle: 'Reset filters',
+  exportCsvTitle: 'Export CSV',
+  sortBy2: 'Sort by…',
+  asc: 'Ascending',
+  desc: 'Descending',
+  error: 'Error',
+  success: 'Success',
+  noData: 'No data available',
+  notAvailable: 'N/A',
+  somethingWentWrong: 'Something went wrong. Please try again.',
+  showingOf: 'Showing {displayed} of {total} items',
+  grid: 'Grid',
+  table: 'Table',
+  sortBy: 'Sort by',
+  none: 'None',
+  selectRange: 'Select range',
+  searchPlaceholder: 'Search…',
+  removeFilter: 'Remove {label}',
+  clearSearch: 'Clear search',
+  sortDirection: 'Change sort direction',
+  home: 'Home',
+  menu: 'Menu',
+  openMenu: 'Open menu',
+  closeMenu: 'Close menu',
+  breadcrumb: 'Breadcrumb',
+  passwordRequirements:
+    'Password does not meet the requirements. Requirements: at least 8 characters, a lowercase letter, an uppercase letter, and a number.',
+} as const;
+
+export const buttons = {
+  viewDetails: 'View details',
+  resetFilters: 'Reset Filters',
+  filters: 'Filters',
+  cancel: 'Cancel',
+  save: 'Save',
+  edit: 'Edit',
+  delete: 'Delete',
+  add: 'Add',
+  confirm: 'Confirm',
+  back: 'Back',
+  next: 'Next',
+  submit: 'Submit',
+  reset: 'Reset',
+  search: 'Search',
+  filter: 'Filter',
+  clear: 'Clear',
+  apply: 'Apply',
+  close: 'Close',
+  tryAgain: 'Try again',
+  signOut: 'Sign out',
+  copy: 'Copy',
+  copied: 'Copied',
+} as const;
+
+export const pagination = {
+  pageOf: 'Page {current} of {total}',
+  totalItems: '{count} total items',
+  rowsPerPage: 'Page Size',
+  first: 'First',
+  previous: 'Previous',
+  next: 'Next',
+  last: 'Last',
+} as const;
+
+export const navigation = {
+  // Demo module — removed by `npm run strip-demo`.
+  projects: 'Projects',
+  invites: 'Invitations',
+  organization: 'Organization',
+  members: 'Members',
+  roles: 'Roles',
+  audit: 'Audit trail',
+  apiKeys: 'API keys',
+  impersonation: 'Impersonation',
+  sections: {
+    main: 'Main',
+    workspace: 'Workspace',
+    platform: 'Platform',
+  },
+} as const;

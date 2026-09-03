@@ -1,0 +1,20 @@
+# Gitleaks config — extends the built-in ruleset, then allowlists known-safe
+# placeholders so the secret scan doesn't false-positive on docs/fixtures.
+# Docs: https://github.com/gitleaks/gitleaks#configuration
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Global allowlist for non-secret placeholders and fixtures"
+paths = [
+  '''\.env\.example$''',
+  '''\.env\.e2e\.example$''',
+  # Test fixtures / mocks may contain fake tokens used only by the unit suite.
+  '''__tests__/''',
+  '''__mocks__/''',
+  '''\.test\.(ts|tsx)$''',
+]
+# Common dummy values that look like secrets but aren't.
+regexes = [
+  '''(?i)(your[-_]?secret|changeme|example|placeholder|dummy|test[-_]?token)''',
+]

@@ -1,0 +1,25 @@
+{
+  "cache_bypass": {
+    "header": "Cache-Control",
+    "param": "refresh",
+    "token": "no-cache"
+  },
+  "descending_value": "desc",
+  "filter": "filter",
+  "filter_by": "filter_by",
+  "page": "page",
+  "page_size": "page_size",
+  "parameters_type": {
+    "param": "type",
+    "value": "parameters"
+  },
+  "search": "search",
+  "search_by": "search_by",
+  "separators": {
+    "columns": ",",
+    "value_groups": "|",
+    "values": ","
+  },
+  "sort": "sort",
+  "sort_direction": "sort_direction"
+}

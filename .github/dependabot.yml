@@ -1,0 +1,28 @@
+version: 2
+updates:
+  # Application dependencies (npm). Security updates land as soon as an advisory
+  # is published; regular version bumps are batched weekly to limit PR noise.
+  - package-ecosystem: npm
+    directory: '/'
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 10
+    groups:
+      # One PR for routine minor/patch bumps across all deps.
+      minor-and-patch:
+        update-types:
+          - minor
+          - patch
+    labels:
+      - dependencies
+      - security
+
+  # Keep the CI/security GitHub Actions (checkout, setup-node, semgrep, etc.)
+  # patched too — a stale action is its own supply-chain risk.
+  - package-ecosystem: github-actions
+    directory: '/'
+    schedule:
+      interval: weekly
+    labels:
+      - ci
+      - dependencies
