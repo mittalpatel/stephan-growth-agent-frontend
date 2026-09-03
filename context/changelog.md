@@ -36,6 +36,19 @@ inherit it with no component edits and future `shadcn add` still matches.
   and `not-found`, whose decorative blob referenced a `bg-brand` token that never
   existed and therefore rendered as nothing.
 
+Two problems were then found by screenshotting the result rather than reading the
+CSS, and both are fixed:
+
+- **The hero panel was a pale slab in dark mode.** It used `bg-primary`, but
+  `--primary` is a control fill, so dark mode lightens it. Correct for a button,
+  wrong for a full-height panel. This predates the rebrand: in stock shadcn, dark
+  `--primary` is near-white, so the panel was a *white* slab before. Added a
+  `--brand-surface` pair that holds the same navy in both themes, since a brand
+  surface is not theme-dependent.
+- **The decorative highlight was removed.** Drawn in the brand accent at 20% and
+  blurred across a 24rem circle, it banded badly over the navy and read as grey-green
+  rather than gold. A flat panel beats a cheap gradient.
+
 Restricted pages were deliberately left alone; they get their pass once the backend
 work starts. `src/components/ui/**` was left untouched on purpose after an initial
 attempt to swap Card's ring for a border: that directory is generated, so the edit

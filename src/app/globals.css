@@ -65,6 +65,15 @@
   --brand-accent: oklch(0.671 0.123 76.5);
   --brand-accent-foreground: oklch(0.961 0.027 83.5);
 
+  /* A large brand-coloured surface (the auth hero panel). Deliberately NOT
+     `--primary`: `--primary` is a control fill, so dark mode lightens it, which
+     is right for a button and wrong for a full-height panel. Pointing the panel
+     at `--primary` made it a pale slab in dark mode (in stock shadcn, where dark
+     `--primary` is near-white, it was a white one). This pair keeps the same
+     navy in both themes, because a brand surface is not theme-dependent. */
+  --brand-surface: oklch(0.347 0.073 256.7);
+  --brand-surface-foreground: oklch(0.985 0.003 106.4);
+
   /* Status tones. Not part of stock shadcn, but every enterprise app renders
      state — and the alternative is `bg-emerald-50` scattered through components,
      which hardcodes light mode. `destructive` above already covers "danger", so
@@ -128,6 +137,10 @@
   --brand-accent: oklch(0.78 0.115 78);
   --brand-accent-foreground: oklch(0.24 0.03 80);
 
+  /* Intentionally identical to the light-mode values. See the note there. */
+  --brand-surface: oklch(0.347 0.073 256.7);
+  --brand-surface-foreground: oklch(0.985 0.003 106.4);
+
   /* Inverted: a dim tinted surface with a light tinted text, rather than the
      light-mode pair, which glows on a dark background. */
   --success: oklch(0.3 0.05 164);
@@ -184,6 +197,8 @@
   --color-info-foreground: var(--info-foreground);
   --color-brand-accent: var(--brand-accent);
   --color-brand-accent-foreground: var(--brand-accent-foreground);
+  --color-brand-surface: var(--brand-surface);
+  --color-brand-surface-foreground: var(--brand-surface-foreground);
 
   --color-chart-1: var(--chart-1);
   --color-chart-2: var(--chart-2);
