@@ -1,4 +1,21 @@
 export const dashboard = {
   title: 'Dashboard',
-  welcome: 'Welcome back. Pick a section from the sidebar to get started.',
+  greeting: 'Good morning, {name}',
+  welcome: "Here's what's happening across your AI workspace.",
+  previewNotice:
+    'Static preview built from the Sprint 1 plan. Real numbers arrive once the backend ships.',
+  metrics: {
+    activeAgents: 'Active agents',
+    conversations: 'Conversations',
+    leadsCaptured: 'Leads captured',
+    escalations: 'Open escalations',
+    unresolvedTopics: 'Unresolved topics',
+  },
+  agentPerformance: {
+    title: 'Agent performance',
+    viewAll: 'View all agents',
+  },
+  activity: {
+    title: 'Recent activity',
+  },
 } as const;

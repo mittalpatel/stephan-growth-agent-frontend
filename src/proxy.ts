@@ -64,6 +64,12 @@ const GLOBAL_AUTH_PATHS = ['/no-role', '/user-profile', '/legal'];
 // the backend.
 const ENABLED_PREFIXES: readonly string[] = [
   '/dashboard',
+  // Sprint 1 static previews — see navItems.ts for why these have no
+  // permission gating yet.
+  '/agents',
+  '/conversations',
+  '/leads',
+  '/analytics',
   '/invites',
   '/notifications',
   // Covers /organization, /organization/members, and /organization/roles — the
@@ -192,6 +198,14 @@ export const config = {
     '/signup/:path*',
     '/dashboard',
     '/dashboard/:path*',
+    '/agents',
+    '/agents/:path*',
+    '/conversations',
+    '/conversations/:path*',
+    '/leads',
+    '/leads/:path*',
+    '/analytics',
+    '/analytics/:path*',
     '/notifications',
     '/notifications/:path*',
     '/user-profile',

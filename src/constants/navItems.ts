@@ -1,4 +1,13 @@
-import { Boxes, Building2, Mail, UserCog } from 'lucide-react';
+import {
+  BarChart3,
+  Bot,
+  Boxes,
+  Building2,
+  Mail,
+  MessagesSquare,
+  UserCog,
+  UserPlus,
+} from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 
 import { t } from '@/locales';
@@ -43,6 +52,10 @@ export interface NavItem {
  */
 export const ENABLED_HREFS: readonly string[] = [
   '/dashboard',
+  '/agents',
+  '/conversations',
+  '/leads',
+  '/analytics',
   '/invites',
   '/organization',
   '/organization/members',
@@ -50,8 +63,12 @@ export const ENABLED_HREFS: readonly string[] = [
   '/organization/audit',
   '/organization/api-keys',
   '/admin/impersonation',
-  // Demo module — removed by `npm run strip-demo`.
-  '/projects',
+  // Demo module — removed by `npm run strip-demo`. Deliberately left off the
+  // sidebar (this app has no use for it), but still reachable directly: the
+  // RBAC/cross-tenant e2e suite exercises it as a fixture and navigates to it
+  // by URL rather than through the nav, so `src/proxy.ts`'s ENABLED_PREFIXES
+  // and ROUTE_PERMISSIONS are untouched.
+  // '/projects',
 ];
 
 /**
@@ -77,13 +94,42 @@ export const DEFAULT_LANDING = '/dashboard';
  */
 export const NAV_ITEMS: NavItem[] = [
   // ── MAIN ─────────────────────────────────────────────────────────────
-  // Demo module — removed by `npm run strip-demo`.
+  // Demo module — removed by `npm run strip-demo`. Defined but left out of
+  // ENABLED_HREFS above, so it resolves to nothing in the sidebar.
   {
     section: t.navigation.sections.main,
     label: t.navigation.projects,
     href: '/projects',
     icon: Boxes,
     requiredFunction: 'project',
+  },
+  // Sprint 1 static previews (frontend-plan-v3.md §3.1) — no requiredFunction
+  // yet, because the backend hasn't landed the `agent` / `conversation` /
+  // `lead` permission codes this app will eventually gate on (§3.3). Add it
+  // back once `contracts/permissions.json` is re-vendored with them.
+  {
+    section: t.navigation.sections.main,
+    label: t.navigation.agents,
+    href: '/agents',
+    icon: Bot,
+  },
+  {
+    section: t.navigation.sections.main,
+    label: t.navigation.conversations,
+    href: '/conversations',
+    icon: MessagesSquare,
+  },
+  {
+    section: t.navigation.sections.main,
+    label: t.navigation.leads,
+    href: '/leads',
+    icon: UserPlus,
+  },
+  {
+    section: t.navigation.sections.main,
+    label: t.navigation.analytics,
+    href: '/analytics',
+    icon: BarChart3,
   },
 
   // ── WORKSPACE ────────────────────────────────────────────────────────

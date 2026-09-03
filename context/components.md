@@ -90,6 +90,19 @@ decorative, so it carries no information the label does not.
 
 Never rely on colour alone to convey state; the label must say it too.
 
+## PreviewBanner
+
+`src/components/common/PreviewBanner.tsx`. Takes one already-translated `note`.
+Renders a dashed-border strip with a "Preview" `Badge` — the visible marker on a
+Sprint 1 static-preview page (see `context/app/(restricted)/agents/page.md` and its
+siblings for `conversations`/`leads`/`analytics`/`dashboard`): real app layout, inline
+mock data, no hook, no service call.
+
+The rule that keeps it meaningful: removing `PreviewBanner` from a page is the same
+change that wires that page to a real endpoint, never a separate cleanup pass — a
+preview page with the banner already removed is a silent lie about what the numbers
+on screen mean.
+
 ## EmptyState
 
 `title`, optional `description`, optional `icon`, optional `action`.

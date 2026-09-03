@@ -1,8 +1,12 @@
+import { agents } from './agents';
+import { analytics } from './analytics';
 import { auth } from './auth';
 import { buttons, common, dateRangePicker, navigation, pagination } from './common';
+import { conversations } from './conversations';
 import { dashboard } from './dashboard';
 import { errors } from './errors';
 import { header } from './header';
+import { leads } from './leads';
 import { legal } from './legal';
 import { notifications } from './notifications';
 import { organizations } from './organizations';
@@ -36,4 +40,8 @@ export const en = {
   organizations,
   // Demo module — removed by `npm run strip-demo`.
   projects,
+  agents,
+  conversations,
+  leads,
+  analytics,
 } as const;
