@@ -8,9 +8,8 @@
 src/app/(public)/
   login/page.tsx                # Server — metadata, Suspense, renders SignIn
   components/
-    SignIn.tsx                  # Composes AuthHeroShell + SocialLoginButtons + LoginForm
+    SignIn.tsx                  # Composes AuthHeroShell + LoginForm
     AuthHeroShell.tsx           # Shared chrome for all three public pages
-    SocialLoginButtons.tsx      # One "Continue with <provider>" per NEXT_PUBLIC_SOCIAL_PROVIDERS
     LoginForm.tsx               # Pure presenter
   hooks/useLoginForm.ts         # All state and submission
 ```
@@ -44,10 +43,11 @@ is not reliably announced, so a placeholder-only field is unlabelled for a scree
   state, no effect on the session. Session lifetime is `session.maxAge` in
   `authOptions`, pinned to the backend's refresh-token lifetime. Wire it to a genuinely
   shorter or longer session before putting it back.
-- **No SSO button by default.** `SocialLoginButtons` renders nothing when
-  `NEXT_PUBLIC_SOCIAL_PROVIDERS` is empty (the default) — see
-  `src/lib/auth/oidcProviders.ts` and `authOptions.ts` for the generic OIDC
-  integration once a provider is configured.
+- **No SSO button.** The page renders credentials-only; `SocialLoginButtons`
+  was removed. `src/lib/auth/oidcProviders.ts` and `authOptions.ts` still carry
+  the generic OIDC provider wiring, so a direct `/api/auth/signin/<provider>`
+  request or a re-added UI entry point works without a config change — see
+  "Social login (generic OIDC)" below.
 
 ## Sign-up link
 
@@ -70,6 +70,8 @@ Wrong credentials keep the user on `/login` with the error surfaced through
 
 ## Social login (generic OIDC)
 
+No longer exposed on this page (the UI button list was removed) — this section
+documents the still-wired backend path for a future entry point.
 `signIn(<providerId>)` → NextAuth's own OIDC client does the authorization-code
 exchange with the IdP entirely server-side (discovery, PKCE, state) → the
 `signIn` callback in `authOptions.ts` hands the resulting `id_token` to the

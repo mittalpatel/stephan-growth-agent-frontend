@@ -2,12 +2,13 @@
  * Server-only config for social login (generic OIDC), read from `OIDC_PROVIDERS`
  * + per-provider `OIDC_<NAME>_ISSUER`/`OIDC_<NAME>_CLIENT_ID`/`OIDC_<NAME>_CLIENT_SECRET`.
  *
+ * The login page no longer renders social sign-in buttons — this config still
+ * feeds `authOptions.ts`'s NextAuth provider list, which is left in place so a
+ * direct `/api/auth/signin/<provider>` request or a re-added UI entry point
+ * keeps working without a config change.
+ *
  * Deliberately not exported for client use — `clientSecret` must never reach the
- * browser bundle. The client-side button list is a *separate*, non-secret env var
- * (`NEXT_PUBLIC_SOCIAL_PROVIDERS`, names only) read directly where the buttons
- * render — see `src/app/(public)/components/SocialLoginButtons.tsx`. The two
- * lists are expected to be kept in sync by whoever configures `.env`, but they
- * are read independently: this file must never be imported from client code.
+ * browser bundle.
  */
 
 export interface OidcProviderConfig {
