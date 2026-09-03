@@ -1,18 +1,22 @@
 export const conversations = {
   title: 'Conversations',
-  description: 'Every conversation your agents have had with a visitor.',
+  description: 'Every visitor conversation across your Website Sales Support agent, in one place.',
   previewNotice:
     'Static preview of the Sprint 1 operator inbox. Transcripts, citations, and escalation resolve land once the backend ships.',
-  table: {
-    visitor: 'Visitor',
-    agent: 'Agent',
-    lastMessage: 'Last message',
-    status: 'Status',
-    updated: 'Updated',
+  intent: {
+    high: 'High',
+    medium: 'Medium',
+    low: 'Low',
   },
-  status: {
-    open: 'Open',
-    escalated: 'Escalated',
-    resolved: 'Resolved',
+  active: 'Active',
+  agentName: 'AI Sales Agent',
+  readOnlyPlaceholder: 'Live visitor conversation — read only in this demo',
+  prospectPanel: {
+    heading: 'Prospect',
+    intent: 'Intent',
+    interest: 'Interest',
+    score: 'Score',
+    viewProspect: 'View prospect',
+    generateFollowUp: 'Generate follow-up',
   },
 } as const;

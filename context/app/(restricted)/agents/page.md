@@ -3,17 +3,25 @@
 **Source:** `src/app/(restricted)/agents/page.tsx`, view in
 `components/AgentsListView.tsx`
 
-A static preview of `frontend-plan-v3.md` §3.1's agents list, built ahead of the
-backend so the layout is reviewable now. Renders `MOCK_AGENTS` (inline, typed) in a
-table — name, type, status, conversation/lead counts, last updated — with a
-`PreviewBanner` (see `components.md`) making the mock-data status visible in the UI
-itself, not just in this doc.
+A static preview of `frontend-plan-v3.md` §3.1's agents list, rebuilt to match the
+`ai-agents-platform` reference build's `AgentsMarketplace` page exactly — eyebrow +
+heading + subheading, a category filter pill row (All/Sales/Marketing/Growth/
+Automation), a 2-column card grid (icon, Active badge, description, a 2×3 feature
+checklist, "Level 1 · Basic" / "Free during trial", "Open agent"), and a dark
+"Tier 4 · Customized" CTA band. A `PreviewBanner` (see `components.md`) makes the
+mock-data status visible in the UI itself, not just in this doc.
+
+The four cards come from `../agentCatalog.ts`'s `AGENT_CATALOG` — the same catalog
+`DashboardView`'s "Agent performance" section renders, so the two pages can't drift
+into two different mock agent lists. Each entry's `category` field drives the filter
+pills; content (name, description, features, metrics) is ported field-for-field from
+the reference build's `data/agents.ts`.
 
 No hook, no service, no `useQueryParams` — none of the plan's real list conventions
 (URL state, the four designed states, `data.data` unwrapping) apply yet because there
-is nothing to fetch. When the backend ships `GET /api/v1/agents/`, replace this with
-the real `useAgentsList()` + `AgentsTable` + `AgentsSkeleton` structure described in
-the plan's §3.4, and remove the banner.
+is nothing to fetch. When the backend ships `GET /api/v1/agents/`, replace
+`AGENT_CATALOG` with the real `useAgentsList()` + `AgentsTable` + `AgentsSkeleton`
+structure described in the plan's §3.4, and remove the banner.
 
 ## Nav and route registration
 
