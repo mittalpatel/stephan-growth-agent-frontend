@@ -5,4 +5,7 @@ export const header = {
   noNotifications: 'No notifications',
   profile: 'Profile',
   signOut: 'Sign out',
+  trialBadge: 'Trial · {days} days remaining',
+  help: 'Help',
+  helpEmailSubject: 'Support request',
 } as const;

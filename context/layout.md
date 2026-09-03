@@ -39,12 +39,15 @@ hamburger button, closed by its own close button or the backdrop.
   `bg-primary/10 text-primary` when active, `text-muted-foreground` otherwise. A
   row with `children` (only `Organization`, currently) expands into an indented
   sub-list instead of navigating.
-- **Footer** (`border-t`): `OrganizationSwitcher`, moved here from the top of the
-  nav to mirror the prototype's org-switcher-at-the-bottom placement, then a
-  second, read-only identity card below it (avatar, `session.user.full_name`,
-  `usePermissions().role`) — matching the prototype's stacked org-card-over-
-  user-card footer. Display-only: `ProfilePopup` in the topbar is still the one
-  control that actually signs out or links to the profile page.
+- **Footer** (`border-t`): a plain `Link` to `/organization` showing the org
+  name (no dropdown — one user is only ever in one organization, so there is
+  nothing to switch between; `OrganizationSwitcher.tsx` was deleted, not
+  hidden), then a second, read-only identity card below it (avatar,
+  `session.user.full_name`, `usePermissions().role`) — matching the prototype's
+  stacked org-box-over-user-card footer. Display-only: `ProfilePopup` in the
+  topbar is still the one control that actually signs out or links to the
+  profile page. An org-less user's path to `/organization/new` is unaffected —
+  `/no-role` carries that link independently of this footer.
 
 There is deliberately no collapsed/icon-only rail mode. One was built, then
 removed the same session on direct feedback — see `context/changelog.md`,
@@ -70,12 +73,18 @@ above the sidebar.
   to it. Only matches destinations `ENABLED_HREFS`/`hasFunctional` would already
   show in the sidebar, so it can never send someone somewhere `PermissionGuard`
   would immediately bounce them back out of.
-- **Right**: `NotificationBell` → `ProfilePopup` (avatar-only trigger; see below).
-
-Deliberately does **not** include the prototype's trial-plan pill or help-center
-button — neither maps to anything real in this app (there is no trial system),
-and a control wired to nothing is a defect (`AGENTS.md`), not a style match
-worth making. Add them if and when they have something to do.
+- **Right**: a trial-status pill → a help icon → `NotificationBell` → a
+  persistent "Explore agents" button → `ProfilePopup` (avatar-only trigger;
+  see below) — the full right-hand cluster the prototype's topbar has, added
+  after a direct reference screenshot asked for it explicitly. Two of these
+  are placeholders, not real state, and both are called out in-code:
+  - The trial pill's day count (`TRIAL_DAYS_REMAINING` in `HeaderOne.tsx`) is a
+    fixed number — there is no trial system in this app yet. Same category of
+    stand-in as `DashboardView`'s mock metrics.
+  - The help icon's `mailto:` address (`support@ybinspire.com`) is unverified.
+    Replace it with the real support inbox before this ships.
+  - The "Explore agents" button is real (`/agents`) and renders on every page,
+    not only the dashboard.
 
 ## ProfilePopup
 

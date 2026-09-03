@@ -9,19 +9,6 @@ export const organizations = {
   title: 'Organization',
   description: "Manage this organization's details, members, and roles.",
 
-  switcher: {
-    label: 'Active organization',
-    // Shown to a user who belongs to more than one tenant.
-    switchTo: 'Switch to {name}',
-    switching: 'Switching…',
-    // Rendered when a switch fails; the user stays in the current organization.
-    switchFailed: 'Could not switch organization. You are still in {name}.',
-    // A user with no organization at all sees this instead of the dropdown.
-    createFirst: 'Create an organization',
-    // Appears at the bottom of the dropdown for a user who already has one.
-    createNew: 'Create a new organization',
-  },
-
   settings: {
     title: 'Settings',
     nameLabel: 'Organization name',

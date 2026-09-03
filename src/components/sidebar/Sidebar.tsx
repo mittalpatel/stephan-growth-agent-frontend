@@ -3,13 +3,13 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useState } from 'react';
-import { ChevronDown, ChevronRight, Sparkles, X } from 'lucide-react';
+import { Building2, ChevronDown, ChevronRight, Sparkles, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { NAV_ITEMS, ENABLED_HREFS, type NavItem } from '@/constants/navItems';
 import { usePermissions } from '@/app/(restricted)/context/PermissionsContext';
+import { useOrganization } from '@/app/(restricted)/context/OrganizationContext';
 import { useUser } from '@/app/(restricted)/context/UserContext';
 import { t } from '@/locales';
-import OrganizationSwitcher from './OrganizationSwitcher';
 
 function isAnyChildActive(item: NavItem, pathname: string): boolean {
   if (!item.children) return false;
@@ -157,6 +157,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
   // the page redirects server-side and the endpoints re-check.
   const { session } = useUser();
   const isSuperuser = Boolean(session.user.is_superuser);
+  const { organization } = useOrganization();
 
   const allItems = NAV_ITEMS.flatMap((item) => {
     if (item.superuserOnly && !isSuperuser) return [];
@@ -227,14 +228,24 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
       </nav>
 
       <div className="border-t py-2.5">
-        {/* Renders nothing when the user belongs to one organization, which is
-            every user of a single-tenant deployment — so no flag check is needed here. */}
-        <OrganizationSwitcher />
+        {/* A single organization per user (no switcher, no "create another"):
+            a plain link to its settings, not a dropdown with nothing to
+            switch between. `ai-agents-platform`'s own equivalent box isn't a
+            multi-org switcher either — it's a shortcut into settings/billing. */}
+        {organization && (
+          <Link
+            href="/organization"
+            className="hover:bg-accent mx-3 mb-2 flex items-center gap-2.5 rounded-md border px-3 py-2 text-sm transition-colors"
+          >
+            <Building2 className="text-muted-foreground size-4 shrink-0" aria-hidden />
+            <span className="min-w-0 flex-1 truncate font-medium">{organization.name}</span>
+          </Link>
+        )}
 
-        {/* A second, read-only identity card below the switcher — the sidebar
-            footer this shell is modeled on stacks "current org" over "current
-            user" rather than relying on the topbar's ProfilePopup alone. This
-            one is display-only; sign-out and the profile link still live on
+        {/* A second, read-only identity card below it — the sidebar footer
+            this shell is modeled on stacks "current org" over "current user"
+            rather than relying on the topbar's ProfilePopup alone. This one
+            is display-only; sign-out and the profile link still live on
             ProfilePopup, so there's exactly one place that actually acts on
             the account. */}
         <div className="flex items-center gap-2.5 px-3 pt-1">
