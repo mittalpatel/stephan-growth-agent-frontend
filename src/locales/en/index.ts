@@ -8,6 +8,7 @@ import { errors } from './errors';
 import { header } from './header';
 import { leads } from './leads';
 import { legal } from './legal';
+import { marketing } from './marketing';
 import { notifications } from './notifications';
 import { organizations } from './organizations';
 import { projects } from './projects';
@@ -36,6 +37,7 @@ export const en = {
   dashboard,
   userProfile,
   legal,
+  marketing,
   notifications,
   organizations,
   // Demo module — removed by `npm run strip-demo`.
