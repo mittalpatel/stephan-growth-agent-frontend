@@ -24,12 +24,37 @@ import { useOptionalUser } from '../context/UserContext';
 // enforces that with no `required_permissions` at all (see
 // apps/notifications/api/v1/views's module docstring) — there is no
 // permission for this map to gate on.
+//
+// `/dashboard` belongs here for a different reason, and its absence was a real
+// bug: `hasAccess()` returns `false` for any route with no `ROUTE_PERMISSIONS`
+// entry (see its own test — an unmapped route is deliberately "blocked", not
+// "open"), and `/dashboard` has never had one, since `navItems.ts`'s doc
+// comment says it must be reachable by every authenticated user regardless of
+// role. The two decisions contradicted each other: any user who held at least
+// one other permission was bounced off `/dashboard` on every visit, straight
+// to `defaultRoute()` (whichever `ROUTE_PERMISSIONS` entry they could open),
+// before ever seeing it render. Caught while logged in as an end-to-end demo
+// user, not from a permission-less test account, which is exactly the case
+// this array's existing entries don't cover.
+//
+// `/agents`, `/conversations`, `/leads`, `/analytics` join it for the same
+// reason `navItems.ts` gives their nav entries no `requiredFunction` yet:
+// they're Sprint 1 static previews (frontend-plan-v3.md), and the
+// `agent`/`conversation`/`lead` permission codes don't exist in
+// `ROUTE_PERMISSIONS` until the backend contract lands them. Move each to its
+// own `ROUTE_PERMISSIONS` entry in the same change that adds its permission
+// gate, matching the plan's §3.3.
 const GLOBAL_PATHS = [
   '/no-role',
   '/user-profile',
   '/organization/new',
   '/invites',
   '/notifications',
+  '/dashboard',
+  '/agents',
+  '/conversations',
+  '/leads',
+  '/analytics',
 ];
 
 // Platform-admin paths: open to superusers, closed to everyone else, and gated on

@@ -1,64 +1,48 @@
 'use client';
 
-import Link from 'next/link';
 import { Menu } from 'lucide-react';
 import { usePathname } from 'next/navigation';
 
 import NotificationBell from '@/app/(restricted)/components/NotificationBell';
+import { useOrganization } from '@/app/(restricted)/context/OrganizationContext';
 import { getPageMeta } from '@/lib/pageMeta';
 import { t } from '@/locales';
 
 import ProfilePopup from './ProfilePopup';
 
+/**
+ * The topbar. Sits only above the content column — the brand mark lives in
+ * `Sidebar` now, not here — so the left slot is the current page's context
+ * (organization, then page title) rather than the wordmark. Mirrors
+ * `ai-agents-platform`'s `Topbar`, which stacks the same two lines in the
+ * same place.
+ */
 export default function HeaderOne({ onMenuClick }: Readonly<{ onMenuClick?: () => void }>) {
   const pathname = usePathname();
   const { title, subtitle } = getPageMeta(pathname);
+  const { organization } = useOrganization();
 
   return (
-    <header className="sticky top-0 z-40 flex h-[72px] shrink-0 items-center border-b border-border bg-background px-4 shadow-sm md:h-[92px] md:px-10">
-      {/* Left: hamburger (mobile) + wordmark.
+    <header className="bg-background/85 sticky top-0 z-30 flex h-16 shrink-0 items-center gap-3 border-b px-4 backdrop-blur-md md:px-8">
+      <button
+        type="button"
+        onClick={onMenuClick}
+        aria-label={t.common.openMenu}
+        className="text-muted-foreground hover:bg-accent hover:text-foreground -ml-1 flex items-center justify-center rounded-md p-2 lg:hidden"
+      >
+        <Menu className="size-5" />
+      </button>
 
-          A wordmark rather than an <Image>: a template that ships a placeholder
-          logo gets a placeholder logo in production. Swap this Link's contents
-          for your own <Image> when you brand the app. */}
-      <div className="flex w-auto shrink-0 items-center gap-3 lg:w-48">
-        {onMenuClick && (
-          <button
-            type="button"
-            onClick={onMenuClick}
-            aria-label={t.common.openMenu}
-            className="flex items-center justify-center rounded-md p-2 text-foreground hover:bg-accent lg:hidden"
-          >
-            <Menu className="h-5 w-5" />
-          </button>
+      <div className="min-w-0 flex-1">
+        {organization && (
+          <p className="text-muted-foreground truncate text-xs">{organization.name}</p>
         )}
-        <Link href="/dashboard" className="text-lg font-semibold tracking-tight">
-          {t.common.appName}
-        </Link>
+        {title && <p className="truncate text-sm font-semibold">{title}</p>}
+        {subtitle && <p className="text-muted-foreground truncate text-xs">{subtitle}</p>}
       </div>
 
-      {/* Center: always a flex-1 spacer; shows title/subtitle on sm+.
-          h2/h3 (not h1 — the page body already has its own h1) for correct
-          document structure; font-sans pins the body font explicitly so
-          converting from <span> doesn't pull in the global h1-h6 heading
-          rule (font-heading/Anton) and change how these render. */}
-      <div className="flex flex-1 flex-col items-center justify-center text-center">
-        {title && (
-          <h2 className="hidden font-sans text-lg font-bold uppercase leading-tight text-primary sm:block">
-            {title}
-          </h2>
-        )}
-        {subtitle && (
-          <h3 className="mt-0.5 hidden font-sans text-md font-medium leading-tight text-foreground sm:block">
-            {subtitle}
-          </h3>
-        )}
-      </div>
-
-      {/* Right: divider (desktop only) + profile */}
-      <div className="flex w-auto shrink-0 items-center justify-end gap-2 lg:w-48">
+      <div className="flex shrink-0 items-center gap-2">
         <NotificationBell />
-        <div className="hidden h-8 w-px bg-border sm:block" />
         <ProfilePopup />
       </div>
     </header>

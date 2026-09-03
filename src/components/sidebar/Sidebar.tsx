@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useState } from 'react';
-import { ChevronDown, ChevronRight } from 'lucide-react';
+import { ChevronDown, ChevronRight, Sparkles, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { NAV_ITEMS, ENABLED_HREFS, type NavItem } from '@/constants/navItems';
 import { usePermissions } from '@/app/(restricted)/context/PermissionsContext';
@@ -21,36 +21,19 @@ function isItemActive(item: NavItem, pathname: string): boolean {
   return pathname === item.href || pathname.startsWith(item.href + '/');
 }
 
-function groupBtnClass(active: boolean) {
+// Flat pills, not the uppercase/shadowed treatment this replaced: a light
+// tinted fill on the active row is what `ai-agents-platform`'s sidebar uses,
+// and it reads calmer at this density than a solid fill on every row.
+function navRowClass(active: boolean) {
   return cn(
-    'flex w-full items-center justify-between gap-3 rounded-xl px-3 py-2.5',
-    'text-sm font-medium uppercase  transition-all duration-150',
+    'flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-left text-sm font-medium transition-colors',
     active
-      ? 'bg-sidebar-accent text-white shadow-sm'
+      ? 'bg-primary/10 text-primary'
       : 'text-muted-foreground hover:bg-accent hover:text-foreground'
   );
 }
 
-function subLinkClass(active: boolean) {
-  return cn(
-    'block rounded-lg px-3 py-2 text-[13px] font-normal  transition-all duration-150',
-    active
-      ? 'bg-sidebar-accent text-white shadow-sm'
-      : 'text-muted-foreground hover:bg-accent hover:text-foreground'
-  );
-}
-
-function simpleLinkClass(active: boolean) {
-  return cn(
-    'flex w-full items-center gap-3 rounded-xl px-3 py-2.5',
-    'text-sm font-medium uppercase  transition-all duration-150',
-    active
-      ? 'bg-sidebar-accent text-white shadow-sm'
-      : 'text-muted-foreground hover:bg-accent hover:text-foreground'
-  );
-}
-
-const SUBMENU_LIST = 'mt-1 ml-8 space-y-0.5 border-l-2 border-border pl-3';
+const SUBMENU_LIST = 'mt-0.5 ml-8 space-y-0.5 border-l-2 border-border pl-3';
 
 function NavGroup({ item, pathname }: Readonly<{ item: NavItem; pathname: string }>) {
   const { hasFunctional } = usePermissions();
@@ -77,33 +60,34 @@ function NavGroup({ item, pathname }: Readonly<{ item: NavItem; pathname: string
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
-        className={groupBtnClass(childActive && !open)}
+        className={cn(navRowClass(childActive && !open), 'justify-between')}
       >
-        <span className="flex items-center gap-3">
-          <span
-            className={cn(
-              'shrink-0',
-              childActive && !open ? 'text-white' : 'text-muted-foreground'
-            )}
-          >
-            <item.icon className="h-4 w-4" />
-          </span>
-          <span>{item.label}</span>
+        <span className="flex items-center gap-2.5">
+          <item.icon className="size-[17px] shrink-0" strokeWidth={2} />
+          <span className="truncate">{item.label}</span>
         </span>
         {open ? (
-          <ChevronDown className="h-3.5 w-3.5 shrink-0 opacity-50" />
+          <ChevronDown className="size-3.5 shrink-0 opacity-60" />
         ) : (
-          <ChevronRight className="h-3.5 w-3.5 shrink-0 opacity-50" />
+          <ChevronRight className="size-3.5 shrink-0 opacity-60" />
         )}
       </button>
 
-      {open && visibleChildren.length > 0 && (
+      {open && (
         <ul className={SUBMENU_LIST}>
           {visibleChildren.map((child) => {
             const active = pathname === child.href || pathname.startsWith(child.href + '/');
             return (
               <li key={child.href}>
-                <Link href={child.href} className={subLinkClass(active)}>
+                <Link
+                  href={child.href}
+                  className={cn(
+                    'block rounded-lg px-3 py-1.5 text-[13px] transition-colors',
+                    active
+                      ? 'text-primary font-medium'
+                      : 'text-muted-foreground hover:text-foreground'
+                  )}
+                >
                   {child.label}
                 </Link>
               </li>
@@ -119,13 +103,35 @@ function NavLeaf({ item, pathname }: Readonly<{ item: NavItem; pathname: string 
   const active = isItemActive(item, pathname);
   return (
     <li>
-      <Link href={item.href} className={simpleLinkClass(active)}>
-        <span className={cn('shrink-0', active ? 'text-white' : 'text-muted-foreground')}>
-          <item.icon className="h-4 w-4" />
-        </span>
-        <span>{item.label}</span>
+      <Link href={item.href} className={navRowClass(active)}>
+        <item.icon className="size-[17px] shrink-0" strokeWidth={2} />
+        <span className="truncate">{item.label}</span>
       </Link>
     </li>
+  );
+}
+
+function NavSection({
+  title,
+  items,
+  pathname,
+}: Readonly<{ title: string; items: NavItem[]; pathname: string }>) {
+  if (items.length === 0) return null;
+  return (
+    <div className="mb-5">
+      <p className="text-muted-foreground/70 mb-1.5 px-3 text-[10px] font-semibold tracking-wider uppercase">
+        {title}
+      </p>
+      <ul className="flex flex-col gap-0.5">
+        {items.map((item) =>
+          item.children ? (
+            <NavGroup key={item.href} item={item} pathname={pathname} />
+          ) : (
+            <NavLeaf key={item.href} item={item} pathname={pathname} />
+          )
+        )}
+      </ul>
+    </div>
   );
 }
 
@@ -167,92 +173,52 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
   return (
     <aside
       className={cn(
-        'flex w-[280px] shrink-0 flex-col overflow-hidden border-r border-r-th-sidebar-border bg-sidebar',
-        // Mobile: fixed overlay drawer
+        'bg-sidebar flex w-64 shrink-0 flex-col border-r',
+        // Mobile: fixed overlay drawer. Desktop: sticky in the flex row and as
+        // tall as the viewport, so its own nav scrolls independently of the
+        // page — matching the full-height rail this shell is styled after,
+        // rather than the header-spans-everything layout it replaced.
         'fixed inset-y-0 left-0 z-50 h-full transition-transform duration-200 ease-in-out',
         isOpen ? 'translate-x-0' : '-translate-x-full',
-        // Desktop: static in layout, always visible
-        'lg:relative lg:translate-x-0 lg:transition-none'
+        'lg:sticky lg:top-0 lg:h-screen lg:translate-x-0 lg:transition-none'
       )}
     >
-      {/* Mobile close button */}
-      <div className="flex items-center justify-between border-b border-border px-4 py-3 lg:hidden">
-        <span className="text-xs font-bold uppercase text-muted-foreground">{t.common.menu}</span>
+      <div className="flex h-16 shrink-0 items-center gap-2.5 border-b px-4">
+        <span className="bg-brand-accent text-brand-accent-foreground flex size-8 shrink-0 items-center justify-center rounded-lg">
+          <Sparkles className="size-4" />
+        </span>
+        <span className="font-display truncate text-[15px] font-bold tracking-tight">
+          {t.common.appName}
+        </span>
         <button
           type="button"
           onClick={onClose}
           aria-label={t.common.closeMenu}
-          className="rounded-md p-1 text-muted-foreground hover:bg-accent hover:text-foreground"
+          className="text-muted-foreground hover:bg-accent hover:text-foreground ml-auto rounded-md p-1.5 lg:hidden"
         >
-          <svg
-            className="h-5 w-5"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-            strokeWidth={2}
-          >
-            <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-          </svg>
+          <X className="size-4" />
         </button>
       </div>
+
+      <nav className="flex-1 overflow-y-auto px-2.5 py-4">
+        <NavSection title={t.navigation.sections.main} items={mainItems} pathname={pathname} />
+        <NavSection
+          title={t.navigation.sections.workspace}
+          items={workspaceItems}
+          pathname={pathname}
+        />
+        <NavSection
+          title={t.navigation.sections.platform}
+          items={platformItems}
+          pathname={pathname}
+        />
+      </nav>
+
       {/* Renders nothing when the user belongs to one organization, which is
           every user of a single-tenant deployment — so no flag check is needed here. */}
-      <div className="pt-3">
+      <div className="border-t py-2.5">
         <OrganizationSwitcher />
       </div>
-      <nav className="flex-1 overflow-y-auto px-4 pb-6 pt-2 sm:px-5">
-        {/* MAIN section */}
-        <div>
-          <p className="mb-2 px-1 text-xs font-black uppercase text-muted-foreground">
-            {t.navigation.sections.main}
-          </p>
-          <ul className="space-y-0.5">
-            {mainItems.map((item) =>
-              item.children ? (
-                <NavGroup key={item.href} item={item} pathname={pathname} />
-              ) : (
-                <NavLeaf key={item.href} item={item} pathname={pathname} />
-              )
-            )}
-          </ul>
-        </div>
-
-        {/* Divider */}
-        <div className="my-4 border-t border-border" />
-
-        {/* WORKSPACE section */}
-        <div>
-          <p className="mb-2 px-1 text-xs font-black uppercase text-muted-foreground">
-            {t.navigation.sections.workspace}
-          </p>
-          <ul className="space-y-0.5">
-            {workspaceItems.map((item) =>
-              item.children ? (
-                <NavGroup key={item.href} item={item} pathname={pathname} />
-              ) : (
-                <NavLeaf key={item.href} item={item} pathname={pathname} />
-              )
-            )}
-          </ul>
-        </div>
-
-        {/* PLATFORM section — empty, and so absent, for everyone but superusers. */}
-        {platformItems.length > 0 ? (
-          <>
-            <div className="my-4 border-t border-border" />
-            <div>
-              <p className="mb-2 px-1 text-xs font-black uppercase text-muted-foreground">
-                {t.navigation.sections.platform}
-              </p>
-              <ul className="space-y-0.5">
-                {platformItems.map((item) => (
-                  <NavLeaf key={item.href} item={item} pathname={pathname} />
-                ))}
-              </ul>
-            </div>
-          </>
-        ) : null}
-      </nav>
     </aside>
   );
 }

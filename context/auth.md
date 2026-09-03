@@ -179,6 +179,17 @@ The restricted layout fetches them server-side and seeds `PermissionsContext`, s
 UI has them at first paint; the client then refetches. `PermissionGuard` **fails
 closed** once loaded — an unknown permission denies.
 
+A route with no `ROUTE_PERMISSIONS` entry at all also fails closed: `hasAccess()`
+returns `false` for it (tested — see `hasAccess` in `src/lib/__tests__/helper.test.ts`,
+`'/some-unmapped-route'`), not "open to everyone." A route meant to be reachable by
+every authenticated user regardless of permissions — `/dashboard`, or a Sprint 1
+static preview with no permission code yet — has to say so explicitly in
+`PermissionGuard.tsx`'s `GLOBAL_PATHS`. Omitting it there is not a no-op: it silently
+bounces any user who holds at least one *other* permission to `defaultRoute()` on
+every visit, which is exactly the bug `/dashboard` shipped with until it was caught by
+logging in as a real seeded user rather than a permission-less test account (see
+`context/changelog.md`, 2026-09-03).
+
 ## Three layers of route protection
 
 None of the first two is a security boundary. Only the backend is.
