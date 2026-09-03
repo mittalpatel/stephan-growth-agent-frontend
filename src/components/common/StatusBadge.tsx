@@ -22,7 +22,7 @@ import { cn } from '@/lib/utils';
  * or the distinction is invisible to a colour-blind reader.
  */
 const statusBadge = cva(
-  'inline-flex h-6 items-center rounded-full border px-2.5 text-xs font-medium whitespace-nowrap',
+  'inline-flex h-6 items-center gap-1.5 rounded-full border px-2.5 text-xs font-medium whitespace-nowrap',
   {
     variants: {
       tone: {
@@ -47,5 +47,14 @@ type StatusBadgeProps = Readonly<{
 }>;
 
 export function StatusBadge({ label, tone, className }: StatusBadgeProps) {
-  return <span className={cn(statusBadge({ tone }), className)}>{label}</span>;
+  return (
+    <span className={cn(statusBadge({ tone }), className)}>
+      {/* Decorative: `currentColor` so the dot always matches its tone, and
+          aria-hidden so a screen reader announces the label alone. It carries no
+          information the label doesn't — see the note above about never letting
+          colour be the only signal. */}
+      <span aria-hidden className="size-1.5 shrink-0 rounded-full bg-current opacity-70" />
+      {label}
+    </span>
+  );
 }

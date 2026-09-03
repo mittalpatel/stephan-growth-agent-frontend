@@ -12,7 +12,7 @@ export default function NotFound() {
         <div className="relative mx-auto w-full max-w-2xl overflow-hidden rounded-3xl bg-card border px-8 py-14 text-center shadow-sm">
           {/* Decorative blurred blobs */}
           <span className="pointer-events-none absolute -left-8 -top-8 h-40 w-40 rounded-full bg-info/40 blur-3xl" />
-          <span className="pointer-events-none absolute bottom-0 right-0 h-44 w-44 rounded-full bg-brand/20 blur-3xl" />
+          <span className="pointer-events-none absolute bottom-0 right-0 h-44 w-44 rounded-full bg-brand-accent/25 blur-3xl" />
 
           <div className="relative flex flex-col items-center gap-5">
             {/* Error badge */}
@@ -21,7 +21,7 @@ export default function NotFound() {
             </span>
 
             {/* Headline */}
-            <h1 className="text-4xl font-normal text-foreground md:text-5xl">
+            <h1 className="font-display text-4xl font-bold tracking-tight text-foreground md:text-5xl">
               {t.errors.notFound}
             </h1>
 

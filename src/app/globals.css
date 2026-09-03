@@ -210,10 +210,18 @@
      request and no layout shift. */
   --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
   --font-mono: var(--font-jetbrains-mono), ui-monospace, monospace;
-  /* Headings and metric values only. Pairing a display face with a text face is
-     most of what separates this look from stock — but used below ~18px it just
-     reads as a slightly wrong body font, so it is deliberately not the default. */
+  /* Headings, dialog/card titles and metric values. Pairing a display face with
+     a text face is most of what separates this look from stock — but used below
+     ~18px it just reads as a slightly wrong body font, so it is deliberately not
+     the default.
+     
+     `--font-heading` is the name four shadcn components (card, dialog,
+     alert-dialog, sheet) already reference via `font-heading`. No such token was
+     ever declared, so that utility was inert and those titles silently fell back
+     to the body font. Declaring it here is what makes them pick up the display
+     face; the alias keeps both names working. */
   --font-display: var(--font-manrope), var(--font-inter), ui-sans-serif, sans-serif;
+  --font-heading: var(--font-display);
 }
 
 @layer base {

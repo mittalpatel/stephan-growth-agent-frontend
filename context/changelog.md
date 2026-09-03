@@ -7,6 +7,41 @@ why, not a diff (`git log` already has that).
 
 ---
 
+## 2026-09-03 — Rebranded the theme to the Nexus palette, and themed the public pages
+
+The client-facing prototype (`ai-agents-platform`) set a visual direction: navy
+primary, warm-neutral ramp, gold highlight, Manrope over Inter. Ported it as token
+_values_ in `globals.css`, leaving every token _name_ stock so the shadcn primitives
+inherit it with no component edits and future `shadcn add` still matches.
+
+- Palette converted from the prototype's hex to `oklch`, per the file's existing
+  convention. Dark mode was derived rather than invented: each token keeps its
+  light-mode hue and swaps lightness, since the prototype ships light mode only and
+  leaving `.dark` on stock neutral would have made the two themes look like different
+  products.
+- One token pair added, `--brand-accent`. shadcn's `--accent` is the hover/active
+  surface, so routing a saturated gold through it would have tinted every hover.
+- `--radius` 0.625rem to 0.75rem, so `rounded-xl` lands on the 16px card roundness the
+  design uses.
+- Fonts: Geist to Manrope (display) plus Inter (body) plus JetBrains Mono (numerics),
+  all self-hosted through `next/font`.
+- **Fixed a latent bug:** `font-heading` was referenced by four generated `ui/`
+  primitives (card, dialog, alert-dialog, sheet) and by `HeaderOne`, but no
+  `--font-heading` token was ever declared, so the utility was inert and every one of
+  those titles silently fell back to the body font. It is now an alias of
+  `--font-display`.
+- `StatusBadge` gained a decorative `aria-hidden` dot.
+- Public pages themed: `AuthHeroShell` (display face on the hero and card titles, a
+  soft brand-accent highlight behind the navy panel, flat border instead of a shadow)
+  and `not-found`, whose decorative blob referenced a `bg-brand` token that never
+  existed and therefore rendered as nothing.
+
+Restricted pages were deliberately left alone; they get their pass once the backend
+work starts. `src/components/ui/**` was left untouched on purpose after an initial
+attempt to swap Card's ring for a border: that directory is generated, so the edit
+would not survive regeneration. The remaining visual gap between our cards and the
+prototype's is exactly that ring-versus-border edge.
+
 ## 2026-09-02 — Built the transfer-ownership UI for the existing backend endpoint
 
 QA's §7.1 flagged `OrganizationTransferOwnershipView` as a live, permission-gated
@@ -62,7 +97,7 @@ three were genuine product bugs no amount of source-reading had caught:
   storage.** `useMfaVerifyForm`'s `useHasStoredChallenge` returned a plain
   boolean from `useSyncExternalStore` with a `false` server snapshot, assuming
   React would resync to the real client value before any effect could act on
-  it. It does not — on a *full page load* (a refresh mid-flow, a bookmark) the
+  it. It does not — on a _full page load_ (a refresh mid-flow, a bookmark) the
   redirect effect fired on the pre-resync `false`, discarding a live challenge
   and forcing the user to re-enter their password. Reproduced against a
   production build, not just dev. Now a tri-state (`null` = not read yet) so
@@ -78,7 +113,7 @@ three were genuine product bugs no amount of source-reading had caught:
   `scrollWidth` back to 375).
 - **Admins were shown the "delete this organization" danger zone.**
   `helper.ts`'s `MANAGE_IMPLIED` treated `delete` as implied by
-  `resource:manage`, mirroring the backend's *declared* contract — but not its
+  `resource:manage`, mirroring the backend's _declared_ contract — but not its
   actual enforcement, which never subsumed `delete` (see backend changelog).
   An Admin holds `organization:manage`, not `organization:delete`, so the
   control could only ever 403. `delete` removed from `MANAGE_IMPLIED` and
@@ -95,7 +130,7 @@ which can never pass (the panel is `hidden md:flex` — present but
 `display:none`) and also collided with the copyright line that contains the app
 name as a substring; `org-settings-owner-gating.spec.ts` read the org-name
 field before its fetch had populated it (capturing `''` as the value to revert
-to) and did its revert *after* the assertions, so one failure left the seeded
+to) and did its revert _after_ the assertions, so one failure left the seeded
 org permanently renamed — the revert now lives in a `finally`.
 
 ## 2026-09-01 — Wired up file rename, which QA found had backend/hook support but no UI
@@ -181,7 +216,7 @@ work correctly through the real UI. Two apparent failures during this pass
 turned out to be test mistakes, not bugs, worth recording: (1) TOTP
 anti-replay — django_otp correctly rejects a code from a timestep already
 consumed, so confirming MFA and then immediately disabling with a
-freshly-*computed* (but not freshly-*windowed*) code fails by design; the
+freshly-_computed_ (but not freshly-_windowed_) code fails by design; the
 disable step must wait out a new 30s window, not just recompute. (2) Private
 Project's own seeded description ("Not shared with anyone...") legitimately
 contains the substring "shared", so searching "Shared" correctly returns
@@ -199,7 +234,7 @@ below and this session's backend RBAC/notification fixes.
   a new one replaces it, or on true unmount (tracked via a ref), not in the
   per-run cleanup.
 - **PDF preview crashed the whole page during SSR** (`DOMMatrix is not
-  defined`): `react-pdf`/pdf.js touch browser-only APIs at import time, but
+defined`): `react-pdf`/pdf.js touch browser-only APIs at import time, but
   `PdfPreview` was a plain `'use client'` component, which Next.js still
   server-renders on first pass. Extracted it into its own file
   (`PdfPreview.tsx`) and load it via `next/dynamic(..., { ssr: false })` from
@@ -308,7 +343,7 @@ never talks to the IdP for anything beyond that full-page redirect. The `signIn`
 callback then hands the resulting `id_token` to the backend's new `POST
 /api/v1/auth/oauth/<provider>/exchange/`, which verifies it and mints our own
 token pair — the provider's own tokens never enter the session cookie, same
-invariant as everywhere else in this app ("the session must carry *your*
+invariant as everywhere else in this app ("the session must carry _your_
 tokens, never the provider's," per the comment this replaces).
 
 ### Added
@@ -364,14 +399,13 @@ full `vitest` suite (248 tests) all clean.
 ### Follow-up — GitHub
 
 Added right after, as a distinct provider rather than a config entry in the
-generic OIDC list above: GitHub is plain OAuth2 (no id_token, no JWKS), so it's
+generic OIDC list above: GitHub is plain OAuth2 (no id*token, no JWKS), so it's
 registered via NextAuth's own `GithubProvider` (env vars `GITHUB_CLIENT_ID` /
 `GITHUB_CLIENT_SECRET` — GitHub's and NextAuth's own well-known names, not the
-`OIDC_<NAME>_*` scheme) rather than through `oidcProviders.ts`'s loop. Still
-just a name in `NEXT_PUBLIC_SOCIAL_PROVIDERS` to get a button — that list
-turned out not to be OIDC-specific after all, so it's renamed from
-`NEXT_PUBLIC_OIDC_PROVIDERS` to `NEXT_PUBLIC_SOCIAL_PROVIDERS` throughout
-(docs, `.env.example`, `SocialLoginButtons.tsx`).
+`OIDC*<NAME>\_\*`scheme) rather than through`oidcProviders.ts`'s loop. Still
+just a name in `NEXT_PUBLIC_SOCIAL_PROVIDERS`to get a button — that list
+turned out not to be OIDC-specific after all, so it's renamed from`NEXT_PUBLIC_OIDC_PROVIDERS`to`NEXT_PUBLIC_SOCIAL_PROVIDERS`throughout
+(docs,`.env.example`, `SocialLoginButtons.tsx`).
 
 The `signIn` callback now branches on `account.provider === 'github'` to send
 `{ access_token }` instead of `{ id_token }` to the backend's exchange
@@ -449,7 +483,7 @@ anything.
 **A real correctness bug in the hook itself, caught only by testing in an actual
 browser.** The first version tracked "should this effect run still act" with a
 single `useRef` shared across renders. React 18 Strict Mode's dev-only
-mount→cleanup→remount double-invoke resets that ref *before* the first run's
+mount→cleanup→remount double-invoke resets that ref _before_ the first run's
 in-flight `connect()` (paused on the ticket-fetch `await`) ever re-checked it —
 so a socket from an already-"cleaned-up" effect run kept getting created and
 left alive, unaffected by the real cleanup. Fixed by making the cancellation

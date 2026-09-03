@@ -31,14 +31,24 @@ export default function AuthHeroShell({
 
   return (
     <main className="bg-muted/40 flex min-h-screen">
-      <div className="bg-primary text-primary-foreground hidden w-1/2 flex-col justify-between p-12 md:flex">
-        <span className="text-lg font-semibold tracking-tight">{t.common.appName}</span>
-        <div className="space-y-2">
-          <p className="max-w-sm text-3xl font-semibold tracking-tight text-balance">
+      <div className="bg-primary text-primary-foreground relative hidden w-1/2 flex-col justify-between overflow-hidden p-12 md:flex">
+        {/* A single soft highlight, drawn in the brand accent at low opacity, so
+            the panel is not a flat rectangle of navy. Decorative and behind the
+            content — never a texture image, which is the thing that ships as a
+            placeholder and stays. */}
+        <span
+          aria-hidden
+          className="bg-brand-accent/20 pointer-events-none absolute -top-24 -right-24 size-96 rounded-full blur-3xl"
+        />
+        <span className="font-display relative text-lg font-bold tracking-tight">
+          {t.common.appName}
+        </span>
+        <div className="relative space-y-2">
+          <p className="font-display max-w-sm text-4xl leading-tight font-bold tracking-tight text-balance">
             {t.auth.heroTagline}
           </p>
         </div>
-        <p className="text-primary-foreground/70 text-xs">
+        <p className="text-primary-foreground/70 relative text-xs">
           {format(t.auth.copyright, { year: String(currentYear) })}
         </p>
       </div>
@@ -51,9 +61,9 @@ export default function AuthHeroShell({
           phone. */}
       <div className="flex min-w-0 flex-1 flex-col items-center justify-center px-4 py-12">
         <div className="w-full max-w-md">
-          <div className="bg-card text-card-foreground rounded-lg border p-6 shadow-sm sm:p-8">
+          <div className="bg-card text-card-foreground border-border rounded-xl border p-6 sm:p-8">
             <div className="mb-6 space-y-1.5">
-              <h1 className="text-2xl font-semibold tracking-tight">{title}</h1>
+              <h1 className="font-display text-2xl font-bold tracking-tight">{title}</h1>
               {subtitle && <p className="text-muted-foreground text-sm">{subtitle}</p>}
             </div>
             {children}

@@ -85,6 +85,9 @@ module maps its own statuses — see the `Record<WidgetStatus, StatusTone>` in
 `WidgetsTable`, whose exhaustive type fails the build when a status is added without a
 tone.
 
+Renders a small `currentColor` dot before the label. It is `aria-hidden` and purely
+decorative, so it carries no information the label does not.
+
 Never rely on colour alone to convey state; the label must say it too.
 
 ## EmptyState
@@ -142,7 +145,13 @@ See [layout.md](layout.md).
 
 Every component uses semantic tokens only: `bg-background`, `text-foreground`,
 `text-muted-foreground`, `border-border`, `bg-card`, `bg-primary`, `bg-muted`,
-`bg-accent`, `text-destructive`, and the `success`/`warning`/`info` pairs.
+`bg-accent`, `text-destructive`, the `success`/`warning`/`info` pairs, and
+`bg-brand-accent` (the gold highlight, distinct from `bg-accent`, which is the
+hover/active surface).
+
+Typography has two faces: `font-display` for headings, dialog and card titles, and
+metric values, `font-sans` for everything else. `font-heading` is an alias of
+`font-display`, kept because four generated `ui/` primitives reference that name.
 
 No hex, and no raw Tailwind palette classes (`bg-white`, `text-gray-500`) — those
 hardcode one theme and silently break the other. Both themes are reviewed before merge.

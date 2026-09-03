@@ -79,10 +79,22 @@ just as wrong, because they hardcode one theme. This is what makes dark mode fre
 single literal colour renders correctly in one theme and is unreadable in the other,
 and nobody notices until a user screenshots it.
 
-This theme is shadcn's stock neutral palette, unmodified (ADR-0014). To brand the app,
-edit the `--primary` pair in `globals.css` — both the `:root` and `.dark` blocks — and
-nothing else. Adding a bespoke accent is precisely what stops every future
-`npx shadcn@latest add …` from matching.
+This theme is **no longer** shadcn's stock neutral palette. It carries the Nexus brand
+palette (navy primary, warm-neutral ramp, gold `--brand-accent`), applied as token
+_values_ in `globals.css`. The token _names_ are still stock, which is what keeps every
+future `npx shadcn@latest add …` matching automatically.
+
+That is also the only sanctioned way to rebrand: change values in `globals.css`, in
+both the `:root` and `.dark` blocks. Do not hand-edit `src/components/ui/**` to restyle
+a primitive, even for something as small as swapping a ring for a border, because that
+directory is generated and the edit is lost on the next regeneration. If a primitive
+genuinely cannot be themed through tokens, raise it rather than patching it in place.
+
+One token pair was added beyond the stock set: `--brand-accent` /
+`--brand-accent-foreground`, the gold highlight. It is separate from shadcn's
+`--accent` on purpose, because `--accent` is the hover/active surface and routing a
+saturated brand colour through it tints every hover in the app. Adding a token means
+adding it in three places: `:root`, `.dark`, and `@theme inline`.
 
 The one sanctioned exception is `src/app/global-error.tsx`, which renders when the
 root layout (and therefore the stylesheet) may have failed to load. It says so.
