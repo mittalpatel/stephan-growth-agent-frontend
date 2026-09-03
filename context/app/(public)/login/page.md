@@ -17,9 +17,11 @@ src/app/(public)/
 
 ## Layout
 
-A single centred card, not a split hero. A hero half needs artwork, and a template that
-ships placeholder artwork gets placeholder artwork in production. `AuthHeroShell`
-leaves room above `children` for a logo when you brand the app.
+A split-screen layout on medium+ screens via `AuthHeroShell`: a left branding panel
+(logo mark, an "Enterprise ready" badge, tagline, and a short feature list on
+`bg-brand-surface`, a token kept identical in both themes rather than derived from
+`primary`) and the credentials card on the right. Below `md` the branding panel is
+hidden and the same logo mark sits above the card instead.
 
 There is deliberately no mount-fade. This is the first thing a user sees, and animating
 it in puts a frame between them and the only control they came for.

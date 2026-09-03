@@ -49,6 +49,7 @@ export default function PublicSignupForm() {
                 autoComplete="given-name"
                 disabled={isLoading}
                 aria-invalid={Boolean(detailsForm.formState.errors.first_name)}
+                className="h-11 rounded-lg text-base"
                 {...detailsForm.register('first_name')}
               />
               {detailsForm.formState.errors.first_name && (
@@ -64,6 +65,7 @@ export default function PublicSignupForm() {
                 autoComplete="family-name"
                 disabled={isLoading}
                 aria-invalid={Boolean(detailsForm.formState.errors.last_name)}
+                className="h-11 rounded-lg text-base"
                 {...detailsForm.register('last_name')}
               />
               {detailsForm.formState.errors.last_name && (
@@ -82,6 +84,7 @@ export default function PublicSignupForm() {
               autoComplete="email"
               disabled={isLoading}
               aria-invalid={Boolean(detailsForm.formState.errors.email)}
+              className="h-11 rounded-lg text-base"
               {...detailsForm.register('email')}
             />
             {detailsForm.formState.errors.email && (
@@ -99,6 +102,7 @@ export default function PublicSignupForm() {
               autoComplete="new-password"
               disabled={isLoading}
               aria-invalid={Boolean(detailsForm.formState.errors.password)}
+              className="h-11 rounded-lg text-base"
               {...detailsForm.register('password')}
             />
             {detailsForm.formState.errors.password && (
@@ -116,6 +120,7 @@ export default function PublicSignupForm() {
               autoComplete="new-password"
               disabled={isLoading}
               aria-invalid={Boolean(detailsForm.formState.errors.confirm_password)}
+              className="h-11 rounded-lg text-base"
               {...detailsForm.register('confirm_password')}
             />
             {detailsForm.formState.errors.confirm_password && (
@@ -125,7 +130,11 @@ export default function PublicSignupForm() {
             )}
           </div>
 
-          <Button type="submit" className="w-full" disabled={isLoading}>
+          <Button
+            type="submit"
+            className="h-11 w-full rounded-lg text-base font-semibold"
+            disabled={isLoading}
+          >
             {isLoading && <Spinner />}
             {isLoading ? copy.creatingAccount : copy.createAccountButton}
           </Button>
@@ -143,13 +152,18 @@ export default function PublicSignupForm() {
               maxLength={6}
               disabled={isLoading}
               aria-invalid={Boolean(otpForm.formState.errors.otp)}
+              className="h-11 rounded-lg text-base"
               {...otpForm.register('otp')}
             />
             {otpForm.formState.errors.otp && (
               <p className="text-destructive text-xs">{otpForm.formState.errors.otp.message}</p>
             )}
           </div>
-          <Button type="submit" className="w-full" disabled={isLoading}>
+          <Button
+            type="submit"
+            className="h-11 w-full rounded-lg text-base font-semibold"
+            disabled={isLoading}
+          >
             {isLoading && <Spinner />}
             {isLoading ? copy.verifyingCode : copy.verifyCodeButton}
           </Button>

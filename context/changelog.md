@@ -7,6 +7,32 @@ why, not a diff (`git log` already has that).
 
 ---
 
+## 2026-09-03 — Made the auth pages match the prototype's visual polish
+
+The public auth flow (login, signup, forgot-password, MFA) still used the stock
+shadcn density (`h-8` fields, no icons) even after the palette rebrand, which read
+as noticeably plainer than the `ai-agents-platform` prototype it was modeled on.
+
+- `AuthHeroShell.tsx`: the branding panel gained a logo mark (`Sparkles` in a
+  `brand-accent` tile), a "Enterprise ready" badge, and a three-line feature list
+  with `CheckCircle2` bullets — copy lives in `t.auth.heroBadge` /
+  `t.auth.heroFeatures`, not inline, per the no-hardcoded-strings rule. The failed
+  blurred-highlight decoration from the earlier pass is replaced with a flat dot-grid
+  texture (`radial-gradient` on `currentColor`), which can't band the way a blurred
+  circle did. Below `md`, the same logo mark now sits above the card instead of
+  disappearing entirely.
+- Every auth form (`LoginForm`, `SignupForm`, `PublicSignupForm`,
+  `ForgotPasswordForm`, `MfaVerifyForm`, `SocialLoginButtons`): text inputs and the
+  primary submit button sized up to `h-11`/`text-base` via `className` overrides at
+  the call site (never by hand-editing `src/components/ui/**`, which stays
+  generated). `LoginForm`'s email and password fields also gained leading `Mail` /
+  `Lock` icons, matching the trailing show/hide-password icon already there.
+- Verified in both themes with Playwright screenshots (forcing the `dark` class,
+  since `next-themes` is class-based and Playwright's `colorScheme` context option
+  does nothing here) rather than by reading token values alone.
+- Restricted pages are untouched, per the standing scope: public pages are themed
+  now, the post-login app waits for the backend team.
+
 ## 2026-09-03 — Rebranded the theme to the Nexus palette, and themed the public pages
 
 The client-facing prototype (`ai-agents-platform`) set a visual direction: navy

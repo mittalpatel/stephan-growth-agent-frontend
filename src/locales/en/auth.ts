@@ -19,6 +19,12 @@ export const auth = {
   // Shown on the branding panel of the split auth layout. Rename or replace
   // when you brand the app.
   heroTagline: 'Everything your team needs, in one place.',
+  heroBadge: 'Enterprise ready',
+  heroFeatures: [
+    'Secure, role-based access for every team',
+    'Real-time visibility across your workspace',
+    'Built to scale with your organization',
+  ],
   validation: {
     email: 'Enter a valid email',
     passwordLength: 'Minimum 5 characters',

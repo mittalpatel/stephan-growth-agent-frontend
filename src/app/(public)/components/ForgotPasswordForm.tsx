@@ -53,6 +53,7 @@ export default function ForgotPasswordForm() {
                 autoComplete="email"
                 disabled={isLoading}
                 aria-invalid={Boolean(emailForm.formState.errors.email)}
+                className="h-11 rounded-lg text-base"
                 {...emailForm.register('email')}
               />
               {emailForm.formState.errors.email && (
@@ -61,7 +62,11 @@ export default function ForgotPasswordForm() {
                 </p>
               )}
             </div>
-            <Button type="submit" className="w-full" disabled={isLoading}>
+            <Button
+              type="submit"
+              className="h-11 w-full rounded-lg text-base font-semibold"
+              disabled={isLoading}
+            >
               {isLoading && <Spinner />}
               {isLoading ? copy.sendingCode : copy.sendCodeButton}
             </Button>
@@ -82,13 +87,18 @@ export default function ForgotPasswordForm() {
                 maxLength={6}
                 disabled={isLoading}
                 aria-invalid={Boolean(otpForm.formState.errors.otp)}
+                className="h-11 rounded-lg text-base"
                 {...otpForm.register('otp')}
               />
               {otpForm.formState.errors.otp && (
                 <p className="text-destructive text-xs">{otpForm.formState.errors.otp.message}</p>
               )}
             </div>
-            <Button type="submit" className="w-full" disabled={isLoading}>
+            <Button
+              type="submit"
+              className="h-11 w-full rounded-lg text-base font-semibold"
+              disabled={isLoading}
+            >
               {isLoading && <Spinner />}
               {isLoading ? copy.verifyingCode : copy.verifyCodeButton}
             </Button>
@@ -107,6 +117,7 @@ export default function ForgotPasswordForm() {
               autoComplete="new-password"
               disabled={isLoading}
               aria-invalid={Boolean(passwordForm.formState.errors.new_password)}
+              className="h-11 rounded-lg text-base"
               {...passwordForm.register('new_password')}
             />
             {passwordForm.formState.errors.new_password && (
@@ -123,6 +134,7 @@ export default function ForgotPasswordForm() {
               autoComplete="new-password"
               disabled={isLoading}
               aria-invalid={Boolean(passwordForm.formState.errors.confirm_password)}
+              className="h-11 rounded-lg text-base"
               {...passwordForm.register('confirm_password')}
             />
             {passwordForm.formState.errors.confirm_password && (
@@ -131,7 +143,11 @@ export default function ForgotPasswordForm() {
               </p>
             )}
           </div>
-          <Button type="submit" className="w-full" disabled={isLoading}>
+          <Button
+            type="submit"
+            className="h-11 w-full rounded-lg text-base font-semibold"
+            disabled={isLoading}
+          >
             {isLoading && <Spinner />}
             {isLoading ? copy.resetting : copy.resetButton}
           </Button>

@@ -53,7 +53,7 @@ export default function SocialLoginButtons() {
             key={name}
             type="button"
             variant="outline"
-            className="w-full"
+            className="h-11 w-full rounded-lg text-base font-medium"
             disabled={pendingProvider !== null}
             onClick={() => handleClick(name)}
           >

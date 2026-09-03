@@ -67,7 +67,11 @@ export default function MfaVerifyForm({ mode }: Props) {
         {errors.code && <p className="text-destructive text-xs">{errors.code.message}</p>}
       </div>
 
-      <Button type="submit" className="w-full" disabled={isLoading}>
+      <Button
+        type="submit"
+        className="h-11 w-full rounded-lg text-base font-semibold"
+        disabled={isLoading}
+      >
         {isLoading && <Spinner />}
         {isLoading ? t.auth.mfaFlow.verifying : t.auth.mfaFlow.verifyButton}
       </Button>

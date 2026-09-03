@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { Eye, EyeOff } from 'lucide-react';
+import { Eye, EyeOff, Lock, Mail } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -35,27 +35,32 @@ export default function LoginForm() {
     <form onSubmit={onSubmit} className="space-y-4" noValidate>
       <div className="space-y-1.5">
         <Label htmlFor="email">{t.auth.emailPlaceholder}</Label>
-        <Input
-          id="email"
-          type="email"
-          autoComplete="email"
-          disabled={isLoading}
-          aria-invalid={Boolean(errors.email)}
-          {...register('email')}
-        />
+        <div className="relative">
+          <Mail className="text-muted-foreground pointer-events-none absolute inset-y-0 left-3 my-auto size-4" />
+          <Input
+            id="email"
+            type="email"
+            autoComplete="email"
+            disabled={isLoading}
+            aria-invalid={Boolean(errors.email)}
+            className="h-11 rounded-lg pl-9 text-base"
+            {...register('email')}
+          />
+        </div>
         {errors.email && <p className="text-destructive text-xs">{errors.email.message}</p>}
       </div>
 
       <div className="space-y-1.5">
         <Label htmlFor="password">{t.auth.passwordPlaceholder}</Label>
         <div className="relative">
+          <Lock className="text-muted-foreground pointer-events-none absolute inset-y-0 left-3 my-auto size-4" />
           <Input
             id="password"
             type={showPassword ? 'text' : 'password'}
             autoComplete="current-password"
             disabled={isLoading}
             aria-invalid={Boolean(errors.password)}
-            className="pr-10"
+            className="h-11 rounded-lg pr-10 pl-9 text-base"
             {...register('password')}
           />
           <button
@@ -79,7 +84,11 @@ export default function LoginForm() {
         </Link>
       </div>
 
-      <Button type="submit" className="w-full" disabled={isLoading}>
+      <Button
+        type="submit"
+        className="h-11 w-full rounded-lg text-base font-semibold"
+        disabled={isLoading}
+      >
         {isLoading && <Spinner />}
         {isLoading ? t.auth.signingIn : t.auth.signInButton}
       </Button>

@@ -61,6 +61,7 @@ export default function SignupForm() {
               autoComplete="given-name"
               disabled={isSubmitting}
               aria-invalid={Boolean(errors.first_name)}
+              className="h-11 rounded-lg text-base"
               {...form.register('first_name')}
             />
             {errors.first_name && (
@@ -74,6 +75,7 @@ export default function SignupForm() {
               autoComplete="family-name"
               disabled={isSubmitting}
               aria-invalid={Boolean(errors.last_name)}
+              className="h-11 rounded-lg text-base"
               {...form.register('last_name')}
             />
             {errors.last_name && (
@@ -90,6 +92,7 @@ export default function SignupForm() {
             autoComplete="new-password"
             disabled={isSubmitting}
             aria-invalid={Boolean(errors.password)}
+            className="h-11 rounded-lg text-base"
             {...form.register('password')}
           />
           {errors.password && <p className="text-destructive text-xs">{errors.password.message}</p>}
@@ -103,6 +106,7 @@ export default function SignupForm() {
             autoComplete="new-password"
             disabled={isSubmitting}
             aria-invalid={Boolean(errors.confirm_password)}
+            className="h-11 rounded-lg text-base"
             {...form.register('confirm_password')}
           />
           {errors.confirm_password && (
@@ -110,7 +114,11 @@ export default function SignupForm() {
           )}
         </div>
 
-        <Button type="submit" className="w-full" disabled={isSubmitting}>
+        <Button
+          type="submit"
+          className="h-11 w-full rounded-lg text-base font-semibold"
+          disabled={isSubmitting}
+        >
           {isSubmitting && <Spinner />}
           {isSubmitting ? copy.creatingAccount : copy.createAccountButton}
         </Button>
