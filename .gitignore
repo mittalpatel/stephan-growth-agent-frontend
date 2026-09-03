@@ -65,3 +65,6 @@ sbom.json
 
 # Local e2e screenshot analysis output
 screenshots/
+
+# Local changelog — not shared across the team
+context/changelog.md
