@@ -83,6 +83,7 @@ export const pagination = {
 } as const;
 
 export const navigation = {
+  dashboard: 'Dashboard',
   // Demo module — removed by `npm run strip-demo`.
   projects: 'Projects',
   agents: 'Agents',

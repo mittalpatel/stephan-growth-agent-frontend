@@ -52,6 +52,7 @@ const eslintConfig = defineConfig([
     'coverage/**',
     'next-env.d.ts',
     'src/components/ui/**', // shadcn generated — not our code
+    'public/**', // vendored static assets (e.g. the PDF.js worker) — not our code
   ]),
   {
     rules: {

@@ -3,6 +3,7 @@ import {
   Bot,
   Boxes,
   Building2,
+  LayoutDashboard,
   Mail,
   MessagesSquare,
   UserCog,
@@ -94,6 +95,14 @@ export const DEFAULT_LANDING = '/dashboard';
  */
 export const NAV_ITEMS: NavItem[] = [
   // ── MAIN ─────────────────────────────────────────────────────────────
+  {
+    section: t.navigation.sections.main,
+    label: t.navigation.dashboard,
+    href: '/dashboard',
+    icon: LayoutDashboard,
+    // No requiredFunction: it's DEFAULT_LANDING, reachable by everyone
+    // regardless of role (see the comment on DEFAULT_LANDING below).
+  },
   // Demo module — removed by `npm run strip-demo`. Defined but left out of
   // ENABLED_HREFS above, so it resolves to nothing in the sidebar.
   {
