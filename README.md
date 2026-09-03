@@ -1,9 +1,9 @@
-# Enterprise Frontend Template
+# YB Inspire Frontend
 
 Next.js 16 (App Router) + TypeScript + Tailwind v4 + shadcn/ui, talking to the
-[enterprise backend template](../enterprise-backend-template). Ships authentication,
-dynamic RBAC, a typed i18n catalog, and one removable demo module that demonstrates
-every convention at once.
+[backend](../enterprise-backend-template). Built on the enterprise starter template:
+authentication, dynamic RBAC, a typed i18n catalog, and one removable demo module
+that demonstrates every convention at once.
 
 ## Quickstart
 

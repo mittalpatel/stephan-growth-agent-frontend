@@ -45,7 +45,7 @@ const VIEWPORT = { width: 375, height: 667 };
  *   1. The panel is `hidden md:flex` — `display:none`, still in the DOM. A
  *      count assertion sees it; only a visibility assertion doesn't.
  *   2. The app name is a *substring* of the copyright line
- *      ("© 2026 Enterprise App. All rights reserved."), which is `md:hidden`
+ *      ("© 2026 YB Inspire. All rights reserved."), which is `md:hidden`
  *      and therefore deliberately visible here. `exact` pins the query to the
  *      panel's own name element and off both the copyright and the ancestor
  *      containers whose combined text also contains it.

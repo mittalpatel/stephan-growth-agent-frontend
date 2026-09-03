@@ -14,12 +14,10 @@ export const auth = {
   socialContinueWith: 'Continue with {provider}',
   socialDividerText: 'or',
   socialSignInError: 'Could not sign in with {provider}.',
-  // Rename when you brand the app; {year} is filled in at render time.
-  copyright: '© {year} Enterprise App. All rights reserved.',
-  // Shown on the branding panel of the split auth layout. Rename or replace
-  // when you brand the app.
+  // {year} is filled in at render time.
+  copyright: '© {year} YB Inspire. All rights reserved.',
   heroTagline: 'Everything your team needs, in one place.',
-  heroBadge: 'Enterprise ready',
+  heroBadge: 'AI-powered, built for teams',
   heroFeatures: [
     'Secure, role-based access for every team',
     'Real-time visibility across your workspace',

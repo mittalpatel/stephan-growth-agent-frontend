@@ -7,6 +7,31 @@ why, not a diff (`git log` already has that).
 
 ---
 
+## 2026-09-03 — Branded the app as YB Inspire
+
+This is a real app built from the enterprise starter template, not the template
+itself, so the generic placeholder branding is gone from anywhere a user or a
+developer opening the repo would see it:
+
+- `t.common.appName` / `t.common.appDescription` (`src/locales/en/common.ts`) — the
+  single source for `<title>`, the meta description, and every header/hero/footer
+  that renders the app name. Changing these two is now done, not "do this before
+  shipping."
+- `t.auth.copyright` (`src/locales/en/auth.ts`) had its own hardcoded "Enterprise
+  App" outside the `appName` token — fixed to read "YB Inspire" directly, and its
+  stale "rename when you brand the app" comments are gone now that it's branded.
+- `package.json` / `package-lock.json` name field: `enterprise-frontend` →
+  `yb-inspire-frontend`.
+- `README.md` title and intro line.
+- An e2e test comment that quoted the old copyright string literally, now stale
+  otherwise (the assertion itself reads `t.common.appName`, so it needed no code
+  change).
+
+Left alone on purpose: `security-audit-report.md` (a historical audit of the
+original template, not this app), and the relative path `../enterprise-backend-template`
+in the README/e2e config, since that names the actual sibling repo on disk, not a
+brand string — renaming it would break the link/path rather than rebrand anything.
+
 ## 2026-09-03 — Made the auth pages match the prototype's visual polish
 
 The public auth flow (login, signup, forgot-password, MFA) still used the stock

@@ -5,10 +5,8 @@ export const dateRangePicker = {
 } as const;
 
 export const common = {
-  // Rename these two when you brand the app. They drive <title> and the
-  // meta description via src/app/layout.tsx.
-  appName: 'Enterprise App',
-  appDescription: 'An application generated from the enterprise starter template.',
+  appName: 'YB Inspire',
+  appDescription: 'AI-powered sales and support agent platform.',
 
   loading: 'Loading...',
   pageShort: 'Pg.',
