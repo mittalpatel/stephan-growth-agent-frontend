@@ -159,7 +159,12 @@ export async function proxy(request: NextRequest) {
 
   const nonce = generateNonce();
   const { pathname } = request.nextUrl;
-  const isPublic = PUBLIC_PATHS.some((p) => pathname.startsWith(p));
+  // '/' is public on its own (the marketing landing page), checked by exact
+  // match rather than folded into PUBLIC_PATHS's startsWith — every pathname
+  // starts with '/', so adding it there would make the whole app public.
+  // An authenticated user hitting it is still sent to DEFAULT_LANDING by
+  // handleAuthenticatedRequest's own `pathname === '/'` check below.
+  const isPublic = pathname === '/' || PUBLIC_PATHS.some((p) => pathname.startsWith(p));
   // A malformed/forged Authorization header can make getToken() throw — never
   // let that crash the middleware (a DoS against every route it gates).
   // Treat any thrown error as "unauthenticated" instead.
