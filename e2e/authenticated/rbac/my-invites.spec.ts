@@ -50,9 +50,13 @@ test.describe('My Invites: accept', () => {
       await owner.page.getByRole('button', { name: t.organizations.invite.title }).click();
       const dialog = owner.page.getByRole('dialog');
       await dialog.getByLabel(t.organizations.invite.emailLabel).fill(guestEmail);
-      await dialog.getByLabel(t.organizations.invite.roleLabel).selectOption({ label: 'Read Only' });
+      await dialog
+        .getByLabel(t.organizations.invite.roleLabel)
+        .selectOption({ label: 'Read Only' });
       await dialog.getByRole('button', { name: t.organizations.invite.submit }).click();
-      await expect(owner.page.getByText(t.organizations.invite.sent)).toBeVisible({ timeout: 10_000 });
+      await expect(owner.page.getByText(t.organizations.invite.sent)).toBeVisible({
+        timeout: 10_000,
+      });
 
       const guest = await loginAsNewContext(browser, guestEmail, PASSWORD);
       try {
@@ -60,7 +64,10 @@ test.describe('My Invites: accept', () => {
         await expect(
           guest.page.getByText(format(t.organizations.myInvites.asRole, { role: 'Read Only' }))
         ).toBeVisible({ timeout: 10_000 });
-        await guest.page.getByRole('button', { name: t.organizations.myInvites.accept }).first().click();
+        await guest.page
+          .getByRole('button', { name: t.organizations.myInvites.accept })
+          .first()
+          .click();
         await expect(guest.page.getByText(t.organizations.myInvites.accepted)).toBeVisible({
           timeout: 10_000,
         });
@@ -79,9 +86,9 @@ test.describe('My Invites: accept', () => {
       await owner.page.goto('/organization/members');
       const row = owner.page.locator('tr', { has: owner.page.getByText(guestEmail) });
       await expect(row).toBeVisible({ timeout: 10_000 });
-      await expect(row.getByRole('combobox', { name: t.organizations.members.changeRole })).toContainText(
-        'Read Only'
-      );
+      await expect(
+        row.getByRole('combobox', { name: t.organizations.members.changeRole })
+      ).toContainText('Read Only');
 
       // Cleanup: remove the guest from Demo Org so this run doesn't leave a
       // permanent cross-org membership behind.
@@ -105,9 +112,13 @@ test.describe('My Invites: decline', () => {
       await owner.page.getByRole('button', { name: t.organizations.invite.title }).click();
       const dialog = owner.page.getByRole('dialog');
       await dialog.getByLabel(t.organizations.invite.emailLabel).fill(guestEmail);
-      await dialog.getByLabel(t.organizations.invite.roleLabel).selectOption({ label: 'Read Only' });
+      await dialog
+        .getByLabel(t.organizations.invite.roleLabel)
+        .selectOption({ label: 'Read Only' });
       await dialog.getByRole('button', { name: t.organizations.invite.submit }).click();
-      await expect(owner.page.getByText(t.organizations.invite.sent)).toBeVisible({ timeout: 10_000 });
+      await expect(owner.page.getByText(t.organizations.invite.sent)).toBeVisible({
+        timeout: 10_000,
+      });
 
       const guest = await loginAsNewContext(browser, guestEmail, PASSWORD);
       try {
@@ -115,7 +126,10 @@ test.describe('My Invites: decline', () => {
         await expect(
           guest.page.getByText(format(t.organizations.myInvites.asRole, { role: 'Read Only' }))
         ).toBeVisible({ timeout: 10_000 });
-        await guest.page.getByRole('button', { name: t.organizations.myInvites.decline }).first().click();
+        await guest.page
+          .getByRole('button', { name: t.organizations.myInvites.decline })
+          .first()
+          .click();
         await expect(guest.page.getByText(t.organizations.myInvites.declined)).toBeVisible({
           timeout: 10_000,
         });

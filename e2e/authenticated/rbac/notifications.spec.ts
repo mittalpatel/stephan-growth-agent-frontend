@@ -71,7 +71,9 @@ test.describe('Notifications: preference toggle persists per {event_type, channe
       await page.reload();
       const toggleAfterReload = page.getByRole('switch', { name: SWITCH_LABEL });
       await expect(toggleAfterReload).toBeVisible({ timeout: 10_000 });
-      await expect(toggleAfterReload).toHaveAttribute('aria-checked', after ?? '', { timeout: 10_000 });
+      await expect(toggleAfterReload).toHaveAttribute('aria-checked', after ?? '', {
+        timeout: 10_000,
+      });
 
       // Restore to avoid leaving this seeded account's preferences mutated
       // for whatever ran before it in the same suite run.
@@ -90,7 +92,7 @@ test.describe('Notifications: preference toggle persists per {event_type, channe
     }
   });
 
-  test('a required (non-optional) event type\'s switch is disabled and cannot be turned off', async ({
+  test("a required (non-optional) event type's switch is disabled and cannot be turned off", async ({
     browser,
   }) => {
     const { context, page } = await loginAsNewContext(browser, DEMO_READONLY, PASSWORD);

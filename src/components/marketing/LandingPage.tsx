@@ -110,9 +110,7 @@ export default function LandingPage() {
                         <Icon className="size-5" />
                       </span>
                       <h3 className="font-display mt-4 text-base font-bold">{feature.title}</h3>
-                      <p className="text-muted-foreground mt-1.5 text-sm">
-                        {feature.description}
-                      </p>
+                      <p className="text-muted-foreground mt-1.5 text-sm">{feature.description}</p>
                     </CardContent>
                   </Card>
                 );

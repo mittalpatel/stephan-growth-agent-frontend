@@ -41,6 +41,14 @@ export function getOidcProviders(): OidcProviderConfig[] {
     const clientId = process.env[`OIDC_${upper}_CLIENT_ID`];
     const clientSecret = process.env[`OIDC_${upper}_CLIENT_SECRET`];
     if (!issuer || !clientId || !clientSecret) return [];
-    return [{ id: name, label: labelFor(name), issuer: issuer.replace(/\/$/, ''), clientId, clientSecret }];
+    return [
+      {
+        id: name,
+        label: labelFor(name),
+        issuer: issuer.replace(/\/$/, ''),
+        clientId,
+        clientSecret,
+      },
+    ];
   });
 }

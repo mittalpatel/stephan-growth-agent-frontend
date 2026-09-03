@@ -60,7 +60,8 @@ describe('useMfaVerifyForm', () => {
     saveMfaChallenge('token-abc', null);
     vi.mocked(signIn).mockResolvedValueOnce({
       ok: false,
-      error: "MFA_RETRY::mfa_invalid_code::That code didn't match. Check the time on your device and try again.",
+      error:
+        "MFA_RETRY::mfa_invalid_code::That code didn't match. Check the time on your device and try again.",
       status: 400,
       url: null,
     });
@@ -87,7 +88,8 @@ describe('useMfaVerifyForm', () => {
     saveMfaChallenge('token-abc', null);
     vi.mocked(signIn).mockResolvedValueOnce({
       ok: false,
-      error: "MFA_RETRY::mfa_invalid_code::That code didn't match. Check the time on your device and try again.",
+      error:
+        "MFA_RETRY::mfa_invalid_code::That code didn't match. Check the time on your device and try again.",
       status: 400,
       url: null,
     });

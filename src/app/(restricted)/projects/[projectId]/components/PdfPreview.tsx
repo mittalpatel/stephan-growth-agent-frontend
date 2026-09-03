@@ -82,7 +82,9 @@ export default function PdfPreview({ url }: Readonly<{ url: string }>) {
               size="icon"
               aria-label={t.projects.files.pdf.zoomOut}
               disabled={scale <= PDF_ZOOM_MIN}
-              onClick={() => setScale((s) => Math.max(PDF_ZOOM_MIN, +(s - PDF_ZOOM_STEP).toFixed(2)))}
+              onClick={() =>
+                setScale((s) => Math.max(PDF_ZOOM_MIN, +(s - PDF_ZOOM_STEP).toFixed(2)))
+              }
             >
               <ZoomOut className="size-4" />
             </Button>
@@ -95,7 +97,9 @@ export default function PdfPreview({ url }: Readonly<{ url: string }>) {
               size="icon"
               aria-label={t.projects.files.pdf.zoomIn}
               disabled={scale >= PDF_ZOOM_MAX}
-              onClick={() => setScale((s) => Math.min(PDF_ZOOM_MAX, +(s + PDF_ZOOM_STEP).toFixed(2)))}
+              onClick={() =>
+                setScale((s) => Math.min(PDF_ZOOM_MAX, +(s + PDF_ZOOM_STEP).toFixed(2)))
+              }
             >
               <ZoomIn className="size-4" />
             </Button>

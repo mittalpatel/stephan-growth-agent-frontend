@@ -35,8 +35,12 @@ test.describe('Projects: role-scoped visibility', () => {
     const { context, page } = await loginAsNewContext(browser, DEMO_OWNER, PASSWORD);
     try {
       await page.goto('/projects');
-      await expect(page.getByRole('link', { name: 'Shared Project' })).toBeVisible({ timeout: 10_000 });
-      await expect(page.getByRole('link', { name: 'Private Project' })).toBeVisible({ timeout: 10_000 });
+      await expect(page.getByRole('link', { name: 'Shared Project' })).toBeVisible({
+        timeout: 10_000,
+      });
+      await expect(page.getByRole('link', { name: 'Private Project' })).toBeVisible({
+        timeout: 10_000,
+      });
     } finally {
       await context.close();
     }
@@ -48,14 +52,18 @@ test.describe('Projects: role-scoped visibility', () => {
     const { context, page } = await loginAsNewContext(browser, DEMO_MEMBER, PASSWORD);
     try {
       await page.goto('/projects');
-      await expect(page.getByRole('link', { name: 'Shared Project' })).toBeVisible({ timeout: 10_000 });
+      await expect(page.getByRole('link', { name: 'Shared Project' })).toBeVisible({
+        timeout: 10_000,
+      });
       await expect(page.getByRole('link', { name: 'Private Project' })).toHaveCount(0);
     } finally {
       await context.close();
     }
   });
 
-  test('Read Only sees neither project (no ProjectAccess grant of any kind)', async ({ browser }) => {
+  test('Read Only sees neither project (no ProjectAccess grant of any kind)', async ({
+    browser,
+  }) => {
     const { context, page } = await loginAsNewContext(browser, DEMO_READONLY, PASSWORD);
     try {
       await page.goto('/projects');

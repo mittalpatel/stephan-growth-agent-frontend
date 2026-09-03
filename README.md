@@ -30,7 +30,7 @@ first is a normal order to do things in.
 
 ## The demo module
 
-`src/app/(restricted)/widgets/` is a complete list-and-detail feature. Read it first —
+`src/app/(restricted)/projects/` is a complete list-and-detail feature. Read it first —
 it is the worked example every convention refers to. Remove it with:
 
 ```bash

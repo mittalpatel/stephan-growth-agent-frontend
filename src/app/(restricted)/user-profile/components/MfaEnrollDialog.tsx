@@ -38,12 +38,7 @@ type Props = Readonly<{
  * or the URL — same reveal-once discipline as `RevealSecretDialog` for API
  * keys: no endpoint here can return the raw secret a second time either.
  */
-export default function MfaEnrollDialog({
-  enrollment,
-  isConfirming,
-  onConfirm,
-  onCancel,
-}: Props) {
+export default function MfaEnrollDialog({ enrollment, isConfirming, onConfirm, onCancel }: Props) {
   const [error, setError] = useState<string | null>(null);
   const form = useForm<ConfirmFormValues>({
     resolver: zodResolver(confirmSchema),
@@ -101,9 +96,7 @@ export default function MfaEnrollDialog({
               className="border-border h-48 w-48 rounded-md border p-2"
             />
             <div className="w-full space-y-1">
-              <p className="text-muted-foreground text-xs font-medium">
-                {copy.manualEntryLabel}
-              </p>
+              <p className="text-muted-foreground text-xs font-medium">{copy.manualEntryLabel}</p>
               <code className="bg-muted block overflow-x-auto rounded-md p-2 text-sm break-all select-all">
                 {enrollment.secret}
               </code>

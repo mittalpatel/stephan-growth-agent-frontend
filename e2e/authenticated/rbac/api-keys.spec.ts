@@ -36,10 +36,7 @@ test.describe('API keys: secret reveal-once and revoke-invalidates', () => {
 
       // Grant at least one permission — the form requires it (see
       // `permissionsRequired` in the locale catalog / useCreateApiKeyForm's schema).
-      await page
-        .getByRole('button', { name: t.organizations.roles.grantAction })
-        .first()
-        .click();
+      await page.getByRole('button', { name: t.organizations.roles.grantAction }).first().click();
 
       await createDialog
         .getByRole('button', { name: t.organizations.apiKeys.create.submit })
@@ -93,10 +90,7 @@ test.describe('API keys: secret reveal-once and revoke-invalidates', () => {
       await page.getByRole('button', { name: t.organizations.apiKeys.create.trigger }).click();
       const createDialog = page.getByRole('dialog', { name: t.organizations.apiKeys.create.title });
       await createDialog.getByLabel(t.organizations.apiKeys.create.nameLabel).fill(keyName);
-      await page
-        .getByRole('button', { name: t.organizations.roles.grantAction })
-        .first()
-        .click();
+      await page.getByRole('button', { name: t.organizations.roles.grantAction }).first().click();
       await createDialog
         .getByRole('button', { name: t.organizations.apiKeys.create.submit })
         .click();

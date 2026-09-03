@@ -69,7 +69,7 @@ Endpoints, query keys, and param building. No React, no state, no fetching — t
 do that. **Export the query-key builder**: the breadcrumb resolver reads the detail
 page's cache and can only do so while both call the same function.
 
-Reference: `src/services/widgets.ts`.
+Reference: `src/services/projects.ts`.
 
 ## This is a cross-repo contract
 

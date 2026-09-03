@@ -108,7 +108,7 @@ compiled. Hence the contract test.
 
 ## Reference implementation
 
-`src/services/widgets.ts` plus `src/app/(restricted)/widgets/hooks/useWidgetsList.ts`.
+`src/services/projects.ts` plus `src/app/(restricted)/projects/hooks/useProjectsList.ts`.
 A service module owns endpoints, query keys, and param building — no React, no state,
 no fetching. Export the query-key builder: the breadcrumb resolver reads the detail
 page's cache and can only do so while both sides call the same function.

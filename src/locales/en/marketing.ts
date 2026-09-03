@@ -64,15 +64,18 @@ export const marketing = {
     items: [
       {
         title: 'Connect your knowledge',
-        description: 'Point it at your website or upload documents. Review what it found before anything goes live.',
+        description:
+          'Point it at your website or upload documents. Review what it found before anything goes live.',
       },
       {
         title: 'Set it up and test it',
-        description: 'Write the persona and fallback behaviour, then ask it real questions against the draft before anyone else does.',
+        description:
+          'Write the persona and fallback behaviour, then ask it real questions against the draft before anyone else does.',
       },
       {
         title: 'Publish and embed',
-        description: 'Copy one script tag onto your site. Roll back to any previous version whenever you need to.',
+        description:
+          'Copy one script tag onto your site. Roll back to any previous version whenever you need to.',
       },
     ],
   },

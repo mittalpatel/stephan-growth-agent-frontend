@@ -125,13 +125,16 @@ test.describe('Roles: create, assign, and the permission ceiling', () => {
       const organizationId = session?.user?.organization?.id;
       expect(organizationId).toBeTruthy();
 
-      const response = await page.request.post(`/api/backend/api/v1/organizations/${organizationId}/roles/`, {
-        data: {
-          name: `Ceiling probe ${Date.now()}`,
-          permission_codes: ['organization:billing'],
-        },
-        failOnStatusCode: false,
-      });
+      const response = await page.request.post(
+        `/api/backend/api/v1/organizations/${organizationId}/roles/`,
+        {
+          data: {
+            name: `Ceiling probe ${Date.now()}`,
+            permission_codes: ['organization:billing'],
+          },
+          failOnStatusCode: false,
+        }
+      );
       // `assert_within_ceiling` (apps/rbac/services/rbac_service.py) rejects
       // with `permission_ceiling_exceeded`. If this deployment's proxy route
       // path differs, a 404 here means the route itself wasn't found, not

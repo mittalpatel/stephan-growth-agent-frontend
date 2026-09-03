@@ -42,7 +42,11 @@ export default defineConfig({
       },
       dependencies: ['setup'],
       testMatch: '**/authenticated/**/*.spec.ts',
-      testIgnore: ['**/authenticated/rbac/**', '**/authenticated/regression/**', '**/authenticated/projects/**'],
+      testIgnore: [
+        '**/authenticated/rbac/**',
+        '**/authenticated/regression/**',
+        '**/authenticated/projects/**',
+      ],
     },
 
     // ── Cross-org / regression specs that log in as seeded demo-org and

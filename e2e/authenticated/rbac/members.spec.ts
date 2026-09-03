@@ -84,7 +84,7 @@ test.describe('Members: invite flow', () => {
   });
 });
 
-test.describe('Members: a role change takes effect on the member\'s next action', () => {
+test.describe("Members: a role change takes effect on the member's next action", () => {
   test('promoting Read Only to Admin immediately grants member-management affordances', async ({
     browser,
   }) => {
@@ -108,9 +108,7 @@ test.describe('Members: a role change takes effect on the member\'s next action'
       // Admin changes the Read Only member's role to Admin.
       await admin.page.goto('/organization/members');
       const targetRow = admin.page.locator('tr', { has: admin.page.getByText(DEMO_READONLY) });
-      await targetRow
-        .getByRole('combobox', { name: t.organizations.members.changeRole })
-        .click();
+      await targetRow.getByRole('combobox', { name: t.organizations.members.changeRole }).click();
       await admin.page.getByRole('option', { name: 'Admin', exact: true }).click();
       await expect(admin.page.getByText(t.organizations.members.roleChanged)).toBeVisible({
         timeout: 10_000,

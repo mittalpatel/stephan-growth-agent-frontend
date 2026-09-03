@@ -155,8 +155,7 @@ export function useOrganizationMembers() {
   // it carries a permission the actor does not hold themselves (e.g. an Admin
   // cannot see "Owner"), so the UI never offers a choice the server will reject.
   const assignableRoles = useMemo(
-    () =>
-      roles.filter((role) => role.permissions.every((code) => heldCodes.includes(code))),
+    () => roles.filter((role) => role.permissions.every((code) => heldCodes.includes(code))),
     [roles, heldCodes]
   );
   const pendingInvites = useMemo(() => invitesQuery.data?.data ?? [], [invitesQuery.data]);

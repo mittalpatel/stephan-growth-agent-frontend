@@ -73,9 +73,7 @@ export function ConversationsListView() {
       <PreviewBanner note={t.conversations.previewNotice} />
 
       <div>
-        <h1 className="font-display text-2xl font-bold tracking-tight">
-          {t.conversations.title}
-        </h1>
+        <h1 className="font-display text-2xl font-bold tracking-tight">{t.conversations.title}</h1>
         <p className="text-muted-foreground mt-1 text-sm">{t.conversations.description}</p>
       </div>
 

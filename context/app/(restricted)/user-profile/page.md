@@ -81,7 +81,7 @@ Two behaviours here are easy to get wrong, and were:
   around it.
 - **The list polls (10s) and refetches on focus** rather than loading once, so a
   session signed out from another device disappears here without a reload. This
-  used to be the *only* way a revoked device found out — as of 2026-08-26,
+  used to be the _only_ way a revoked device found out — as of 2026-08-26,
   `useRealtimeSocket` (mounted in `LayoutWrapper`, not this page) pushes an
   instant `signOut()` over a WebSocket the moment this session is the one
   revoked, on whatever page happens to be open. The poll here stays as the

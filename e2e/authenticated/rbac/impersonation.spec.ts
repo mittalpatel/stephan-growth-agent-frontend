@@ -47,9 +47,9 @@ test.describe('Impersonation: gating', () => {
       // an Owner, however privileged within their own org, must never reach
       // the form.
       await expect(page).not.toHaveURL(/\/admin\/impersonation/, { timeout: 10_000 });
-      await expect(page.getByRole('heading', { name: t.organizations.impersonation.title })).toHaveCount(
-        0
-      );
+      await expect(
+        page.getByRole('heading', { name: t.organizations.impersonation.title })
+      ).toHaveCount(0);
     } finally {
       await context.close();
     }
@@ -67,7 +67,11 @@ test.describe('Impersonation: start, attribution, end', () => {
   }) => {
     // Two sessions, a debounced lookup, a start and an end — more than the 30s default.
     test.setTimeout(90_000);
-    const { context, page } = await loginAsNewContext(browser, SUPERUSER_EMAIL!, SUPERUSER_PASSWORD!);
+    const { context, page } = await loginAsNewContext(
+      browser,
+      SUPERUSER_EMAIL!,
+      SUPERUSER_PASSWORD!
+    );
     try {
       await page.goto('/admin/impersonation');
       // Not `getByRole('heading')`: the form's title is a shadcn `CardTitle`,
@@ -79,7 +83,9 @@ test.describe('Impersonation: start, attribution, end', () => {
         page.getByText(t.organizations.impersonation.title, { exact: true })
       ).toBeVisible();
 
-      await page.getByLabel(t.organizations.impersonation.emailLabel).fill('demo.member@example.com');
+      await page
+        .getByLabel(t.organizations.impersonation.emailLabel)
+        .fill('demo.member@example.com');
       // Debounced lookup (400ms) populates the organization select once the
       // account resolves. `RHFSelectField` is a native <select> (same as the
       // member-invite role field — see members.spec.ts), and demo.member
@@ -90,9 +96,10 @@ test.describe('Impersonation: start, attribution, end', () => {
       // select doesn't open a queryable listbox the way a Radix combobox
       // does; it just hangs waiting for an "option" role that Playwright
       // cannot interact with through a separate click here.
-      await expect(
-        page.getByLabel(t.organizations.impersonation.organizationLabel)
-      ).toHaveValue(/./, { timeout: 5_000 });
+      await expect(page.getByLabel(t.organizations.impersonation.organizationLabel)).toHaveValue(
+        /./,
+        { timeout: 5_000 }
+      );
       await page
         .getByLabel(t.organizations.impersonation.reasonLabel)
         .fill('e2e: impersonation.spec.ts attribution check');
@@ -104,7 +111,9 @@ test.describe('Impersonation: start, attribution, end', () => {
       });
 
       // Persistent banner: role="status", never dismissible, names the target.
-      const banner = page.getByRole('status').filter({ hasText: t.organizations.impersonation.banner.actingAs });
+      const banner = page
+        .getByRole('status')
+        .filter({ hasText: t.organizations.impersonation.banner.actingAs });
       await expect(banner).toBeVisible();
       await expect(banner).toContainText('demo.member@example.com');
       await expect(banner).toContainText(t.organizations.impersonation.banner.readOnly);
@@ -124,9 +133,9 @@ test.describe('Impersonation: start, attribution, end', () => {
       // shows Ended, not Live, and no lingering banner survives a reload.
       await page.goto('/admin/impersonation');
       await page.reload();
-      await expect(page.getByRole('status').filter({ hasText: t.organizations.impersonation.banner.actingAs })).toHaveCount(
-        0
-      );
+      await expect(
+        page.getByRole('status').filter({ hasText: t.organizations.impersonation.banner.actingAs })
+      ).toHaveCount(0);
       await expect(page.getByText(t.organizations.impersonation.statusEnded).first()).toBeVisible({
         timeout: 10_000,
       });

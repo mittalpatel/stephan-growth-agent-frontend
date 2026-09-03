@@ -31,7 +31,9 @@ test.describe('Projects: search matches name and description', () => {
     try {
       await page.goto('/projects');
       await search(page, 'Shared Project');
-      await expect(page.getByRole('link', { name: 'Shared Project' })).toBeVisible({ timeout: 10_000 });
+      await expect(page.getByRole('link', { name: 'Shared Project' })).toBeVisible({
+        timeout: 10_000,
+      });
       await expect(page.getByRole('link', { name: 'Private Project' })).toHaveCount(0);
     } finally {
       await context.close();
@@ -47,7 +49,9 @@ test.describe('Projects: search matches name and description', () => {
       // "editor" appears in Shared Project's seeded description
       // ("...as editor.") and nowhere in either seeded project's name.
       await search(page, 'editor');
-      await expect(page.getByRole('link', { name: 'Shared Project' })).toBeVisible({ timeout: 10_000 });
+      await expect(page.getByRole('link', { name: 'Shared Project' })).toBeVisible({
+        timeout: 10_000,
+      });
       await expect(page.getByRole('link', { name: 'Private Project' })).toHaveCount(0);
     } finally {
       await context.close();

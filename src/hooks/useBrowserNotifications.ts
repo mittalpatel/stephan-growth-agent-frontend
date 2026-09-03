@@ -103,11 +103,7 @@ export function browserNotificationText(
  * invoke it unconditionally on every push without branching.
  */
 export function useBrowserNotifications() {
-  const permission = useSyncExternalStore(
-    subscribePermission,
-    currentPermission,
-    serverPermission
-  );
+  const permission = useSyncExternalStore(subscribePermission, currentPermission, serverPermission);
 
   const request = useCallback(async (): Promise<BrowserPermission> => {
     if (typeof window === 'undefined' || !('Notification' in window)) return 'unsupported';

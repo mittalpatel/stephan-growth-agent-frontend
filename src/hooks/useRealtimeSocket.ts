@@ -5,10 +5,7 @@ import { signOut } from 'next-auth/react';
 import { useQueryClient } from '@tanstack/react-query';
 
 import axiosAuth, { SAME_ORIGIN_ROUTE } from '@/client/axiosAuth';
-import {
-  useBrowserNotifications,
-  type PushedNotification,
-} from '@/hooks/useBrowserNotifications';
+import { useBrowserNotifications, type PushedNotification } from '@/hooks/useBrowserNotifications';
 
 /**
  * Live push for two things that used to require a poll or a manual refresh

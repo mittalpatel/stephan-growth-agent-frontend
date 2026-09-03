@@ -19,7 +19,7 @@ still works, the validation just stops being inline.
 ## `.trim()` belongs in the schema
 
 ```ts
-name: z.string().trim().min(1, t.widgets.validation.nameRequired);
+name: z.string().trim().min(1, t.projects.validation.nameRequired);
 ```
 
 Not in the submit handler. The schema's transform is what gets validated _and_ what gets
@@ -38,7 +38,7 @@ form:
 
 ```ts
 .refine((v) => !(v.status === 'active' && v.quantity <= 0), {
-  message: t.widgets.validation.activeNeedsStock,
+  message: t.projects.validation.activeNeedsStock,
   path: ['quantity'],
 })
 ```
@@ -69,4 +69,4 @@ tooltip, which is unstyled, untranslated, and inconsistent across browsers.
 
 ## Reference
 
-`src/lib/schemas/widget.ts`, `src/app/(public)/components/LoginForm.tsx`.
+`src/lib/schemas/project.ts`, `src/app/(public)/components/LoginForm.tsx`.

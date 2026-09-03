@@ -41,13 +41,11 @@ describe('MfaVerifyForm', () => {
   it('shows the authenticator-app copy and a numeric keypad in otp mode', () => {
     hookReturn = mockHook();
     render(<MfaVerifyForm mode="otp" />);
-    expect(screen.getByLabelText(t.auth.mfaFlow.codeLabel)).toHaveAttribute(
-      'inputmode',
-      'numeric'
+    expect(screen.getByLabelText(t.auth.mfaFlow.codeLabel)).toHaveAttribute('inputmode', 'numeric');
+    expect(screen.getByRole('link', { name: t.auth.mfaFlow.useBackupCode })).toHaveAttribute(
+      'href',
+      '/login/backup-code'
     );
-    expect(
-      screen.getByRole('link', { name: t.auth.mfaFlow.useBackupCode })
-    ).toHaveAttribute('href', '/login/backup-code');
   });
 
   it('shows the recovery-code copy and a text keyboard in backup-code mode', () => {

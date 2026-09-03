@@ -55,10 +55,10 @@ second list on the same screen cannot collide with this one.
 
 ### Two queries, different cadence
 
-| Query              | Key                            | Why separate                     |
-| ------------------ | ------------------------------- | --------------------------------- |
-| List rows          | `[PROJECTS_LIST_KEY, params]`   | Changes on every URL change       |
-| `?type=parameters` | `[PROJECTS_PARAMETERS_KEY]`     | Filter config; `staleTime: 5min`  |
+| Query              | Key                           | Why separate                     |
+| ------------------ | ----------------------------- | -------------------------------- |
+| List rows          | `[PROJECTS_LIST_KEY, params]` | Changes on every URL change      |
+| `?type=parameters` | `[PROJECTS_PARAMETERS_KEY]`   | Filter config; `staleTime: 5min` |
 
 The parameters payload drives `FilterToolbar` entirely, so **adding a filter is a
 backend-only change** — see `apps/projects/selectors/project_selector.py::build_parameters_config`.
@@ -73,9 +73,9 @@ next one loads, so paging does not flash empty.
 | State     | Renders                                                                  |
 | --------- | ------------------------------------------------------------------------ |
 | Loading   | `ProjectsTableSkeleton` / `ProjectsGridSkeleton`, shaped like the result |
-| Error     | `EmptyState` with a retry button                                        |
-| Empty     | Different copy for "nothing exists" vs "nothing matched"                |
-| Populated | `ProjectsTable` or `ProjectsGrid`                                       |
+| Error     | `EmptyState` with a retry button                                         |
+| Empty     | Different copy for "nothing exists" vs "nothing matched"                 |
+| Populated | `ProjectsTable` or `ProjectsGrid`                                        |
 
 The empty split matters: offering "clear filters" to someone with no filters set is
 noise, and offering "create one" to someone whose search simply missed is misleading.
@@ -96,18 +96,18 @@ adding a status fails the build here until it is given a tone.
 
 ## API
 
-| Method | Endpoint                                | Notes                                              |
-| ------ | ---------------------------------------- | --------------------------------------------------- |
-| GET    | `/api/v1/projects/`                      | List; params from `buildProjectListParams`          |
-| GET    | `/api/v1/projects/?type=parameters`      | Filter and sort configuration                       |
-| GET    | `/api/v1/projects/{id}/`                 | Detail; see the `[projectId]` doc                   |
-| POST   | `/api/v1/projects/`                      | Create — requires `project:manage`                  |
-| PATCH  | `/api/v1/projects/{id}/`                 | Update — requires `project:manage`                  |
-| DELETE | `/api/v1/projects/{id}/`                 | Soft delete — requires `project:manage`             |
-| GET    | `/api/v1/projects/{id}/access/`          | List access grants — requires `project:access_manage` |
-| POST   | `/api/v1/projects/{id}/access/`          | Grant access — requires `project:access_manage`     |
-| DELETE | `/api/v1/projects/{id}/access/`          | Revoke access — requires `project:access_manage`    |
-| GET    | `/api/v1/projects/export/`               | Requires `project:export` — **not** implied by manage |
+| Method | Endpoint                            | Notes                                                 |
+| ------ | ----------------------------------- | ----------------------------------------------------- |
+| GET    | `/api/v1/projects/`                 | List; params from `buildProjectListParams`            |
+| GET    | `/api/v1/projects/?type=parameters` | Filter and sort configuration                         |
+| GET    | `/api/v1/projects/{id}/`            | Detail; see the `[projectId]` doc                     |
+| POST   | `/api/v1/projects/`                 | Create — requires `project:manage`                    |
+| PATCH  | `/api/v1/projects/{id}/`            | Update — requires `project:manage`                    |
+| DELETE | `/api/v1/projects/{id}/`            | Soft delete — requires `project:manage`               |
+| GET    | `/api/v1/projects/{id}/access/`     | List access grants — requires `project:access_manage` |
+| POST   | `/api/v1/projects/{id}/access/`     | Grant access — requires `project:access_manage`       |
+| DELETE | `/api/v1/projects/{id}/access/`     | Revoke access — requires `project:access_manage`      |
+| GET    | `/api/v1/projects/export/`          | Requires `project:export` — **not** implied by manage |
 
 `execute`, `export`, and `access_manage` are all granted independently of `manage`.
 Being able to edit a project's fields does not imply being trusted to grant or revoke

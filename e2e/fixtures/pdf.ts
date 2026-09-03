@@ -22,9 +22,7 @@ export function buildTestPdf(pageCount: number): Buffer {
   const kids = pageObjIds.map((id) => `${id} 0 R`).join(' ');
 
   objects.push(`1 0 obj\n<< /Type /Catalog /Pages 2 0 R >>\nendobj\n`);
-  objects.push(
-    `2 0 obj\n<< /Type /Pages /Kids [${kids}] /Count ${pageCount} >>\nendobj\n`
-  );
+  objects.push(`2 0 obj\n<< /Type /Pages /Kids [${kids}] /Count ${pageCount} >>\nendobj\n`);
 
   pageObjIds.forEach((pageId, index) => {
     const contentId = contentObjIds[index];

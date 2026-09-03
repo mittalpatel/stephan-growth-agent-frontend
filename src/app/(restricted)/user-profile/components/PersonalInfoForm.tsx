@@ -45,7 +45,10 @@ export function PersonalInfoForm({ profile }: Readonly<{ profile: UserProfile }>
           <Label htmlFor="first_name">{copy.firstNameLabel}</Label>
           <Input
             id="first_name"
-            className={fieldClass(!!errors.first_name, isExternalIdp && 'cursor-not-allowed bg-accent')}
+            className={fieldClass(
+              !!errors.first_name,
+              isExternalIdp && 'cursor-not-allowed bg-accent'
+            )}
             placeholder={copy.firstNamePlaceholder}
             readOnly={isExternalIdp}
             disabled={isExternalIdp || isSaving}
@@ -58,7 +61,10 @@ export function PersonalInfoForm({ profile }: Readonly<{ profile: UserProfile }>
           <Label htmlFor="last_name">{copy.lastNameLabel}</Label>
           <Input
             id="last_name"
-            className={fieldClass(!!errors.last_name, isExternalIdp && 'cursor-not-allowed bg-accent')}
+            className={fieldClass(
+              !!errors.last_name,
+              isExternalIdp && 'cursor-not-allowed bg-accent'
+            )}
             placeholder={copy.lastNamePlaceholder}
             readOnly={isExternalIdp}
             disabled={isExternalIdp || isSaving}

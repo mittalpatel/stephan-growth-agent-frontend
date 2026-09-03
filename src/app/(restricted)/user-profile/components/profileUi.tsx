@@ -19,10 +19,7 @@ export function fieldClass(hasError: boolean, extra?: string | false) {
   return cn('mt-1.5', themedInput, hasError && themedInputError, extra);
 }
 
-export function SectionHeader({
-  icon,
-  title,
-}: Readonly<{ icon: React.ReactNode; title: string }>) {
+export function SectionHeader({ icon, title }: Readonly<{ icon: React.ReactNode; title: string }>) {
   return (
     <div className="mb-5 flex items-center gap-3 border-b border-input pb-4">
       <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary text-primary-foreground">

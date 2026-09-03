@@ -87,7 +87,10 @@ export function LeadsListView() {
                 <TableCell className="text-muted-foreground">{lead.email}</TableCell>
                 <TableCell className="text-muted-foreground">{lead.agent}</TableCell>
                 <TableCell>
-                  <StatusBadge label={t.leads.status[lead.status]} tone={STATUS_TONE[lead.status]} />
+                  <StatusBadge
+                    label={t.leads.status[lead.status]}
+                    tone={STATUS_TONE[lead.status]}
+                  />
                 </TableCell>
                 <TableCell className="text-muted-foreground">{lead.captured}</TableCell>
               </TableRow>

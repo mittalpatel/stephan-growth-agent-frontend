@@ -68,7 +68,7 @@ export function useFilePreview(projectId: string, fileId: string | null) {
     () => () => {
       if (objectUrlRef.current) URL.revokeObjectURL(objectUrlRef.current);
     },
-    [],
+    []
   );
 
   // `fileId` being null means "nothing selected" — never surface a stale URL

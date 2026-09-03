@@ -1,15 +1,7 @@
 {
-  "exposed_headers": [
-    "Retry-After"
-  ],
+  "exposed_headers": ["Retry-After"],
   "field_errors_key": "errors",
-  "keys": [
-    "success",
-    "message",
-    "data",
-    "meta",
-    "errors"
-  ],
+  "keys": ["success", "message", "data", "meta", "errors"],
   "retry_after_header": "Retry-After",
   "success_flag": "success"
 }

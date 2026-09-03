@@ -61,10 +61,10 @@ the not-found state the user should already be seeing.
 ## Three states, and why 404 is not an error
 
 | Condition    | Renders                                               |
-| ------------ | ------------------------------------------------------ |
-| `isLoading`  | `ProjectDetailSkeleton`, shaped like the final layout  |
-| `isNotFound` | Not-found `EmptyState` with a link back to the list    |
-| `isError`    | Error `EmptyState` **with** a retry                    |
+| ------------ | ----------------------------------------------------- |
+| `isLoading`  | `ProjectDetailSkeleton`, shaped like the final layout |
+| `isNotFound` | Not-found `EmptyState` with a link back to the list   |
+| `isError`    | Error `EmptyState` **with** a retry                   |
 
 A missing record and a failed request are different situations. Offering "try again"
 on a 404 invites the user to retry something that cannot succeed.
@@ -94,14 +94,14 @@ Same shape as `useProjectAccess`: a hand-rolled `useCallback` per action
 — `useAuthMutation`'s `body` goes straight to axios, so no special-casing is needed for
 multipart; just don't force a JSON `Content-Type` header.
 
-| Method | Endpoint                                              | Notes                        |
-| ------ | ------------------------------------------------------- | ----------------------------- |
-| GET    | `/api/v1/projects/{id}/files/`                          | List                          |
-| POST   | `/api/v1/projects/{id}/files/`                          | Upload — multipart            |
-| PATCH  | `/api/v1/projects/{id}/files/{fileId}/`                 | Rename only                   |
-| DELETE | `/api/v1/projects/{id}/files/{fileId}/`                 |                                |
-| GET    | `/api/v1/projects/{id}/files/{fileId}/content/`         | Inline bytes, for preview     |
-| GET    | `/api/v1/projects/{id}/files/{fileId}/download/`        | Attachment bytes, for download|
+| Method | Endpoint                                         | Notes                          |
+| ------ | ------------------------------------------------ | ------------------------------ |
+| GET    | `/api/v1/projects/{id}/files/`                   | List                           |
+| POST   | `/api/v1/projects/{id}/files/`                   | Upload — multipart             |
+| PATCH  | `/api/v1/projects/{id}/files/{fileId}/`          | Rename only                    |
+| DELETE | `/api/v1/projects/{id}/files/{fileId}/`          |                                |
+| GET    | `/api/v1/projects/{id}/files/{fileId}/content/`  | Inline bytes, for preview      |
+| GET    | `/api/v1/projects/{id}/files/{fileId}/download/` | Attachment bytes, for download |
 
 ### Upload dialog and dropzone
 
@@ -121,11 +121,11 @@ revokes it on unmount or when the file id changes (see the effect in
 `[projectId]/hooks/useFilePreview.ts` — never skip the cleanup, an unrevoked blob URL
 leaks memory). It branches on `content_type`:
 
-| `content_type`     | Renders                                        |
-| ------------------- | ------------------------------------------------ |
-| `image/*`            | `<img>` at the blob URL                          |
-| `application/pdf`    | `react-pdf`'s `<Document>`/`<Page>` at the blob URL |
-| anything else        | A generic file icon + the Download button        |
+| `content_type`    | Renders                                             |
+| ----------------- | --------------------------------------------------- |
+| `image/*`         | `<img>` at the blob URL                             |
+| `application/pdf` | `react-pdf`'s `<Document>`/`<Page>` at the blob URL |
+| anything else     | A generic file icon + the Download button           |
 
 The PDF branch (`PdfPreview` in `ProjectFilesSection.tsx`) is a real PDF.js render via
 `react-pdf`, not a browser-native `<embed>` — prev/next page controls plus a "Page X of
@@ -163,7 +163,7 @@ re-checks independently and is the only real enforcement point.
 `ProjectAccessSection` renders below the record fields. It is gated on
 `can('project', 'access_manage')` from `usePermissions()` — someone without that
 permission never sees the section rendered at all, not a read-only version of it.
-Visibility of *who has access* is itself part of what the permission controls, mirroring
+Visibility of _who has access_ is itself part of what the permission controls, mirroring
 how the backend scopes the endpoint.
 
 ### useProjectAccess
@@ -175,10 +175,10 @@ body inline (see `AGENTS.md`).
 
 Two queries feed one merged row list:
 
-| Query          | Source                                          | Purpose                          |
-| -------------- | ------------------------------------------------ | --------------------------------- |
-| Org roster     | `organizationMembersEndpoint(organizationId)`     | Everyone who *could* get access   |
-| Access grants  | `GET /api/v1/projects/{id}/access/`               | Who *currently* has access, and at what level |
+| Query         | Source                                        | Purpose                                       |
+| ------------- | --------------------------------------------- | --------------------------------------------- |
+| Org roster    | `organizationMembersEndpoint(organizationId)` | Everyone who _could_ get access               |
+| Access grants | `GET /api/v1/projects/{id}/access/`           | Who _currently_ has access, and at what level |
 
 The hook left-joins the roster onto the grants by `user_id`: every member appears as a
 row, defaulted to `'none'` unless a grant exists. That is what lets the table offer

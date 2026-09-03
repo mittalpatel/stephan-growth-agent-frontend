@@ -1,6 +1,6 @@
 # New Feature Checklist
 
-In order. Copy `src/app/(restricted)/widgets/` as the starting point.
+In order. Copy `src/app/(restricted)/projects/` as the starting point.
 
 ## 1. Contract first
 

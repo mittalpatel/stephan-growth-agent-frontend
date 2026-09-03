@@ -31,9 +31,11 @@ async function openOtpBoxes(page: import('@playwright/test').Page) {
   await page.goto('/user-profile');
   await page.getByRole('tab', { name: t.userProfile.tabs.security }).click();
   await page.getByRole('button', { name: t.userProfile.mfa.enableButton }).click();
-  await expect(page.getByRole('dialog', { name: t.userProfile.mfa.enrollDialogTitle })).toBeVisible({
-    timeout: 15_000,
-  });
+  await expect(page.getByRole('dialog', { name: t.userProfile.mfa.enrollDialogTitle })).toBeVisible(
+    {
+      timeout: 15_000,
+    }
+  );
   return page.locator('input[data-slot="otp-input"]');
 }
 

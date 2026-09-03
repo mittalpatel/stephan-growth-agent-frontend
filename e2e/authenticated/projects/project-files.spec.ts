@@ -53,7 +53,9 @@ test.describe('Project Files: upload, PDF preview, delete', () => {
   // does not fit Playwright's 30s default — especially against a dev server
   // compiling the project-detail route on first hit. The individual `expect`
   // timeouts are the meaningful assertions; this is just headroom for the sum.
-  test('an editor-grant Member can upload a PDF, preview it, and delete it', async ({ browser }) => {
+  test('an editor-grant Member can upload a PDF, preview it, and delete it', async ({
+    browser,
+  }) => {
     test.setTimeout(90_000);
     const { context, page } = await loginAsNewContext(browser, DEMO_MEMBER, PASSWORD);
     try {
@@ -74,7 +76,9 @@ test.describe('Project Files: upload, PDF preview, delete', () => {
       // Name auto-fills from the selected file per handleFileSelected; leave
       // it as-is.
       await dialog.getByRole('button', { name: t.projects.files.form.submit }).click();
-      await expect(page.getByText(t.projects.files.toast.uploaded)).toBeVisible({ timeout: 15_000 });
+      await expect(page.getByText(t.projects.files.toast.uploaded)).toBeVisible({
+        timeout: 15_000,
+      });
 
       const fileRow = page.locator('tbody tr', { has: page.getByText(fileName) });
       await expect(fileRow).toBeVisible({ timeout: 10_000 });
@@ -135,10 +139,14 @@ test.describe('Project Files: upload, PDF preview, delete', () => {
         buffer: buildTestPdf(1),
       });
       await dialog.getByRole('button', { name: t.projects.files.form.submit }).click();
-      await expect(page.getByText(t.projects.files.toast.uploaded)).toBeVisible({ timeout: 15_000 });
+      await expect(page.getByText(t.projects.files.toast.uploaded)).toBeVisible({
+        timeout: 15_000,
+      });
 
       const fileRow = page.locator('tbody tr', { has: page.getByText(fileName) });
-      await expect(fileRow.getByRole('button', { name: t.projects.files.actions.delete })).toBeVisible({
+      await expect(
+        fileRow.getByRole('button', { name: t.projects.files.actions.delete })
+      ).toBeVisible({
         timeout: 10_000,
       });
       await fileRow.getByRole('button', { name: t.projects.files.actions.delete }).click();

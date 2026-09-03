@@ -24,7 +24,11 @@ export function useMyProjectAccess(projectId: string) {
   return {
     accessLevel,
     isOwner: accessLevel === 'owner',
-    hasEditorGrant: accessLevel === 'owner' || accessLevel === 'org_wide' || accessLevel === 'editor' || accessLevel === 'manager',
+    hasEditorGrant:
+      accessLevel === 'owner' ||
+      accessLevel === 'org_wide' ||
+      accessLevel === 'editor' ||
+      accessLevel === 'manager',
     isLoading: query.isLoading,
   };
 }

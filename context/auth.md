@@ -185,7 +185,7 @@ returns `false` for it (tested — see `hasAccess` in `src/lib/__tests__/helper.
 every authenticated user regardless of permissions — `/dashboard`, or a Sprint 1
 static preview with no permission code yet — has to say so explicitly in
 `PermissionGuard.tsx`'s `GLOBAL_PATHS`. Omitting it there is not a no-op: it silently
-bounces any user who holds at least one *other* permission to `defaultRoute()` on
+bounces any user who holds at least one _other_ permission to `defaultRoute()` on
 every visit, which is exactly the bug `/dashboard` shipped with until it was caught by
 logging in as a real seeded user rather than a permission-less test account (see
 `context/changelog.md`, 2026-09-03).

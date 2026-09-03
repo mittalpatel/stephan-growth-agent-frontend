@@ -45,10 +45,14 @@ test.describe('Organization settings: owner-only danger zone, shared name edit',
     const { context, page } = await loginAsNewContext(browser, DEMO_OWNER, PASSWORD);
     try {
       await page.goto('/organization');
-      await expect(page.getByRole('heading', { name: t.organizations.dangerZone.title })).toBeVisible({
+      await expect(
+        page.getByRole('heading', { name: t.organizations.dangerZone.title })
+      ).toBeVisible({
         timeout: 10_000,
       });
-      const deleteButton = page.getByRole('button', { name: t.organizations.dangerZone.deleteAction });
+      const deleteButton = page.getByRole('button', {
+        name: t.organizations.dangerZone.deleteAction,
+      });
       await expect(deleteButton).toBeVisible();
 
       // Confirm the control actually opens the confirm dialog (real
@@ -135,9 +139,11 @@ test.describe('Organization settings: owner-only danger zone, shared name edit',
     const { context, page } = await loginAsNewContext(browser, DEMO_ADMIN, PASSWORD);
     try {
       await page.goto('/organization');
-      await expect(page.getByRole('heading', { name: t.organizations.settings.title })).toBeVisible({
-        timeout: 10_000,
-      });
+      await expect(page.getByRole('heading', { name: t.organizations.settings.title })).toBeVisible(
+        {
+          timeout: 10_000,
+        }
+      );
       await expect(page.getByLabel(t.organizations.dangerZone.memberLabel)).toHaveCount(0);
       await expect(
         page.getByRole('button', { name: t.organizations.dangerZone.transferAction })
@@ -176,9 +182,11 @@ test.describe('Organization settings: owner-only danger zone, shared name edit',
     const { context, page } = await loginAsNewContext(browser, DEMO_ADMIN, PASSWORD);
     try {
       await page.goto('/organization');
-      await expect(page.getByRole('heading', { name: t.organizations.settings.title })).toBeVisible({
-        timeout: 10_000,
-      });
+      await expect(page.getByRole('heading', { name: t.organizations.settings.title })).toBeVisible(
+        {
+          timeout: 10_000,
+        }
+      );
       await expect(
         page.getByRole('heading', { name: t.organizations.dangerZone.title })
       ).toHaveCount(0);
@@ -214,9 +222,11 @@ test.describe('Organization settings: owner-only danger zone, shared name edit',
       // belt-and-suspenders against a false-positive 403 that actually came
       // from a route-not-found rather than a real permission check.
       await page.goto('/organization');
-      await expect(page.getByRole('heading', { name: t.organizations.settings.title })).toBeVisible({
-        timeout: 10_000,
-      });
+      await expect(page.getByRole('heading', { name: t.organizations.settings.title })).toBeVisible(
+        {
+          timeout: 10_000,
+        }
+      );
     } finally {
       await context.close();
     }

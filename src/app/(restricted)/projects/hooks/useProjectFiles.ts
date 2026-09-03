@@ -7,11 +7,7 @@ import { useAuthMutation } from '@/hooks/useAuthMutation';
 import { useAuthQuery } from '@/hooks/useAuthQuery';
 import { applyApiError } from '@/lib/apiError';
 import { t } from '@/locales';
-import {
-  projectFileDetailEndpoint,
-  projectFilesEndpoint,
-  projectFilesKey,
-} from '@/services/files';
+import { projectFileDetailEndpoint, projectFilesEndpoint, projectFilesKey } from '@/services/files';
 import type { ProjectFile } from '@/types/file';
 
 /**

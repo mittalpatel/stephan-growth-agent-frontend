@@ -147,7 +147,10 @@ function AccessRow({
         disabled={pending}
         onValueChange={(level) => onChangeLevel(level as Exclude<AccessLevelOrNone, 'none'>)}
       >
-        <SelectTrigger className="w-[130px] shrink-0" aria-label={t.projects.access.columns.accessLevel}>
+        <SelectTrigger
+          className="w-[130px] shrink-0"
+          aria-label={t.projects.access.columns.accessLevel}
+        >
           <SelectValue />
         </SelectTrigger>
         <SelectContent>
@@ -229,8 +232,7 @@ function AddPeople({
     const pool = needle
       ? remainingCandidates.filter(
           (row) =>
-            row.full_name.toLowerCase().includes(needle) ||
-            row.email.toLowerCase().includes(needle)
+            row.full_name.toLowerCase().includes(needle) || row.email.toLowerCase().includes(needle)
         )
       : remainingCandidates;
     return pool.slice(0, 6);

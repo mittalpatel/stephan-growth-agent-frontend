@@ -9,10 +9,7 @@ import { useAuthMutation } from '@/hooks/useAuthMutation';
 import { useAuthQuery } from '@/hooks/useAuthQuery';
 import { applyApiError } from '@/lib/apiError';
 import { t } from '@/locales';
-import {
-  organizationMembersEndpoint,
-  organizationMembersKey,
-} from '@/services/organizations';
+import { organizationMembersEndpoint, organizationMembersKey } from '@/services/organizations';
 import {
   projectAccessEndpoint,
   projectAccessKey,

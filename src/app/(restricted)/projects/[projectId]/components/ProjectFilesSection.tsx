@@ -330,10 +330,7 @@ function FilePreview({
         type="button"
         variant="outline"
         onClick={() =>
-          void downloadBlob(
-            projectFileDownloadEndpoint(projectId, file.id),
-            file.original_filename
-          )
+          void downloadBlob(projectFileDownloadEndpoint(projectId, file.id), file.original_filename)
         }
       >
         <Download className="size-4" aria-hidden />
@@ -444,16 +441,24 @@ export function ProjectFilesSection({ projectId }: Readonly<{ projectId: string 
                       {file.name}
                     </button>
                   </td>
-                  <td className={`${dataTableTd} text-muted-foreground hidden text-sm sm:table-cell`}>
+                  <td
+                    className={`${dataTableTd} text-muted-foreground hidden text-sm sm:table-cell`}
+                  >
                     {formatFileSize(file.size)}
                   </td>
-                  <td className={`${dataTableTd} text-muted-foreground hidden text-sm md:table-cell`}>
+                  <td
+                    className={`${dataTableTd} text-muted-foreground hidden text-sm md:table-cell`}
+                  >
                     {file.content_type}
                   </td>
-                  <td className={`${dataTableTd} text-muted-foreground hidden text-sm lg:table-cell`}>
+                  <td
+                    className={`${dataTableTd} text-muted-foreground hidden text-sm lg:table-cell`}
+                  >
                     {file.owner_email || t.common.notAvailable}
                   </td>
-                  <td className={`${dataTableTd} text-muted-foreground hidden text-sm md:table-cell`}>
+                  <td
+                    className={`${dataTableTd} text-muted-foreground hidden text-sm md:table-cell`}
+                  >
                     {formatDate(file.created_at)}
                   </td>
                   <td className={`${dataTableTd} text-right`}>

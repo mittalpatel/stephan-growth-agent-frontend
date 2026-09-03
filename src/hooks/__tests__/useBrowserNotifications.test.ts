@@ -1,9 +1,6 @@
 import { describe, it, expect } from 'vitest';
 
-import {
-  browserNotificationText,
-  type PushedNotification,
-} from '@/hooks/useBrowserNotifications';
+import { browserNotificationText, type PushedNotification } from '@/hooks/useBrowserNotifications';
 
 function push(overrides: Partial<PushedNotification>): PushedNotification {
   return {

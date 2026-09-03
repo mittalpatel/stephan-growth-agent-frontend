@@ -67,10 +67,9 @@ test.describe('Profile: partial edit does not blank the untouched field', () => 
       // Reload from the server rather than trusting client-side form state,
       // since the bug this guards against is specifically a server-side blank.
       await page.reload();
-      await expect(page.getByLabel(t.userProfile.firstNameLabel)).toHaveValue(
-        ORIGINAL_FIRST_NAME,
-        { timeout: 10_000 }
-      );
+      await expect(page.getByLabel(t.userProfile.firstNameLabel)).toHaveValue(ORIGINAL_FIRST_NAME, {
+        timeout: 10_000,
+      });
       await expect(page.getByLabel(t.userProfile.lastNameLabel)).toHaveValue(newLastName);
     } finally {
       await context.close();

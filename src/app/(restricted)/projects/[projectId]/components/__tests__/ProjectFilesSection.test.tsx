@@ -43,9 +43,7 @@ vi.mock('react-pdf', () => ({
     onLoadSuccess?.({ numPages: 3 });
     return <div data-testid="pdf-document">{children}</div>;
   },
-  Page: ({ pageNumber }: { pageNumber: number }) => (
-    <div data-testid="pdf-page">{pageNumber}</div>
-  ),
+  Page: ({ pageNumber }: { pageNumber: number }) => <div data-testid="pdf-page">{pageNumber}</div>,
   pdfjs: { GlobalWorkerOptions: {} },
 }));
 

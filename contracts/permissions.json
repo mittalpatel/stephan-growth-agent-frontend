@@ -12,19 +12,8 @@
     "view"
   ],
   "algebra": {
-    "manage_excludes": [
-      "delete",
-      "execute",
-      "export",
-      "billing",
-      "transfer",
-      "access_manage"
-    ],
-    "manage_subsumes": [
-      "view",
-      "create",
-      "update"
-    ],
+    "manage_excludes": ["delete", "execute", "export", "billing", "transfer", "access_manage"],
+    "manage_subsumes": ["view", "create", "update"],
     "separator": ":"
   },
   "codes": [
@@ -51,13 +40,5 @@
     "user:manage",
     "user:view"
   ],
-  "resources": [
-    "apikey",
-    "audit",
-    "member",
-    "organization",
-    "project",
-    "rbac",
-    "user"
-  ]
+  "resources": ["apikey", "audit", "member", "organization", "project", "rbac", "user"]
 }

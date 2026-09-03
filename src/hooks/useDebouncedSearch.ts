@@ -37,7 +37,12 @@ export const SEARCH_DEBOUNCE_MS = 400;
  * The URL remains the source of truth for the actual query; this only manages
  * the visible input value + debounce.
  */
-export function useDebouncedSearch({ initialValue, columns, setSearch, delay = SEARCH_DEBOUNCE_MS }: Options) {
+export function useDebouncedSearch({
+  initialValue,
+  columns,
+  setSearch,
+  delay = SEARCH_DEBOUNCE_MS,
+}: Options) {
   const [searchTerm, setSearchTerm] = useState(() => initialValue);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
