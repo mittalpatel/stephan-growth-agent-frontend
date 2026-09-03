@@ -30,107 +30,127 @@
 
 :root {
   /* One radius token. Everything else derives from it, so roundness is a single
-     decision rather than a per-component opinion. */
-  --radius: 0.625rem;
+     decision rather than a per-component opinion. Raised from shadcn's stock
+     0.625rem so `rounded-xl` lands on 16px — the card roundness the Nexus
+     design uses, reached by changing one number rather than every component. */
+  --radius: 0.75rem;
 
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
+  --background: oklch(0.985 0.003 106.4);
+  --foreground: oklch(0.205 0.01 268.2);
   --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
+  --card-foreground: oklch(0.205 0.01 268.2);
   --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
-  --destructive: oklch(0.577 0.245 27.325);
-  --destructive-foreground: oklch(0.985 0 0);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
+  --popover-foreground: oklch(0.205 0.01 268.2);
+  --primary: oklch(0.347 0.073 256.7);
+  --primary-foreground: oklch(0.985 0.003 106.4);
+  --secondary: oklch(0.963 0.004 106.5);
+  --secondary-foreground: oklch(0.205 0.01 268.2);
+  --muted: oklch(0.963 0.004 106.5);
+  --muted-foreground: oklch(0.551 0.013 264.5);
+  /* shadcn's `accent` is the subtle hover/active surface, not the brand
+     highlight — a tinted brand wash keeps hovers quiet. The gold highlight
+     lives in `--brand-accent` below. */
+  --accent: oklch(0.957 0.008 253.9);
+  --accent-foreground: oklch(0.347 0.073 256.7);
+  --destructive: oklch(0.543 0.174 29.7);
+  --destructive-foreground: oklch(0.985 0.003 106.4);
+  --border: oklch(0.922 0.007 88.6);
+  --input: oklch(0.922 0.007 88.6);
+  --ring: oklch(0.347 0.073 256.7);
+
+  /* The one added token pair. Gold, used for the small uppercase eyebrow above
+     a page title and nothing else — it carries the brand's warmth without
+     entering the hover/active surfaces that `--accent` owns. Added in all three
+     places (`:root`, `.dark`, `@theme inline`) per the rule above. */
+  --brand-accent: oklch(0.671 0.123 76.5);
+  --brand-accent-foreground: oklch(0.961 0.027 83.5);
 
   /* Status tones. Not part of stock shadcn, but every enterprise app renders
      state — and the alternative is `bg-emerald-50` scattered through components,
      which hardcodes light mode. `destructive` above already covers "danger", so
      these three complete the set. Each pair is a surface plus text guaranteed to
      hit 4.5:1 on it. */
-  --success: oklch(0.95 0.05 150);
-  --success-foreground: oklch(0.45 0.13 150);
-  --warning: oklch(0.96 0.06 85);
-  --warning-foreground: oklch(0.48 0.12 70);
-  --info: oklch(0.95 0.04 240);
-  --info-foreground: oklch(0.48 0.14 250);
+  --success: oklch(0.956 0.015 171.1);
+  --success-foreground: oklch(0.533 0.104 163.8);
+  --warning: oklch(0.959 0.028 81.5);
+  --warning-foreground: oklch(0.624 0.132 70.1);
+  --info: oklch(0.955 0.016 253.9);
+  --info-foreground: oklch(0.538 0.135 254.2);
 
   /* Chart tokens ship with the theme so a chart added later is already
-     on-palette and colour-blind-safe. */
-  --chart-1: oklch(0.646 0.222 41.116);
-  --chart-2: oklch(0.6 0.118 184.704);
-  --chart-3: oklch(0.398 0.07 227.392);
-  --chart-4: oklch(0.828 0.189 84.429);
-  --chart-5: oklch(0.769 0.188 70.08);
+     on-palette and colour-blind-safe. Ordered brand → gold → green → blue →
+     violet: adjacent pairs differ in lightness as well as hue, so the series
+     stays readable in greyscale and to a dichromat. */
+  --chart-1: oklch(0.347 0.073 256.7);
+  --chart-2: oklch(0.671 0.123 76.5);
+  --chart-3: oklch(0.533 0.104 163.8);
+  --chart-4: oklch(0.538 0.135 254.2);
+  --chart-5: oklch(0.542 0.185 296.2);
 
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.205 0 0);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
+  --sidebar: oklch(1 0 0);
+  --sidebar-foreground: oklch(0.205 0.01 268.2);
+  --sidebar-primary: oklch(0.347 0.073 256.7);
+  --sidebar-primary-foreground: oklch(0.985 0.003 106.4);
+  --sidebar-accent: oklch(0.957 0.008 253.9);
+  --sidebar-accent-foreground: oklch(0.347 0.073 256.7);
+  --sidebar-border: oklch(0.922 0.007 88.6);
+  --sidebar-ring: oklch(0.347 0.073 256.7);
 }
 
 .dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.205 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.205 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.922 0 0);
-  --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
-  /* Lifted and desaturated relative to light mode: the light-mode red on a dark
-     surface vibrates and fails contrast. */
-  --destructive: oklch(0.704 0.191 22.216);
-  --destructive-foreground: oklch(0.985 0 0);
+  /* The source design ships light mode only. This block is derived from it
+     rather than invented: every token keeps its light-mode hue and swaps
+     lightness, so the palette reads as the same brand with the lights off. */
+  --background: oklch(0.185 0.008 268.2);
+  --foreground: oklch(0.965 0.003 106.4);
+  --card: oklch(0.225 0.009 268.2);
+  --card-foreground: oklch(0.965 0.003 106.4);
+  --popover: oklch(0.225 0.009 268.2);
+  --popover-foreground: oklch(0.965 0.003 106.4);
+  /* The light-mode navy is too dark to sit under white text on a dark surface;
+     lifted and slightly desaturated so it still reads as the same blue. */
+  --primary: oklch(0.72 0.088 256.7);
+  --primary-foreground: oklch(0.205 0.01 268.2);
+  --secondary: oklch(0.275 0.008 268.2);
+  --secondary-foreground: oklch(0.965 0.003 106.4);
+  --muted: oklch(0.275 0.008 268.2);
+  --muted-foreground: oklch(0.715 0.012 264.5);
+  --accent: oklch(0.295 0.021 256.7);
+  --accent-foreground: oklch(0.93 0.02 253.9);
+  --destructive: oklch(0.704 0.165 29.7);
+  --destructive-foreground: oklch(0.985 0.003 106.4);
   /* Borders and inputs are translucent white rather than a flat grey so they
      read correctly over both `--background` and the lighter `--card`. */
   --border: oklch(1 0 0 / 10%);
   --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.556 0 0);
+  --ring: oklch(0.62 0.08 256.7);
+
+  --brand-accent: oklch(0.78 0.115 78);
+  --brand-accent-foreground: oklch(0.24 0.03 80);
 
   /* Inverted: a dim tinted surface with a light tinted text, rather than the
      light-mode pair, which glows on a dark background. */
-  --success: oklch(0.28 0.06 150);
-  --success-foreground: oklch(0.82 0.14 150);
-  --warning: oklch(0.3 0.06 80);
-  --warning-foreground: oklch(0.85 0.14 85);
-  --info: oklch(0.29 0.06 245);
-  --info-foreground: oklch(0.82 0.12 240);
+  --success: oklch(0.3 0.05 164);
+  --success-foreground: oklch(0.82 0.12 164);
+  --warning: oklch(0.31 0.05 72);
+  --warning-foreground: oklch(0.85 0.12 78);
+  --info: oklch(0.3 0.05 254);
+  --info-foreground: oklch(0.83 0.1 254);
 
-  --chart-1: oklch(0.488 0.243 264.376);
-  --chart-2: oklch(0.696 0.17 162.48);
-  --chart-3: oklch(0.769 0.188 70.08);
-  --chart-4: oklch(0.627 0.265 303.9);
-  --chart-5: oklch(0.645 0.246 16.439);
+  --chart-1: oklch(0.72 0.088 256.7);
+  --chart-2: oklch(0.78 0.115 78);
+  --chart-3: oklch(0.7 0.11 164);
+  --chart-4: oklch(0.7 0.12 254);
+  --chart-5: oklch(0.68 0.15 296);
 
-  --sidebar: oklch(0.205 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
+  --sidebar: oklch(0.225 0.009 268.2);
+  --sidebar-foreground: oklch(0.965 0.003 106.4);
+  --sidebar-primary: oklch(0.72 0.088 256.7);
+  --sidebar-primary-foreground: oklch(0.205 0.01 268.2);
+  --sidebar-accent: oklch(0.295 0.021 256.7);
+  --sidebar-accent-foreground: oklch(0.93 0.02 253.9);
   --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.556 0 0);
+  --sidebar-ring: oklch(0.62 0.08 256.7);
 }
 
 @theme inline {
@@ -162,6 +182,8 @@
   --color-warning-foreground: var(--warning-foreground);
   --color-info: var(--info);
   --color-info-foreground: var(--info-foreground);
+  --color-brand-accent: var(--brand-accent);
+  --color-brand-accent-foreground: var(--brand-accent-foreground);
 
   --color-chart-1: var(--chart-1);
   --color-chart-2: var(--chart-2);
@@ -186,8 +208,12 @@
 
   /* Loaded by next/font in src/app/layout.tsx — self-hosted, so no external
      request and no layout shift. */
-  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
-  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-jetbrains-mono), ui-monospace, monospace;
+  /* Headings and metric values only. Pairing a display face with a text face is
+     most of what separates this look from stock — but used below ~18px it just
+     reads as a slightly wrong body font, so it is deliberately not the default. */
+  --font-display: var(--font-manrope), var(--font-inter), ui-sans-serif, sans-serif;
 }
 
 @layer base {

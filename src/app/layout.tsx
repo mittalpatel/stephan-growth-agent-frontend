@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { Geist, Geist_Mono } from 'next/font/google';
+import { Inter, JetBrains_Mono, Manrope } from 'next/font/google';
 import { headers } from 'next/headers';
 import { Toaster } from 'sonner';
 
@@ -14,11 +14,25 @@ import ThemeProvider from '@/providers/ThemeProvider';
 
 import './globals.css';
 
-// Two families, both self-hosted by next/font — no external request, no
+// Three families, all self-hosted by next/font — no external request, no
 // render-blocking stylesheet, and no layout shift from a late font swap.
-// Rebranding means changing these two lines and nothing else.
-const geistSans = Geist({ variable: '--font-geist-sans', subsets: ['latin'] });
-const geistMono = Geist_Mono({ variable: '--font-geist-mono', subsets: ['latin'] });
+// Rebranding means changing these three lines and nothing else.
+//
+// Manrope is the display face, used for headings and metric values only (see
+// `--font-display` in globals.css); Inter carries body and all UI text;
+// JetBrains Mono is reserved for numerics. Weights are pinned to the ones the
+// design actually uses rather than shipping the full variable range.
+const inter = Inter({ variable: '--font-inter', subsets: ['latin'] });
+const manrope = Manrope({
+  variable: '--font-manrope',
+  subsets: ['latin'],
+  weight: ['600', '700', '800'],
+});
+const jetbrainsMono = JetBrains_Mono({
+  variable: '--font-jetbrains-mono',
+  subsets: ['latin'],
+  weight: ['400', '500', '600'],
+});
 
 export const metadata: Metadata = {
   title: { default: t.common.appName, template: `%s | ${t.common.appName}` },
@@ -40,7 +54,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
       // language (and therefore screen-reader pronunciation and hyphenation)
       // without touching this file.
       lang={DEFAULT_LANGUAGE}
-      className={`${geistSans.variable} ${geistMono.variable} h-full`}
+      className={`${inter.variable} ${manrope.variable} ${jetbrainsMono.variable} h-full`}
       // next-themes writes `class="dark"` here before paint. Without this
       // React logs a hydration mismatch on every load, and the real warnings
       // get lost in the noise.
