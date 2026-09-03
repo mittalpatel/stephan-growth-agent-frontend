@@ -9,8 +9,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { LogOut, User, ChevronDown } from 'lucide-react';
-import { usePermissions } from '@/app/(restricted)/context/PermissionsContext';
+import { LogOut, User } from 'lucide-react';
 import { t } from '@/locales';
 
 async function handleSignOut() {
@@ -21,17 +20,16 @@ async function handleSignOut() {
   void signOut({ callbackUrl: '/login' });
 }
 
+/**
+ * A compact avatar-only trigger — matching `ai-agents-platform`'s topbar,
+ * where the avatar is the only identity chrome up there. Name and role
+ * already render at full size in `Sidebar`'s footer card, so repeating them
+ * here doubled up on the same information and was most of why the topbar
+ * read wider and busier than the prototype's.
+ */
 export default function ProfilePopup() {
   const { data: session } = useSession();
   const user = session?.user;
-  // Not `session.user.role`: that is baked into the NextAuth JWT at sign-in and
-  // only refreshes when the session itself cycles (SESSION_MAX_AGE_SECONDS — up
-  // to 7 days), and nothing calls `update()` on another user's session when an
-  // admin changes their role, so the label could sit stale for a week.
-  // `PermissionsContext` refetches /auth/me/permissions/ on every page load, so
-  // its role is always current. Display only — authorization is re-checked
-  // server-side on every request regardless of what either of these says.
-  const { role } = usePermissions();
 
   const initials =
     user?.full_name
@@ -39,33 +37,17 @@ export default function ProfilePopup() {
       .map((n) => n[0])
       .join('')
       .toUpperCase()
-      .slice(0, 4) ?? '?';
+      .slice(0, 2) ?? '?';
 
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <button
           type="button"
-          className="flex items-center gap-2.5 rounded-md px-2 py-1.5 outline-none transition-colors hover:bg-accent"
+          aria-label={t.header.profile}
+          className="flex size-9 shrink-0 items-center justify-center rounded-full text-[13px] font-semibold text-white outline-none transition-opacity bg-primary hover:opacity-90"
         >
-          {/* Avatar */}
-          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-shell-avatar text-[13px] font-bold text-white">
-            {initials}
-          </div>
-
-          {/* Name + role — pinned to font-sans with normal tracking so they render
-              sharp and mixed-case. Without this they inherit Bebas Neue (font-ui)
-              from the parent <button>, which is caps-only and condensed. */}
-          <div className="hidden flex-col items-start gap-0.5 sm:flex">
-            <span className="max-w-[160px] truncate font-sans text-[15px] font-semibold leading-tight text-foreground">
-              {user?.full_name ?? '—'}
-            </span>
-            <span className="font-sans text-[13px] leading-tight text-foreground">
-              {role?.name ?? ''}
-            </span>
-          </div>
-
-          <ChevronDown className="hidden h-4 w-4 text-shell-muted sm:block" />
+          {initials}
         </button>
       </DropdownMenuTrigger>
 

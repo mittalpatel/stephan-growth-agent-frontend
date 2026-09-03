@@ -135,11 +135,23 @@ function NavSection({
   );
 }
 
+/** Initials from a full name, capped at 2 characters — matches ProfilePopup's own rule. */
+function initialsOf(fullName: string | undefined): string {
+  return (
+    fullName
+      ?.split(' ')
+      .map((n) => n[0])
+      .join('')
+      .toUpperCase()
+      .slice(0, 2) ?? '?'
+  );
+}
+
 type SidebarProps = Readonly<{ isOpen: boolean; onClose: () => void }>;
 
 export default function Sidebar({ isOpen, onClose }: SidebarProps) {
   const pathname = usePathname();
-  const { hasFunctional } = usePermissions();
+  const { hasFunctional, role } = usePermissions();
   // Platform-admin items are gated on the account flag, not on a permission code
   // — see NavItem.superuserOnly. The flag reaching the browser grants nothing:
   // the page redirects server-side and the endpoints re-check.
@@ -214,10 +226,26 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
         />
       </nav>
 
-      {/* Renders nothing when the user belongs to one organization, which is
-          every user of a single-tenant deployment — so no flag check is needed here. */}
       <div className="border-t py-2.5">
+        {/* Renders nothing when the user belongs to one organization, which is
+            every user of a single-tenant deployment — so no flag check is needed here. */}
         <OrganizationSwitcher />
+
+        {/* A second, read-only identity card below the switcher — the sidebar
+            footer this shell is modeled on stacks "current org" over "current
+            user" rather than relying on the topbar's ProfilePopup alone. This
+            one is display-only; sign-out and the profile link still live on
+            ProfilePopup, so there's exactly one place that actually acts on
+            the account. */}
+        <div className="flex items-center gap-2.5 px-3 pt-1">
+          <div className="bg-primary text-primary-foreground flex size-7 shrink-0 items-center justify-center rounded-full text-xs font-semibold">
+            {initialsOf(session.user.full_name)}
+          </div>
+          <div className="min-w-0 flex-1">
+            <p className="truncate text-xs font-medium">{session.user.full_name}</p>
+            <p className="text-muted-foreground truncate text-[11px]">{role?.name ?? ''}</p>
+          </div>
+        </div>
       </div>
     </aside>
   );

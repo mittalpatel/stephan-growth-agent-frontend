@@ -4,6 +4,10 @@ export const dashboard = {
   welcome: "Here's what's happening across your AI workspace.",
   previewNotice:
     'Static preview built from the Sprint 1 plan. Real numbers arrive once the backend ships.',
+  actions: {
+    viewAnalytics: 'View analytics',
+    exploreAgents: 'Explore agents',
+  },
   metrics: {
     activeAgents: 'Active agents',
     conversations: 'Conversations',

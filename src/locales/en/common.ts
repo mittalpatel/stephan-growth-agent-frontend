@@ -32,6 +32,8 @@ export const common = {
   none: 'None',
   selectRange: 'Select range',
   searchPlaceholder: 'Search…',
+  navSearchPlaceholder: 'Search agents, conversations, leads…',
+  navSearchLabel: 'Jump to a page',
   removeFilter: 'Remove {label}',
   clearSearch: 'Clear search',
   sortDirection: 'Change sort direction',

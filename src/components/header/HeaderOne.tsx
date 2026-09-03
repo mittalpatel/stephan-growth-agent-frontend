@@ -8,14 +8,15 @@ import { useOrganization } from '@/app/(restricted)/context/OrganizationContext'
 import { getPageMeta } from '@/lib/pageMeta';
 import { t } from '@/locales';
 
+import { QuickNavSearch } from './QuickNavSearch';
 import ProfilePopup from './ProfilePopup';
 
 /**
  * The topbar. Sits only above the content column — the brand mark lives in
  * `Sidebar` now, not here — so the left slot is the current page's context
  * (organization, then page title) rather than the wordmark. Mirrors
- * `ai-agents-platform`'s `Topbar`, which stacks the same two lines in the
- * same place.
+ * `ai-agents-platform`'s `Topbar`: the same two-line left slot, a search box
+ * in the middle, and controls on the right.
  */
 export default function HeaderOne({ onMenuClick }: Readonly<{ onMenuClick?: () => void }>) {
   const pathname = usePathname();
@@ -33,7 +34,7 @@ export default function HeaderOne({ onMenuClick }: Readonly<{ onMenuClick?: () =
         <Menu className="size-5" />
       </button>
 
-      <div className="min-w-0 flex-1">
+      <div className="min-w-0 shrink-0">
         {organization && (
           <p className="text-muted-foreground truncate text-xs">{organization.name}</p>
         )}
@@ -41,7 +42,9 @@ export default function HeaderOne({ onMenuClick }: Readonly<{ onMenuClick?: () =
         {subtitle && <p className="text-muted-foreground truncate text-xs">{subtitle}</p>}
       </div>
 
-      <div className="flex shrink-0 items-center gap-2">
+      <QuickNavSearch />
+
+      <div className="ml-auto flex shrink-0 items-center gap-2">
         <NotificationBell />
         <ProfilePopup />
       </div>

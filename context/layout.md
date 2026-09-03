@@ -40,7 +40,15 @@ hamburger button, closed by its own close button or the backdrop.
   row with `children` (only `Organization`, currently) expands into an indented
   sub-list instead of navigating.
 - **Footer** (`border-t`): `OrganizationSwitcher`, moved here from the top of the
-  nav to mirror the prototype's org-switcher-at-the-bottom placement.
+  nav to mirror the prototype's org-switcher-at-the-bottom placement, then a
+  second, read-only identity card below it (avatar, `session.user.full_name`,
+  `usePermissions().role`) — matching the prototype's stacked org-card-over-
+  user-card footer. Display-only: `ProfilePopup` in the topbar is still the one
+  control that actually signs out or links to the profile page.
+
+There is deliberately no collapsed/icon-only rail mode. One was built, then
+removed the same session on direct feedback — see `context/changelog.md`,
+2026-09-03, if it's ever worth reconsidering.
 
 Nav items defined in `src/constants/navItems.ts`; visibility gated by
 `ENABLED_HREFS` (kill switch) and `requiredFunction`/`hasFunctional` (permission).
@@ -57,19 +65,27 @@ above the sidebar.
 - **Left**: mobile hamburger, then the organization name (small, muted) stacked
   over the current page's title/subtitle from `getPageMeta(pathname)`
   (`src/lib/pageMeta.ts`). No wordmark here — see Sidebar above.
-- **Right**: `NotificationBell` → `ProfilePopup`.
+- **Middle**: `QuickNavSearch` (`hidden md:flex`) — a real jump-to-page search,
+  not a decorative input: typing a nav item's label and pressing Enter routes
+  to it. Only matches destinations `ENABLED_HREFS`/`hasFunctional` would already
+  show in the sidebar, so it can never send someone somewhere `PermissionGuard`
+  would immediately bounce them back out of.
+- **Right**: `NotificationBell` → `ProfilePopup` (avatar-only trigger; see below).
 
-Deliberately does **not** include the prototype's search input, trial-plan pill,
-or help-center button — none of those map to anything real in this app yet, and
-a control wired to nothing is a defect (`AGENTS.md`), not a style match worth
-making. Add them if and when they have something to do.
+Deliberately does **not** include the prototype's trial-plan pill or help-center
+button — neither maps to anything real in this app (there is no trial system),
+and a control wired to nothing is a defect (`AGENTS.md`), not a style match
+worth making. Add them if and when they have something to do.
 
 ## ProfilePopup
 
 `src/components/header/ProfilePopup.tsx`
 
-- Avatar showing up to 4 initials from `full_name`, name + role stacked beside it
-- Dropdown: Profile link, Sign Out (with `BroadcastChannel` logout)
+The topbar trigger is avatar-only (a bare circle with initials) — no inline
+name/role/chevron. `Sidebar`'s footer card (above) already shows name and role
+at full size, so repeating them here was pure duplication and read as wider and
+busier than the prototype's own single-avatar topbar corner. The dropdown
+content (name, email, profile link, sign out) is unchanged.
 
 ## RestrictedBreadcrumb
 
