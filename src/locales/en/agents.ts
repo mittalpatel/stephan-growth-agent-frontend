@@ -130,84 +130,61 @@ export const agents = {
     errorTitle: 'Could not load this agent',
     errorDescription: 'Something went wrong while loading this agent. Please try again.',
   },
-  // Still used by the dashboard's "Agent performance" section (Phase 3
-  // replaces it with real analytics) — kept here rather than duplicated.
-  catalog: {
-    websiteSalesSupport: {
-      name: 'Website Sales Support',
-      category: 'sales',
-      description:
-        'An AI sales assistant trained on your company knowledge that guides visitors, answers questions, and captures qualified prospects around the clock.',
-      features: [
-        'Website knowledge',
-        'PDF knowledge',
-        'AI sales conversations',
-        'Conversation history',
-        'Prospect capture',
-        'Lead intelligence',
-      ],
-      metricALabel: 'Conversations',
-      metricAValue: '128',
-      metricBLabel: 'Conversion rate',
-      metricBValue: '32.8%',
-      valueGenerated: '$8,240',
+  settings: {
+    title: 'Settings',
+    description: 'Allowed domains, deployment keys, and how to embed this agent on a website.',
+    noPermissionTitle: 'Manage permission required',
+    noPermissionDescription: "You don't have permission to manage this agent's settings.",
+    domains: {
+      title: 'Allowed domains',
+      description: "Hostnames permitted to load this agent's public widget.",
+      hostnameLabel: 'Hostname',
+      hostnamePlaceholder: 'www.example.com',
+      add: 'Add domain',
+      remove: 'Remove domain',
+      removeConfirmTitle: 'Remove this domain?',
+      removeConfirmDescription: 'The widget will stop loading from this hostname immediately.',
+      empty: 'No domains added this session.',
+      added: 'Domain added.',
+      removed: 'Domain removed.',
+      sessionOnlyNote:
+        'This list only shows domains added during the current session. There is no way yet to look up domains added previously.',
+      validation: {
+        hostnameRequired: 'Enter a hostname.',
+        hostnameTooLong: 'Hostname must be 255 characters or fewer.',
+      },
     },
-    sevo: {
-      name: 'SEvO',
-      category: 'growth',
-      description:
-        'Trains your team on AEO, GEO, SEO and the SEvO experience, and produces the exact steps to become visible inside LLMs and modern search.',
-      features: [
-        'Website analysis',
-        'SEO analysis',
-        'AEO recommendations',
-        'GEO recommendations',
-        'LLM visibility',
-        'Implementation guidance',
-      ],
-      metricALabel: 'Recommendations',
-      metricAValue: '14',
-      metricBLabel: 'Implemented',
-      metricBValue: '6',
-      valueGenerated: '$3,180',
+    keys: {
+      title: 'Deployment keys',
+      description: "Credentials the public widget presents to load this agent's configuration.",
+      issue: 'Issue key',
+      revoke: 'Revoke',
+      revoked: 'Deployment key revoked.',
+      revokeConfirmTitle: 'Revoke this deployment key?',
+      revokeConfirmDescription: 'Any widget using this key will stop working immediately.',
+      empty: 'No keys issued this session.',
+      status: {
+        active: 'Active',
+        revoked: 'Revoked',
+      },
+      sessionOnlyNote:
+        'This list only shows keys issued during the current session. There is no way yet to look up keys issued previously.',
+      reveal: {
+        title: 'Your new deployment key',
+        warning:
+          "This is the only time this secret will be shown. Copy it now, it can't be shown again.",
+        secretLabel: 'Secret',
+        copyLabel: 'Copy secret',
+        copied: 'Secret copied to clipboard.',
+        copyFailed: 'Could not copy automatically. Select and copy the secret manually.',
+        done: "I've saved it",
+      },
     },
-    contentStrategy: {
-      name: 'Content Strategy',
-      category: 'marketing',
-      description:
-        'Builds a weekly content plan from your website, second brain, and two strategic topics — producing on-brand LinkedIn and social posts automatically.',
-      features: [
-        'Weekly content planning',
-        'LinkedIn posts',
-        'Social posts',
-        'Brand & tone alignment',
-        'Content review',
-        'Publishing workflow',
-      ],
-      metricALabel: 'Scheduled',
-      metricAValue: '5',
-      metricBLabel: 'Engagement',
-      metricBValue: '+18.4%',
-      valueGenerated: '$2,400',
-    },
-    leadOutreach: {
-      name: 'Lead Outreach',
-      category: 'automation',
-      description:
-        'Ingests Meta Lead Ads, enriches and scores each lead, syncs to your CRM, and carries on AI-assisted WhatsApp conversations with human approval built in.',
-      features: [
-        'Meta Lead Ads',
-        'CRM sync',
-        'Lead scoring',
-        'Enrichment',
-        'WhatsApp conversations',
-        'Nurturing',
-      ],
-      metricALabel: 'Leads',
-      metricAValue: '64',
-      metricBLabel: 'Qualified',
-      metricBValue: '38',
-      valueGenerated: '$4,600',
+    embed: {
+      title: 'Embed snippet',
+      description: "How a website presents an issued deployment key to load this agent's widget.",
+      queryParamNote:
+        'The config endpoint alone also accepts the key as a "key" query parameter instead of this header.',
     },
   },
 } as const;

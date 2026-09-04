@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { AlertTriangle, ArrowLeft, BookOpen } from 'lucide-react';
+import { AlertTriangle, ArrowLeft, BookOpen, Settings } from 'lucide-react';
 
 import { usePermissions } from '@/app/(restricted)/context/PermissionsContext';
 import { EmptyState } from '@/components/common/EmptyState';
@@ -30,6 +30,7 @@ export function AgentDetailView({ agentId }: Props) {
   const { agent, isLoading, isError, isNotFound, refetch } = useAgentDetail(agentId);
   const { can } = usePermissions();
   const canViewKnowledge = can('knowledge', 'view');
+  const canManage = can('agent', 'manage');
 
   if (isLoading) return <AgentDetailSkeleton />;
 
@@ -77,14 +78,24 @@ export function AgentDetailView({ agentId }: Props) {
             <h1 className="font-display text-2xl font-bold tracking-tight">{agent.name}</h1>
             <StatusBadge label={t.agents.status[agent.status]} tone={STATUS_TONE[agent.status]} />
           </div>
-          {canViewKnowledge && (
-            <Button variant="outline" asChild>
-              <Link href={`/agents/${agentId}/knowledge`}>
-                <BookOpen className="size-4" aria-hidden />
-                {t.knowledge.title}
-              </Link>
-            </Button>
-          )}
+          <div className="flex items-center gap-2">
+            {canViewKnowledge && (
+              <Button variant="outline" asChild>
+                <Link href={`/agents/${agentId}/knowledge`}>
+                  <BookOpen className="size-4" aria-hidden />
+                  {t.knowledge.title}
+                </Link>
+              </Button>
+            )}
+            {canManage && (
+              <Button variant="outline" asChild>
+                <Link href={`/agents/${agentId}/settings`}>
+                  <Settings className="size-4" aria-hidden />
+                  {t.agents.settings.title}
+                </Link>
+              </Button>
+            )}
+          </div>
         </div>
       </div>
 

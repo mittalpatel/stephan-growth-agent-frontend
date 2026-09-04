@@ -33,7 +33,9 @@ dashboard's "Agent performance" section now reuses `useAgentsList()` directly
 ## Detail page (`/agents/[agentId]`)
 
 Header carries a "Knowledge sources" link to `/agents/[agentId]/knowledge`
-(gated `knowledge:view`; see that route's own context doc).
+(gated `knowledge:view`) and, as of Phase 4, a "Settings" link to
+`/agents/[agentId]/settings` (gated `agent:manage`) for allowed domains and
+deployment keys; see each route's own context doc.
 
 Four tabs, each backed by its own hook under `[agentId]/hooks/`:
 
@@ -73,8 +75,8 @@ remains in `GLOBAL_PATHS` — no permission code exists for it yet.
 `src/proxy.ts`'s `ENABLED_PREFIXES`/`config.matcher` already listed `/agents`
 from the Sprint 1 preview; unchanged here.
 
-## Not yet built (later phases)
+## Related pages
 
-Allowed domains and deployment keys have no UI yet — they land under
-`/agents/[agentId]/settings` in Phase 4. Knowledge sources are live; see
-`context/app/(restricted)/agents/[agentId]/knowledge/page.md`.
+Knowledge sources: `context/app/(restricted)/agents/[agentId]/knowledge/page.md`.
+Allowed domains, deployment keys, and the embed snippet (Phase 4):
+`context/app/(restricted)/agents/[agentId]/settings/page.md`.

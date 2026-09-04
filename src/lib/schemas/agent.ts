@@ -35,3 +35,15 @@ export const agentUpdateSchema = z.object({
 });
 
 export type AgentUpdateFormValues = z.infer<typeof agentUpdateSchema>;
+
+/** Mirrors `AllowedDomainWriteSerializer`'s only field. */
+export const agentDomainCreateSchema = z.object({
+  hostname: z
+    .string()
+    .trim()
+    .toLowerCase()
+    .min(1, t.agents.settings.domains.validation.hostnameRequired)
+    .max(255, t.agents.settings.domains.validation.hostnameTooLong),
+});
+
+export type AgentDomainCreateFormValues = z.infer<typeof agentDomainCreateSchema>;

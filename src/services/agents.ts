@@ -14,6 +14,13 @@ export const agentTestAskEndpoint = (id: string) => `${agentDraftEndpoint(id)}te
 export const agentPublishEndpoint = (id: string) => `${agentDetailEndpoint(id)}publish/`;
 export const agentRollbackEndpoint = (id: string) => `${agentDetailEndpoint(id)}rollback/`;
 
+export const agentDomainsEndpoint = (id: string) => `${agentDetailEndpoint(id)}domains/`;
+export const agentDomainDeleteEndpoint = (id: string, domainId: string) =>
+  `${agentDomainsEndpoint(id)}${domainId}/`;
+export const agentKeysEndpoint = (id: string) => `${agentDetailEndpoint(id)}keys/`;
+export const agentKeyRevokeEndpoint = (id: string, keyId: string) =>
+  `${agentKeysEndpoint(id)}${keyId}/revoke/`;
+
 export const AGENTS_LIST_KEY = 'agents-list';
 export const AGENTS_PARAMETERS_KEY = 'agents-parameters';
 

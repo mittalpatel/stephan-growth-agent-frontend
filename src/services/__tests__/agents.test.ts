@@ -3,8 +3,12 @@ import { describe, it, expect } from 'vitest';
 import {
   agentDetailEndpoint,
   agentDetailKey,
+  agentDomainDeleteEndpoint,
+  agentDomainsEndpoint,
   agentDraftEndpoint,
   agentDraftKey,
+  agentKeyRevokeEndpoint,
+  agentKeysEndpoint,
   agentListUrl,
   agentPublishEndpoint,
   agentRollbackEndpoint,
@@ -26,6 +30,20 @@ describe('agent endpoints', () => {
   it('builds distinct query keys per agent', () => {
     expect(agentDetailKey(AGENT_ID)).toEqual(['agent-detail', AGENT_ID]);
     expect(agentDraftKey(AGENT_ID)).toEqual(['agent-draft', AGENT_ID]);
+  });
+
+  it('nests the domain and deployment key endpoints under the agent id', () => {
+    const DOMAIN_ID = '1a2b3c4d-1111-4a2b-8c3d-4e5f60718293';
+    const KEY_ID = '9f8e7d6c-1111-4a2b-8c3d-4e5f60718293';
+
+    expect(agentDomainsEndpoint(AGENT_ID)).toBe(`${AGENTS_ENDPOINT}${AGENT_ID}/domains/`);
+    expect(agentDomainDeleteEndpoint(AGENT_ID, DOMAIN_ID)).toBe(
+      `${AGENTS_ENDPOINT}${AGENT_ID}/domains/${DOMAIN_ID}/`
+    );
+    expect(agentKeysEndpoint(AGENT_ID)).toBe(`${AGENTS_ENDPOINT}${AGENT_ID}/keys/`);
+    expect(agentKeyRevokeEndpoint(AGENT_ID, KEY_ID)).toBe(
+      `${AGENTS_ENDPOINT}${AGENT_ID}/keys/${KEY_ID}/revoke/`
+    );
   });
 
   it('encodes list params onto the list endpoint', () => {

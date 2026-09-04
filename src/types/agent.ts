@@ -133,3 +133,28 @@ export type AgentTestAskResult = {
   citations: AgentTestAskCitation[];
   confidence_decision: 'answered' | 'clarify' | 'fallback' | 'handoff';
 };
+
+/**
+ * A hostname permitted to load an agent's public widget. There is no
+ * `GET /agents/{id}/domains/` endpoint, only create/delete, so the frontend
+ * can never list domains configured before the current session started
+ * (see `context/app/(restricted)/agents/[agentId]/settings/page.md`).
+ */
+export type AllowedDomain = {
+  id: string;
+  agent: string;
+  hostname: string;
+  created_at: string;
+};
+
+/** Never carries the raw secret, only `key_prefix` and revocation state. */
+export type AgentDeploymentKey = {
+  id: string;
+  agent: string;
+  key_prefix: string;
+  revoked_at: string | null;
+  created_at: string;
+};
+
+/** Shape of the `POST /agents/{id}/keys/` response only, the one place the raw secret is ever returned. */
+export type AgentDeploymentKeyIssued = AgentDeploymentKey & { secret: string };
