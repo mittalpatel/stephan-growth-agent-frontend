@@ -1,123 +1,124 @@
 'use client';
 
-import { useState } from 'react';
-import Link from 'next/link';
-import { ArrowRight, Check } from 'lucide-react';
+import { AlertTriangle } from 'lucide-react';
 
-import { AGENT_CATALOG, type AgentCategory } from '@/app/(restricted)/agents/agentCatalog';
-import { PreviewBanner } from '@/components/common/PreviewBanner';
-import { StatusBadge } from '@/components/common/StatusBadge';
+import { usePermissions } from '@/app/(restricted)/context/PermissionsContext';
+import { EmptyState } from '@/components/common/EmptyState';
+import { FilterToolbar } from '@/components/common/FilterToolbar';
+import { ListPagination } from '@/components/common/ListPagination';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
-import { cn } from '@/lib/utils';
 import { t } from '@/locales';
 
-const FILTERS: readonly { key: AgentCategory | 'all'; label: string }[] = [
-  { key: 'all', label: t.agents.filters.all },
-  { key: 'sales', label: t.agents.filters.sales },
-  { key: 'marketing', label: t.agents.filters.marketing },
-  { key: 'growth', label: t.agents.filters.growth },
-  { key: 'automation', label: t.agents.filters.automation },
-];
+import { useAgentsList } from '../hooks/useAgentsList';
+import CreateAgentDialog from './CreateAgentDialog';
+import { AgentsTable } from './AgentsTable';
+import { AgentsTableSkeleton } from './AgentsTableSkeleton';
 
 /**
- * Sprint 1 static preview of the agents list, matching `ai-agents-platform`'s
- * `AgentsMarketplace` layout, copy, and the four Sprint 1 agents
- * (frontend-plan-v3.md §3.1). Swap `AGENT_CATALOG` for `useAgentsList()` once
- * `GET /api/v1/agents/` ships, and drop `PreviewBanner`.
+ * The agents list, wired to `GET /api/v1/agents/`.
+ *
+ * Four states, all designed rather than incidental — see `ProjectsList` for
+ * the pattern this mirrors. Replaces the Sprint 1 static preview that rendered
+ * the fixed `AGENT_CATALOG` marketplace card grid.
  */
 export function AgentsListView() {
-  const [filter, setFilter] = useState<AgentCategory | 'all'>('all');
-  const filtered =
-    filter === 'all' ? AGENT_CATALOG : AGENT_CATALOG.filter((a) => a.category === filter);
+  const list = useAgentsList();
+  const { can } = usePermissions();
+  const canCreate = can('agent', 'create');
+
+  function renderBody() {
+    if (list.isLoading) {
+      return <AgentsTableSkeleton rows={list.limit} />;
+    }
+
+    if (list.isError) {
+      return (
+        <EmptyState
+          icon={AlertTriangle}
+          title={t.agents.list.errorTitle}
+          description={t.agents.list.errorDescription}
+          action={
+            <Button variant="outline" onClick={() => void list.refetch()}>
+              {t.buttons.tryAgain}
+            </Button>
+          }
+        />
+      );
+    }
+
+    if (list.agents.length === 0) {
+      return list.hasActiveFilters ? (
+        <EmptyState
+          title={t.agents.list.emptyFilteredTitle}
+          description={t.agents.list.emptyFilteredDescription}
+          action={
+            <Button variant="outline" onClick={list.onResetFilters}>
+              {t.buttons.resetFilters}
+            </Button>
+          }
+        />
+      ) : (
+        <EmptyState
+          title={t.agents.list.emptyTitle}
+          description={t.agents.list.emptyDescription}
+          action={canCreate ? <CreateAgentDialog onCreated={list.refetch} /> : undefined}
+        />
+      );
+    }
+
+    return <AgentsTable agents={list.agents} />;
+  }
 
   return (
     <div className="flex flex-col gap-6">
-      <PreviewBanner note={t.agents.previewNotice} />
-
       <div>
-        <span className="text-brand-accent mb-2 block text-xs font-semibold tracking-wider uppercase">
-          {t.agents.eyebrow}
-        </span>
-        <h1 className="font-display max-w-2xl text-[28px] leading-tight font-bold tracking-tight">
-          {t.agents.heading}
-        </h1>
-        <p className="text-muted-foreground mt-2 max-w-2xl text-[15px] leading-relaxed">
-          {t.agents.subheading}
-        </p>
+        <h1 className="font-display text-2xl font-bold tracking-tight">{t.agents.title}</h1>
+        <p className="text-muted-foreground mt-1 text-sm">{t.agents.description}</p>
       </div>
 
-      <div className="bg-muted flex w-fit items-center gap-1 rounded-lg p-1">
-        {FILTERS.map((f) => (
-          <button
-            key={f.key}
-            type="button"
-            onClick={() => setFilter(f.key)}
-            className={cn(
-              'rounded-md px-3.5 py-1.5 text-sm font-semibold transition-colors',
-              filter === f.key ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground'
-            )}
-          >
-            {f.label}
-          </button>
-        ))}
-      </div>
+      <div className="space-y-4">
+        {canCreate && (
+          <div className="flex justify-end">
+            <CreateAgentDialog onCreated={list.refetch} />
+          </div>
+        )}
 
-      <div className="grid gap-5 md:grid-cols-2">
-        {filtered.map((agent) => (
-          <Card key={agent.id}>
-            <CardContent className="flex flex-col">
-              <div className="mb-4 flex items-start justify-between">
-                <span className="bg-brand-accent/15 text-brand-accent flex size-12 items-center justify-center rounded-xl">
-                  <agent.icon className="size-[22px]" />
-                </span>
-                <StatusBadge label={t.agents.status.active} tone="success" />
-              </div>
+        <FilterToolbar
+          title={list.title}
+          total={list.total}
+          displayed={list.displayed}
+          isFetching={list.isFetching}
+          searchTerm={list.searchTerm}
+          onSearchChange={list.onSearchChange}
+          onSearchClear={list.onSearchClear}
+          searchPlaceholder={list.searchPlaceholder}
+          sortField={list.sortField}
+          sortDirection={list.sortDirection}
+          sortOptions={list.sortOptions}
+          onSortFieldChange={list.onSortFieldChange}
+          onSortDirectionToggle={list.onSortDirectionToggle}
+          limit={list.limit}
+          limitOptions={list.limitOptions}
+          onLimitChange={list.onLimitChange}
+          onResetFilters={list.onResetFilters}
+          filterConfigs={list.filterConfigs}
+          activeFilters={list.activeFilters}
+          onFilterChange={list.onFilterChange}
+          showDateRange={false}
+        />
 
-              <h3 className="font-display text-lg font-bold">{agent.name}</h3>
-              <p className="text-muted-foreground mt-1.5 mb-4 text-sm leading-relaxed">
-                {agent.description}
-              </p>
+        {renderBody()}
 
-              <div className="mb-5 grid grid-cols-2 gap-x-3 gap-y-2">
-                {agent.features.map((feature) => (
-                  <div key={feature} className="flex items-center gap-1.5 text-xs">
-                    <Check className="text-success size-3 shrink-0" />
-                    <span className="truncate">{feature}</span>
-                  </div>
-                ))}
-              </div>
-
-              <div className="border-border mt-auto flex items-center justify-between border-t pt-4">
-                <div>
-                  <p className="text-xs font-semibold">{t.agents.levelBasic}</p>
-                  <p className="text-success text-xs">{t.agents.freeDuringTrial}</p>
-                </div>
-                <Button size="sm" className="gap-1.5" asChild>
-                  <Link href={`/agents/${agent.id}`}>
-                    {t.agents.openAgent} <ArrowRight className="size-3.5" />
-                  </Link>
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-
-      <div className="bg-foreground text-background flex flex-wrap items-center justify-between gap-6 rounded-2xl p-7">
-        <div>
-          <p className="text-background/50 mb-1.5 text-xs font-semibold tracking-wider uppercase">
-            {t.agents.customTier.eyebrow}
-          </p>
-          <h3 className="font-display mb-1.5 text-xl font-bold">{t.agents.customTier.heading}</h3>
-          <p className="text-background/70 max-w-lg text-sm">{t.agents.customTier.description}</p>
-        </div>
-        <Button
-          className="bg-background text-foreground hover:bg-background/90 shrink-0"
-          size="default"
-        >
-          {t.agents.customTier.cta}
-        </Button>
+        {list.totalPages > 1 && (
+          <ListPagination
+            currentPage={list.currentPage}
+            totalPages={list.totalPages}
+            limit={list.limit}
+            limitOptions={list.limitOptions}
+            onPageChange={list.onPageChange}
+            onLimitChange={list.onLimitChange}
+          />
+        )}
       </div>
     </div>
   );

@@ -37,13 +37,12 @@ import { useOptionalUser } from '../context/UserContext';
 // user, not from a permission-less test account, which is exactly the case
 // this array's existing entries don't cover.
 //
-// `/agents`, `/conversations`, `/leads`, `/analytics` join it for the same
-// reason `navItems.ts` gives their nav entries no `requiredFunction` yet:
-// they're Sprint 1 static previews (frontend-plan-v3.md), and the
-// `agent`/`conversation`/`lead` permission codes don't exist in
-// `ROUTE_PERMISSIONS` until the backend contract lands them. Move each to its
-// own `ROUTE_PERMISSIONS` entry in the same change that adds its permission
-// gate, matching the plan's §3.3.
+// `/conversations`, `/leads`, `/analytics` remain here for the same reason
+// `navItems.ts` gives their nav entries no `requiredFunction` yet: they're
+// Sprint 1 static previews, and the `conversation`/`lead` permission codes
+// aren't wired into `ROUTE_PERMISSIONS` until their own phase lands. `/agents`
+// moved out once the backend's `agent` permission code landed and got its own
+// `ROUTE_PERMISSIONS` entry.
 const GLOBAL_PATHS = [
   '/no-role',
   '/user-profile',
@@ -51,7 +50,6 @@ const GLOBAL_PATHS = [
   '/invites',
   '/notifications',
   '/dashboard',
-  '/agents',
   '/conversations',
   '/leads',
   '/analytics',

@@ -28,9 +28,20 @@
     "separator": ":"
   },
   "codes": [
+    "agent:create",
+    "agent:delete",
+    "agent:execute",
+    "agent:manage",
+    "agent:view",
     "apikey:manage",
     "apikey:view",
     "audit:view",
+    "conversation:manage",
+    "conversation:view",
+    "knowledge:execute",
+    "knowledge:manage",
+    "knowledge:view",
+    "lead:view",
     "member:manage",
     "member:view",
     "organization:billing",
@@ -52,8 +63,12 @@
     "user:view"
   ],
   "resources": [
+    "agent",
     "apikey",
     "audit",
+    "conversation",
+    "knowledge",
+    "lead",
     "member",
     "organization",
     "project",

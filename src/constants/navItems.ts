@@ -112,16 +112,17 @@ export const NAV_ITEMS: NavItem[] = [
     icon: Boxes,
     requiredFunction: 'project',
   },
-  // Sprint 1 static previews (frontend-plan-v3.md §3.1) — no requiredFunction
-  // yet, because the backend hasn't landed the `agent` / `conversation` /
-  // `lead` permission codes this app will eventually gate on (§3.3). Add it
-  // back once `contracts/permissions.json` is re-vendored with them.
   {
     section: t.navigation.sections.main,
     label: t.navigation.agents,
     href: '/agents',
     icon: Bot,
+    requiredFunction: 'agent',
   },
+  // Sprint 1 static previews (frontend-plan-v3.md §3.1) — no requiredFunction
+  // yet, because the backend hasn't landed the `conversation` / `lead`
+  // permission codes this app will eventually gate on (§3.3). Add it back
+  // once `contracts/permissions.json` is re-vendored with them.
   {
     section: t.navigation.sections.main,
     label: t.navigation.conversations,

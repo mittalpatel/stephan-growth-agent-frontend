@@ -41,6 +41,11 @@ export const ROUTE_PERMISSIONS: readonly RoutePermission[] = [
   { prefix: '/organization', resources: ['organization'] },
   // Demo module — removed by `npm run strip-demo`.
   { prefix: '/projects', resources: ['project'] },
+  // YB Inspire Sprint 1 Phase 2. Was in PermissionGuard's GLOBAL_PATHS until
+  // the backend's `agent` permission code landed; now gated the same way as
+  // every other resource. `/conversations`/`/leads` join this once their own
+  // phase wires them to the backend.
+  { prefix: '/agents', resources: ['agent'] },
   // NOTE: `/admin/*` is deliberately absent. It is gated on `is_superuser`, not
   // on a permission code, so it is listed in PermissionGuard's SUPERUSER_PATHS
   // instead — a resource entry here would be an org-level permission granting a

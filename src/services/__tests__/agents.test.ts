@@ -1,0 +1,48 @@
+import { describe, it, expect } from 'vitest';
+
+import {
+  agentDetailEndpoint,
+  agentDetailKey,
+  agentDraftEndpoint,
+  agentDraftKey,
+  agentListUrl,
+  agentPublishEndpoint,
+  agentRollbackEndpoint,
+  agentTestAskEndpoint,
+  AGENTS_ENDPOINT,
+} from '../agents';
+
+const AGENT_ID = '0c2f6a1e-1111-4a2b-8c3d-4e5f60718293';
+
+describe('agent endpoints', () => {
+  it('nests the agent id in every detail-scoped endpoint', () => {
+    expect(agentDetailEndpoint(AGENT_ID)).toBe(`${AGENTS_ENDPOINT}${AGENT_ID}/`);
+    expect(agentDraftEndpoint(AGENT_ID)).toBe(`${AGENTS_ENDPOINT}${AGENT_ID}/draft/`);
+    expect(agentTestAskEndpoint(AGENT_ID)).toBe(`${AGENTS_ENDPOINT}${AGENT_ID}/draft/test/`);
+    expect(agentPublishEndpoint(AGENT_ID)).toBe(`${AGENTS_ENDPOINT}${AGENT_ID}/publish/`);
+    expect(agentRollbackEndpoint(AGENT_ID)).toBe(`${AGENTS_ENDPOINT}${AGENT_ID}/rollback/`);
+  });
+
+  it('builds distinct query keys per agent', () => {
+    expect(agentDetailKey(AGENT_ID)).toEqual(['agent-detail', AGENT_ID]);
+    expect(agentDraftKey(AGENT_ID)).toEqual(['agent-draft', AGENT_ID]);
+  });
+
+  it('encodes list params onto the list endpoint', () => {
+    const url = agentListUrl({
+      page: 2,
+      limit: 25,
+      search: [],
+      search_by: '',
+      sort: 'name',
+      sort_direction: 'asc',
+      filter: [],
+      filter_by: [],
+    });
+    expect(url).toContain(AGENTS_ENDPOINT);
+    expect(url).toContain('page=2');
+    expect(url).toContain('page_size=25');
+    expect(url).toContain('sort=name');
+    expect(url).toContain('sort_direction=asc');
+  });
+});
