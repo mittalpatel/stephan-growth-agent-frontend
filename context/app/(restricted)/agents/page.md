@@ -32,6 +32,9 @@ the dashboard to real analytics.
 
 ## Detail page (`/agents/[agentId]`)
 
+Header carries a "Knowledge sources" link to `/agents/[agentId]/knowledge`
+(gated `knowledge:view`; see that route's own context doc).
+
 Four tabs, each backed by its own hook under `[agentId]/hooks/`:
 
 - **Overview** (`AgentOverviewTab`) — edit `name`/`human_inbox_email`/`status`
@@ -70,6 +73,6 @@ from the Sprint 1 preview; unchanged here.
 
 ## Not yet built (later phases)
 
-Knowledge sources, allowed domains, and deployment keys have no UI yet — they
-land under `/agents/[agentId]/knowledge` and `/agents/[agentId]/settings` in
-their own phases per the frontend integration plan.
+Allowed domains and deployment keys have no UI yet — they land under
+`/agents/[agentId]/settings` in Phase 4. Knowledge sources are live; see
+`context/app/(restricted)/agents/[agentId]/knowledge/page.md`.

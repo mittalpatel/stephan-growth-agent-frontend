@@ -6,6 +6,7 @@ import { conversations } from './conversations';
 import { dashboard } from './dashboard';
 import { errors } from './errors';
 import { header } from './header';
+import { knowledge } from './knowledge';
 import { leads } from './leads';
 import { legal } from './legal';
 import { marketing } from './marketing';
@@ -43,6 +44,7 @@ export const en = {
   // Demo module — removed by `npm run strip-demo`.
   projects,
   agents,
+  knowledge,
   conversations,
   leads,
   analytics,

@@ -1,8 +1,9 @@
 'use client';
 
 import Link from 'next/link';
-import { AlertTriangle, ArrowLeft } from 'lucide-react';
+import { AlertTriangle, ArrowLeft, BookOpen } from 'lucide-react';
 
+import { usePermissions } from '@/app/(restricted)/context/PermissionsContext';
 import { EmptyState } from '@/components/common/EmptyState';
 import { StatusBadge, type StatusTone } from '@/components/common/StatusBadge';
 import { Button } from '@/components/ui/button';
@@ -27,6 +28,8 @@ type Props = Readonly<{ agentId: string }>;
 
 export function AgentDetailView({ agentId }: Props) {
   const { agent, isLoading, isError, isNotFound, refetch } = useAgentDetail(agentId);
+  const { can } = usePermissions();
+  const canViewKnowledge = can('knowledge', 'view');
 
   if (isLoading) return <AgentDetailSkeleton />;
 
@@ -69,9 +72,19 @@ export function AgentDetailView({ agentId }: Props) {
           <ArrowLeft className="size-4" />
           {t.agents.detail.backToList}
         </Link>
-        <div className="mt-2 flex items-center gap-3">
-          <h1 className="font-display text-2xl font-bold tracking-tight">{agent.name}</h1>
-          <StatusBadge label={t.agents.status[agent.status]} tone={STATUS_TONE[agent.status]} />
+        <div className="mt-2 flex items-center justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <h1 className="font-display text-2xl font-bold tracking-tight">{agent.name}</h1>
+            <StatusBadge label={t.agents.status[agent.status]} tone={STATUS_TONE[agent.status]} />
+          </div>
+          {canViewKnowledge && (
+            <Button variant="outline" asChild>
+              <Link href={`/agents/${agentId}/knowledge`}>
+                <BookOpen className="size-4" aria-hidden />
+                {t.knowledge.title}
+              </Link>
+            </Button>
+          )}
         </div>
       </div>
 
