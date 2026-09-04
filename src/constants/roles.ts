@@ -43,9 +43,12 @@ export const ROUTE_PERMISSIONS: readonly RoutePermission[] = [
   { prefix: '/projects', resources: ['project'] },
   // YB Inspire Sprint 1 Phase 2. Was in PermissionGuard's GLOBAL_PATHS until
   // the backend's `agent` permission code landed; now gated the same way as
-  // every other resource. `/conversations`/`/leads` join this once their own
-  // phase wires them to the backend.
+  // every other resource.
   { prefix: '/agents', resources: ['agent'] },
+  // YB Inspire Sprint 1 Phase 3 — same move, now that `conversation`/`lead`
+  // permission codes are vendored.
+  { prefix: '/conversations', resources: ['conversation'] },
+  { prefix: '/leads', resources: ['lead'] },
   // NOTE: `/admin/*` is deliberately absent. It is gated on `is_superuser`, not
   // on a permission code, so it is listed in PermissionGuard's SUPERUSER_PATHS
   // instead — a resource entry here would be an org-level permission granting a

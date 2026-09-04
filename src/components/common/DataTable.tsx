@@ -103,12 +103,19 @@ export function DataTableBody({ className, children }: DataTableBodyProps) {
 type DataTableRowProps = Readonly<{
   className?: string;
   children: React.ReactNode;
+  /** Makes the row itself clickable (e.g. opening a detail panel) in
+   *  addition to any interactive elements inside its cells. */
+  onClick?: () => void;
 }>;
 
 /** A `<tr>` that animates in. Pass `key` from the caller's map. */
-export function DataTableRow({ className, children }: DataTableRowProps) {
+export function DataTableRow({ className, children, onClick }: DataTableRowProps) {
   return (
-    <MotionListItem as="tr" className={cn(DEFAULT_ROW, className)}>
+    <MotionListItem
+      as="tr"
+      className={cn(DEFAULT_ROW, onClick && 'cursor-pointer', className)}
+      onClick={onClick}
+    >
       {children}
     </MotionListItem>
   );

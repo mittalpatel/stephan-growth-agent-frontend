@@ -26,9 +26,9 @@ This redesigned the page rather than reusing the mock's marketplace-card
 layout — a real, filterable/sortable/paginated agent list doesn't fit a fixed
 4-card grid, and the category/feature-checklist content in the old mock had
 no backend equivalent (`Agent` has no `category` or `features` field). The
-mock's `AGENT_CATALOG` (`../agentCatalog.ts`) is **not deleted** — the
-dashboard's "Agent performance" section still renders it until Phase 3 wires
-the dashboard to real analytics.
+mock's `AGENT_CATALOG` (`../agentCatalog.ts`) is deleted as of Phase 3 — the
+dashboard's "Agent performance" section now reuses `useAgentsList()` directly
+(see `context/app/(restricted)/dashboard/page.md`).
 
 ## Detail page (`/agents/[agentId]`)
 
@@ -65,8 +65,10 @@ Four tabs, each backed by its own hook under `[agentId]/hooks/`:
 '/agents', resources: ['agent'] }` entry, and `/agents` was removed from
 `PermissionGuard.tsx`'s `GLOBAL_PATHS` in the same change —
 `contracts/permissions.json` was re-vendored from the backend snapshot first
-(`agent:{view,manage,create,delete,execute}`). `/conversations`, `/leads`,
-`/analytics` remain in `GLOBAL_PATHS` until their own phase.
+(`agent:{view,manage,create,delete,execute}`). `/conversations` and `/leads`
+got the same treatment in Phase 3, once `conversation`/`lead` permission
+codes were wired in — see those pages' own context docs. `/analytics`
+remains in `GLOBAL_PATHS` — no permission code exists for it yet.
 
 `src/proxy.ts`'s `ENABLED_PREFIXES`/`config.matcher` already listed `/agents`
 from the Sprint 1 preview; unchanged here.

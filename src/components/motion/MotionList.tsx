@@ -60,14 +60,19 @@ type ItemProps = Readonly<{
   as?: ItemAs;
   className?: string;
   children: React.ReactNode;
+  onClick?: () => void;
 }>;
 
-export function MotionListItem({ as = 'div', className, children }: ItemProps) {
+export function MotionListItem({ as = 'div', className, children, onClick }: ItemProps) {
   const reduceMotion = useReducedMotion();
   const Comp = ITEM_ELEMENTS[as];
 
   return (
-    <Comp className={cn(className)} variants={reduceMotion ? undefined : itemVariants}>
+    <Comp
+      className={cn(className)}
+      variants={reduceMotion ? undefined : itemVariants}
+      onClick={onClick}
+    >
       {children}
     </Comp>
   );

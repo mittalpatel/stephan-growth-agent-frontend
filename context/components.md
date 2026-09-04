@@ -50,6 +50,11 @@ animation live in one place. It owns the card shell, the scroll container, and t
 Each table keeps control of its own `<thead>` and `<td>` cells — those vary too much
 (sortable headers, action buttons, badges, responsive columns) to be worth abstracting.
 
+`DataTableRow` takes an optional `onClick` (added for the leads list, Sprint 1
+Phase 3 — the first table needing a whole-row click target to open a detail
+panel); `MotionListItem` forwards it to the underlying `<tr>`. Omit it for a
+table with no row-level action.
+
 ```tsx
 <DataTable minWidth={720}>
   <thead>
