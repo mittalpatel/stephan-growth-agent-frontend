@@ -23,6 +23,8 @@ export const organizations = {
   },
 
   settingsTabs: {
+    errorTitle: 'Could not load these settings',
+    errorDescription: 'Something went wrong. Nothing has been changed.',
     tabs: {
       general: 'General',
       brand: 'Brand',
@@ -53,11 +55,15 @@ export const organizations = {
       logAllAgentActions: 'Log every agent action for audit review',
     },
     data: {
+      noPermission: 'You do not have access to export or delete this organization’s data.',
       exportTitle: 'Data export',
       requestExport: 'Request export',
       exportRequested: 'Export requested. You will be notified when it is ready.',
       noExports: 'No exports have been requested yet.',
+      exportsErrorTitle: 'Could not load your exports',
+      exportsErrorDescription: 'Something went wrong fetching your export history.',
       download: 'Download',
+      downloading: 'Downloading…',
       exportStatus: {
         pending: 'Pending',
         processing: 'Processing',
@@ -75,6 +81,8 @@ export const organizations = {
       deleteConfirmBody:
         'This link permanently deletes your organization and all its data. This cannot be undone.',
       deleteConfirmAction: 'Confirm deletion',
+      deleteConfirmMissingToken:
+        'This confirmation link is incomplete. Open the link from your email again, or request deletion once more.',
       deleteConfirmed: 'Your organization has been deleted.',
     },
   },

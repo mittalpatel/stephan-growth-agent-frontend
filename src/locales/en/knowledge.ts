@@ -116,7 +116,9 @@ export const knowledge = {
   },
   health: {
     title: 'Knowledge health',
+    error: 'Health could not be loaded.',
     score: 'Health score',
+    scoreValue: '{score}/100',
     sources: 'Sources',
     indexedChunks: 'Indexed chunks',
     lastUpdated: 'Last updated',

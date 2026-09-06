@@ -7,7 +7,7 @@ import { EmptyState } from '@/components/common/EmptyState';
 import { FilterToolbar } from '@/components/common/FilterToolbar';
 import { ListPagination } from '@/components/common/ListPagination';
 import { PageHeader } from '@/components/common/PageHeader';
-import { StatusBadge, type StatusTone } from '@/components/common/StatusBadge';
+import { StatusBadge } from '@/components/common/StatusBadge';
 import { Button } from '@/components/ui/button';
 import {
   DataTable,
@@ -20,17 +20,10 @@ import {
 import { Skeleton } from '@/components/ui/skeleton';
 import { formatDate } from '@/lib/i18n';
 import { t } from '@/locales';
-import type { LeadStatus } from '@/types/lead';
 
+import { LEAD_STATUS_TONE } from '../leadStatusTone';
 import { useLeadsList } from '../hooks/useLeadsList';
 import { LeadDetailSheet } from './LeadDetailSheet';
-
-const STATUS_TONE: Record<LeadStatus, StatusTone> = {
-  new: 'neutral',
-  contacted: 'info',
-  qualified: 'success',
-  disqualified: 'danger',
-};
 
 /**
  * Sprint 1 Phase 3: the org-wide leads list, wired to `GET /api/v1/leads/`.
@@ -102,7 +95,10 @@ export function LeadsListView() {
                 <p className="text-muted-foreground text-xs">{lead.email}</p>
               </td>
               <td className={dataTableTd}>
-                <StatusBadge label={t.leads.status[lead.status]} tone={STATUS_TONE[lead.status]} />
+                <StatusBadge
+                  label={t.leads.status[lead.status]}
+                  tone={LEAD_STATUS_TONE[lead.status]}
+                />
               </td>
               <td className={`${dataTableTd} text-muted-foreground hidden text-sm md:table-cell`}>
                 {lead.consent_given ? t.leads.consent.given : t.leads.consent.notGiven}

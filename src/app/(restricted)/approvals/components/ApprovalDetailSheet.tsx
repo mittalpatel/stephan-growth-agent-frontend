@@ -102,7 +102,7 @@ export function ApprovalDetailSheet({ approvalId, onOpenChange }: Props) {
 
             {canManage && approval.status === 'pending' && (
               <div className="flex gap-2">
-                <Button onClick={() => void approve()} disabled={isApproving}>
+                <Button onClick={() => approve()} disabled={isApproving}>
                   {t.approvals.actions.approve}
                 </Button>
                 <RejectApprovalDialog onReject={reject} isRejecting={isRejecting} />

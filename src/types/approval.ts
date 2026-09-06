@@ -27,5 +27,6 @@ export type Approval = ApprovalListItem & {
   ai_action: string;
   reason: string;
   preview: string;
-  rejection_reason: string | null;
+  /** Blank (`''`) until rejected, never null — the model defaults it. */
+  rejection_reason: string;
 };

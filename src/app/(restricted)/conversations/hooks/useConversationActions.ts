@@ -27,6 +27,8 @@ export function useConversationActions(conversationId: string) {
     onError: (error) => toast.error(getAxiosError(error)),
   });
 
+  // Always 202: the backend only queues the work, and the result surfaces
+  // later as a row in the approvals inbox rather than in this response.
   const generateFollowupMutation = useAuthMutation<ApiResponse<null>, undefined>({
     onSuccess: () => toast.success(t.conversations.toast.followupQueued),
     onError: (error) => toast.error(getAxiosError(error)),
@@ -39,8 +41,11 @@ export function useConversationActions(conversationId: string) {
         body: { operator_id: operatorId },
       }),
     isAssigning: assignMutation.isPending,
+    // `mutate`, not `mutateAsync`: nothing awaits this, and an un-awaited
+    // `mutateAsync` leaves its rejection unhandled even though `onError`
+    // already reported it.
     generateFollowup: () =>
-      generateFollowupMutation.mutateAsync({
+      generateFollowupMutation.mutate({
         url: conversationGenerateFollowupEndpoint(conversationId),
       }),
     isGeneratingFollowup: generateFollowupMutation.isPending,

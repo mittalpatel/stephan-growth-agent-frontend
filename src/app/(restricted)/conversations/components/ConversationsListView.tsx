@@ -89,7 +89,7 @@ function GenerateFollowup({ conversationId }: Readonly<{ conversationId: string 
       variant="outline"
       size="sm"
       disabled={isGeneratingFollowup}
-      onClick={() => void generateFollowup()}
+      onClick={() => generateFollowup()}
     >
       {t.conversations.detail.generateFollowup}
     </Button>

@@ -10,13 +10,15 @@ import { t } from '@/locales';
 import type { SecuritySettingsFormValues } from '@/lib/schemas/settings';
 
 import { useSecuritySettingsForm } from '../hooks/useSecuritySettingsForm';
+import { SettingsTabError } from './SettingsTabError';
 
 export function SecuritySettingsTab() {
   const { can } = usePermissions();
   const canManage = can('organization', 'manage');
-  const { form, submit, isPending, isLoading } = useSecuritySettingsForm();
+  const { form, submit, isPending, isLoading, isError, refetch } = useSecuritySettingsForm();
 
   if (isLoading) return <Skeleton className="h-24 w-full" />;
+  if (isError) return <SettingsTabError onRetry={() => void refetch()} />;
 
   return (
     <FormProvider {...form}>

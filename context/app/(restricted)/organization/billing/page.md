@@ -19,6 +19,30 @@ New page (Sprint-1 gap closure, `apps.platform_config`'s new
 - `GET billing/usage/` — live per-org usage counters against the assigned
   plan's limits. No permission gate.
 
+## What the subscription panel actually renders
+
+`SubscriptionDetailSerializer` returns `status` plus six independently
+nullable dates (`trial_start`/`trial_end`, `current_period_start`/`_end`,
+`grace_period_ends_at`, `canceled_at`). Most are null at any given moment, so
+the panel shows only the one that matches the current `status` — trial end
+while `trialing`, renewal date while `active`, grace-period end while
+`past_due`, cancellation date once `canceled` — rather than a wall of empty
+rows. Statuses are rendered through the locale catalog, never as the raw enum.
+
+`UsageSelector` returns the `PlanLimit` **field names** verbatim as its `key`s
+(`max_agents`, `max_seats`, …). Those are backend identifiers, not copy, so
+`BillingView` maps them through `t.billing.usage.keys` rather than printing
+them. `limit: null` renders as "Unlimited"; a `limit` of `0` is a real
+ceiling, so the metered check compares against `null` explicitly instead of
+relying on truthiness, and usage above its limit is called out in
+`text-destructive`.
+
+The plan grid marks the organization's own tier with a "Current plan" badge,
+resolved from the subscription read — so only a user who may read the
+subscription sees it highlighted. That is correct rather than a gap: everyone
+else has no way to know which tier is theirs, and inferring it from usage
+limits would sometimes be wrong.
+
 Nested under `/organization` like Integrations, gated via
 `ROUTE_PERMISSIONS`'s `{ prefix: '/organization/billing', resources:
 ['organization'] }` — the page itself needs only `organization:view` to

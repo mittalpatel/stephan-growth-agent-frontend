@@ -32,6 +32,7 @@ export const dashboard = {
   },
   checklist: {
     title: 'Get set up',
+    progress: '{done} of {total} steps done',
     items: {
       organization_created: 'Create your organization',
       team_member_invited: 'Invite a team member',

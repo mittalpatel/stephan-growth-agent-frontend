@@ -83,6 +83,11 @@ above the sources list: `GET /agents/{id}/knowledge/health/`
 `{score, last_updated, sources, indexed_chunks}`, gated `knowledge:view`
 same as the list itself.
 
+The score is shown as `n/100` and suppressed to a dash when `sources === 0`:
+the backend returns `0` in that case, which reads as "broken" rather than
+"nothing added yet". A failed read renders an inline message with a retry
+rather than leaving the panel on its skeleton forever.
+
 ## Route protection
 
 No new `ROUTE_PERMISSIONS` entry — `{ prefix: '/agents', resources: ['agent']

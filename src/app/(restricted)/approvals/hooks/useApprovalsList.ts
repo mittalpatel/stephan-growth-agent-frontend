@@ -90,7 +90,12 @@ export function useApprovalsList() {
 
     sortField: queryParams.sort,
     sortDirection: queryParams.sort_direction,
-    sortOptions: [{ value: 'created_at', label: t.approvals.table.created }],
+    // `ApprovalSelector._SORT_FIELDS` also allows `updated_at`, left out
+    // because no column shows it — a sort with no visible effect reads as a bug.
+    sortOptions: [
+      { value: 'created_at', label: t.approvals.table.created },
+      { value: 'status', label: t.approvals.table.status },
+    ],
     onSortFieldChange: (field: string) => setSort(field, queryParams.sort_direction),
     onSortDirectionToggle: () =>
       setSort(queryParams.sort, queryParams.sort_direction === 'asc' ? 'desc' : 'asc'),

@@ -10,13 +10,15 @@ import { t } from '@/locales';
 import type { AiPreferencesFormValues } from '@/lib/schemas/settings';
 
 import { useAiPreferencesForm } from '../hooks/useAiPreferencesForm';
+import { SettingsTabError } from './SettingsTabError';
 
 export function AiPreferencesTab() {
   const { can } = usePermissions();
   const canManage = can('organization', 'manage');
-  const { form, submit, isPending, isLoading } = useAiPreferencesForm();
+  const { form, submit, isPending, isLoading, isError, refetch } = useAiPreferencesForm();
 
   if (isLoading) return <Skeleton className="h-32 w-full" />;
+  if (isError) return <SettingsTabError onRetry={() => void refetch()} />;
 
   return (
     <FormProvider {...form}>

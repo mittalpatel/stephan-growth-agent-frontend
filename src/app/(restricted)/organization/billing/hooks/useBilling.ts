@@ -38,13 +38,27 @@ export function useBilling() {
     BILLING_USAGE_ENDPOINT
   );
 
+  const subscription = subscriptionQuery.data?.data;
+
   return {
     plans: plansQuery.data?.data ?? [],
     isPlansLoading: plansQuery.isLoading,
-    subscription: subscriptionQuery.data?.data,
-    isSubscriptionLoading: subscriptionQuery.isLoading,
+    isPlansError: plansQuery.isError,
+    refetchPlans: plansQuery.refetch,
+
+    subscription,
+    isSubscriptionLoading: canViewSubscription && subscriptionQuery.isLoading,
     canViewSubscription,
+    /**
+     * Lets the plan grid mark which tier is the organization's own. Only
+     * resolvable for a user who may read the subscription — everyone else sees
+     * the plan list with nothing highlighted, which is correct: they have no
+     * way to know, and guessing from usage limits would be wrong.
+     */
+    currentPlanId: subscription?.plan_tier?.id ?? null,
+
     usage: usageQuery.data?.data ?? [],
     isUsageLoading: usageQuery.isLoading,
+    isUsageError: usageQuery.isError,
   };
 }

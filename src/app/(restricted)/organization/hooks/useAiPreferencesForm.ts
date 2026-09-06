@@ -14,6 +14,14 @@ import type { ApiResponse } from '@/types/api';
 import type { AiPreferences } from '@/types/settings';
 import { t } from '@/locales';
 
+/**
+ * The AI-preferences settings tab.
+ *
+ * `form.reset` picks the three editable fields explicitly rather than
+ * spreading the response: the serializer also returns `id`/`updated_at`
+ * (read-only), and spreading would park them in form state and send them
+ * straight back in the PATCH body on every save.
+ */
 export function useAiPreferencesForm() {
   const query = useAuthQuery<ApiResponse<AiPreferences>>(
     [SETTINGS_AI_PREFERENCES_KEY],
@@ -30,11 +38,16 @@ export function useAiPreferencesForm() {
     },
   });
 
+  const prefs = query.data?.data;
   useEffect(() => {
-    const prefs = query.data?.data;
-    if (prefs) form.reset(prefs);
+    if (!prefs) return;
+    form.reset({
+      require_approval_before_outreach: prefs.require_approval_before_outreach,
+      require_approval_before_publishing: prefs.require_approval_before_publishing,
+      allow_auto_crm_updates: prefs.allow_auto_crm_updates,
+    });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [query.data?.data]);
+  }, [prefs]);
 
   const submit = form.handleSubmit(async (values) => {
     try {
@@ -46,9 +59,23 @@ export function useAiPreferencesForm() {
       toast.success(t.organizations.settingsTabs.aiPreferences.saved);
       await query.refetch();
     } catch (error) {
-      applyApiError(error);
+      applyApiError<AiPreferencesFormValues>(error, {
+        setError: form.setError,
+        fields: [
+          'require_approval_before_outreach',
+          'require_approval_before_publishing',
+          'allow_auto_crm_updates',
+        ],
+      });
     }
   });
 
-  return { form, submit, isPending, isLoading: query.isLoading };
+  return {
+    form,
+    submit,
+    isPending,
+    isLoading: query.isLoading,
+    isError: query.isError,
+    refetch: query.refetch,
+  };
 }

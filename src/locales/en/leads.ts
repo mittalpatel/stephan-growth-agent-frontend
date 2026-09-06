@@ -27,6 +27,7 @@ export const leads = {
   detail: {
     title: 'Lead details',
     statusLabel: 'Status',
+    changeStatus: 'Change lead status',
     interestNote: 'Interest',
     consentNotice: 'Consent notice version',
     fieldsHeading: 'Collected fields',

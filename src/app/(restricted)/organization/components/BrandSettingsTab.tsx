@@ -10,13 +10,15 @@ import { t } from '@/locales';
 import type { BrandSettingsFormValues } from '@/lib/schemas/settings';
 
 import { useBrandSettingsForm } from '../hooks/useBrandSettingsForm';
+import { SettingsTabError } from './SettingsTabError';
 
 export function BrandSettingsTab() {
   const { can } = usePermissions();
   const canManage = can('organization', 'manage');
-  const { form, submit, isPending, isLoading } = useBrandSettingsForm();
+  const { form, submit, isPending, isLoading, isError, refetch } = useBrandSettingsForm();
 
   if (isLoading) return <Skeleton className="h-48 w-full" />;
+  if (isError) return <SettingsTabError onRetry={() => void refetch()} />;
 
   return (
     <FormProvider {...form}>

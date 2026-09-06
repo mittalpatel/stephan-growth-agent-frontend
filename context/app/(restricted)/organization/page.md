@@ -51,19 +51,46 @@ organization id in the URL, unlike every other endpoint on this page):
 - **Security** (`SecuritySettingsTab`/`useSecuritySettingsForm.ts`): require
   2FA, log all agent actions.
 - **Data** (`DataSettingsTab`/`useOrganizationDataSettings.ts`): export
-  history + request (`GET`/`POST /api/v1/settings/data/export/`, download via
-  an authenticated blob fetch since the endpoint needs the session's
-  credentials, not a plain link) and delete (`POST .../data/delete/` emails a
-  confirmation link). The link lands on
-  `/organization/data-delete-confirm` (`DataDeleteConfirmView`), a
-  separate page since it's opened from an email outside this session's
-  normal navigation — reads `?token=` and posts to
-  `/api/v1/settings/data/delete/confirm/`.
+  history + request (`GET`/`POST /api/v1/settings/data/export/`) and delete
+  (`POST .../data/delete/` emails a confirmation link).
 
 All four gate their editable controls on `organization:manage`, matching the
 General tab's existing convention; Data's export/delete actions gate on the
 more specific `organization:export`/`organization:delete` instead, since
 they're independently-granted codes (see `AGENTS.md`'s `MANAGE_IMPLIED` note).
+
+Three details in the Data tab are load-bearing rather than incidental:
+
+- The export-history **read** is gated on `organization:export` via the
+  query's own `enabled`, not just its section's visibility. The backend gates
+  `OrgDataExportListCreateView`'s GET on that same code, so firing it
+  unconditionally 403'd on every render for the ordinary member who can open
+  this page but not export it.
+- Downloads go through `src/lib/downloadBlob.ts`, not a hand-rolled object
+  URL: it honours the server's `Content-Disposition` filename and, more
+  importantly, parses the error Blob back into the standard envelope so
+  `applyApiError` can surface the real message. The 404 an export that isn't
+  `ready` returns is exactly that case, and without it the user gets a
+  generic failure.
+- A member holding only `organization:view` sees neither section, so the tab
+  renders an explicit "no access" line instead of an unexplained blank body.
+
+Each of the other three tabs renders `SettingsTabError` (a small shared
+component) when its GET fails, rather than falling through to an empty form —
+saving that form would overwrite real settings with blanks. Their `form.reset`
+calls also pick the editable fields explicitly: every settings serializer also
+returns a read-only `id`/`updated_at`, and spreading the response would park
+those in form state and PATCH them straight back on every save.
+
+`/organization/data-delete-confirm` (`DataDeleteConfirmView`) is a separate
+page because the link is opened from an email, outside this session's normal
+navigation. It reads `?token=` with `useSearchParams` (hence the `Suspense`
+boundary in its `page.tsx` — Next requires one), explains itself rather than
+showing a permanently disabled button when the token is missing, and on
+success navigates to `DEFAULT_LANDING` and calls `router.refresh()`: the
+session's active organization has just been deleted, so the restricted layout
+must re-read the session rather than keep trusting the stale client copy —
+the same move `useOrganizationSettingsForm.deleteOrganization` already makes.
 
 ## Member suspend/reactivate (Sprint-1 gap closure)
 

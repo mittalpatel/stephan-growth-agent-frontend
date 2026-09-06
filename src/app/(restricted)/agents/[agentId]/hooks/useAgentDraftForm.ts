@@ -140,10 +140,14 @@ export function useAgentDraftForm(
       return;
     }
     // Mirrors `AgentVersionUpdateSerializer.validate_qualification_config`'s
-    // `trigger_phrases` guard: a list of non-empty strings, when present.
+    // `trigger_phrases` guard: a list of non-blank strings, when present.
+    // An explicit `null` counts as absent, exactly as the backend's
+    // `value.get("trigger_phrases") is not None` check does — rejecting it
+    // here would block a save the server would have accepted.
     const triggerPhrases = qualificationConfig.trigger_phrases;
     if (
       triggerPhrases !== undefined &&
+      triggerPhrases !== null &&
       (!Array.isArray(triggerPhrases) ||
         !triggerPhrases.every((phrase) => typeof phrase === 'string' && phrase.trim().length > 0))
     ) {

@@ -18,5 +18,10 @@ export function useKnowledgeHealth(agentId: string) {
     agentKnowledgeHealthEndpoint(agentId)
   );
 
-  return { health: query.data?.data, isLoading: query.isLoading };
+  return {
+    health: query.data?.data,
+    isLoading: query.isLoading,
+    isError: query.isError,
+    refetch: query.refetch,
+  };
 }

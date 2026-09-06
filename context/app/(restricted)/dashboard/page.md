@@ -44,7 +44,18 @@ fixed 5-item list in order: `organization_created`, `team_member_invited`,
 "Get set up" card between the header and the metrics grid, but only while
 at least one step is still undone — it disappears once every step is
 `done` rather than lingering as a completed checklist nobody needs to see
-again. A dedicated `GET /api/v1/dashboard/summary/` endpoint also landed
+again.
+
+Two constraints shape it. The query is gated on **both** having an
+organization and holding `organization:view`: this route is reachable by
+every authenticated user regardless of role (including one with no
+organization at all), so an ungated read would 403 on every dashboard render
+for them. And each still-outstanding step links to the page where it is
+actually done (`CHECKLIST_HREF` in `DashboardView`) — a checklist that only
+reports state makes the user hunt for the page. Completed steps are struck
+through and deliberately do not link: they are a record, not an action. A
+failed read yields no items and the card simply does not render; an
+onboarding hint is not worth an error state on the app's home page. A dedicated `GET /api/v1/dashboard/summary/` endpoint also landed
 this pass (`kpis.leads`/`kpis.conversations` + a lightweight per-agent
 `{id, name, status, agent_type}` list, gated `dashboard:view`) but is
 deliberately **not** wired in here: its counts are strictly narrower than

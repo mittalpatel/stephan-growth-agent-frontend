@@ -31,18 +31,17 @@ export function useBrandSettingsForm() {
     },
   });
 
+  const brand = query.data?.data;
   useEffect(() => {
-    const brand = query.data?.data;
-    if (brand) {
-      form.reset({
-        logo_url: brand.logo_url,
-        color_primary: brand.color_primary,
-        tone_of_voice: brand.tone_of_voice,
-        company_description: brand.company_description,
-      });
-    }
+    if (!brand) return;
+    form.reset({
+      logo_url: brand.logo_url,
+      color_primary: brand.color_primary,
+      tone_of_voice: brand.tone_of_voice,
+      company_description: brand.company_description,
+    });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [query.data?.data]);
+  }, [brand]);
 
   const submit = form.handleSubmit(async (values) => {
     try {
@@ -57,5 +56,12 @@ export function useBrandSettingsForm() {
     }
   });
 
-  return { form, submit, isPending, isLoading: query.isLoading };
+  return {
+    form,
+    submit,
+    isPending,
+    isLoading: query.isLoading,
+    isError: query.isError,
+    refetch: query.refetch,
+  };
 }

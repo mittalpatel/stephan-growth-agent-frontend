@@ -1,11 +1,13 @@
 'use client';
 
+import { useState } from 'react';
 import { toast } from 'sonner';
 
-import axiosAuth from '@/client/axiosAuth';
+import { usePermissions } from '@/app/(restricted)/context/PermissionsContext';
 import { useAuthMutation } from '@/hooks/useAuthMutation';
 import { useAuthQuery } from '@/hooks/useAuthQuery';
 import { applyApiError } from '@/lib/apiError';
+import { downloadBlob } from '@/lib/downloadBlob';
 import {
   SETTINGS_DATA_DELETE_ENDPOINT,
   SETTINGS_DATA_EXPORT_ENDPOINT,
@@ -21,11 +23,22 @@ import { t } from '@/locales';
  * Confirming the delete token happens on a dedicated page
  * (`/organization/data-delete-confirm`), since the link is emailed and opened
  * outside this session's normal navigation.
+ *
+ * The history read is gated client-side on `organization:export` because the
+ * backend gates the endpoint itself on it (`OrgDataExportListCreateView`'s
+ * `method_permissions`) — firing it unconditionally would 403 on every render
+ * for the (common) member who can see this settings page but not export it.
  */
 export function useOrganizationDataSettings() {
+  const { can } = usePermissions();
+  const canExport = can('organization', 'export');
+  const canDelete = can('organization', 'delete');
+  const [downloadingId, setDownloadingId] = useState<string | null>(null);
+
   const query = useAuthQuery<ApiResponse<OrgDataExport[]>>(
     [SETTINGS_DATA_EXPORT_KEY],
-    SETTINGS_DATA_EXPORT_ENDPOINT
+    SETTINGS_DATA_EXPORT_ENDPOINT,
+    { enabled: canExport }
   );
   const { mutateAsync: mutate, isPending } = useAuthMutation();
 
@@ -39,19 +52,21 @@ export function useOrganizationDataSettings() {
     }
   };
 
+  /**
+   * `downloadBlob` (not a hand-rolled object URL) so the ZIP is saved under the
+   * server's own `Content-Disposition` filename and, more importantly, so a
+   * failure surfaces the real backend message: the error body arrives as a Blob
+   * here, which `applyApiError` alone cannot read. The 404 an export that isn't
+   * `ready` yet returns is exactly that case.
+   */
   const downloadExport = async (id: string) => {
+    setDownloadingId(id);
     try {
-      const response = await axiosAuth.get(settingsDataExportDownloadEndpoint(id), {
-        responseType: 'blob',
-      });
-      const url = URL.createObjectURL(response.data as Blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = `export-${id}.zip`;
-      link.click();
-      URL.revokeObjectURL(url);
+      await downloadBlob(settingsDataExportDownloadEndpoint(id), `export-${id}.zip`);
     } catch (error) {
       applyApiError(error);
+    } finally {
+      setDownloadingId(null);
     }
   };
 
@@ -66,9 +81,14 @@ export function useOrganizationDataSettings() {
 
   return {
     exports: query.data?.data ?? [],
-    isLoading: query.isLoading,
+    isLoading: canExport && query.isLoading,
+    isError: query.isError,
+    refetch: query.refetch,
+    canExport,
+    canDelete,
     requestExport,
     downloadExport: (id: string) => void downloadExport(id),
+    downloadingId,
     requestDelete,
     isPending,
   };

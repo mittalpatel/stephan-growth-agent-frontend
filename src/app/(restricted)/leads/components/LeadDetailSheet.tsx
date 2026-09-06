@@ -15,12 +15,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { StatusBadge } from '@/components/common/StatusBadge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { formatDate } from '@/lib/i18n';
 import { LEAD_STATUS_TRANSITIONS } from '@/services/leads';
 import { t } from '@/locales';
 import type { LeadStatus } from '@/types/lead';
 
+import { LEAD_STATUS_TONE } from '../leadStatusTone';
 import { useLeadActions } from '../hooks/useLeadActions';
 import { useLeadDetail } from '../hooks/useLeadDetail';
 
@@ -47,34 +49,39 @@ export function LeadDetailSheet({ leadId, onOpenChange }: Props) {
           </div>
         ) : (
           <div className="flex flex-col gap-5 px-4 pb-6">
-            {can('lead', 'manage') && (
-              <div>
-                <p className="text-muted-foreground mb-1 text-xs font-semibold tracking-wider uppercase">
-                  {t.leads.detail.statusLabel}
-                </p>
-                {LEAD_STATUS_TRANSITIONS[lead.status].length === 0 ? (
-                  <p className="text-sm">{t.leads.status[lead.status]}</p>
-                ) : (
-                  <Select
-                    value={lead.status}
-                    disabled={isChangingStatus}
-                    onValueChange={(value) => void changeStatus(value as LeadStatus)}
-                  >
-                    <SelectTrigger className="w-full">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value={lead.status}>{t.leads.status[lead.status]}</SelectItem>
-                      {LEAD_STATUS_TRANSITIONS[lead.status].map((status) => (
-                        <SelectItem key={status} value={status}>
-                          {t.leads.status[status]}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                )}
-              </div>
-            )}
+            {/* The status is worth showing to everyone who can open this sheet;
+                only the ability to change it is gated. `qualified` and
+                `disqualified` are terminal, so they render read-only for
+                everyone rather than as a picker with no options. */}
+            <div>
+              <p className="text-muted-foreground mb-1 text-xs font-semibold tracking-wider uppercase">
+                {t.leads.detail.statusLabel}
+              </p>
+              {can('lead', 'manage') && LEAD_STATUS_TRANSITIONS[lead.status].length > 0 ? (
+                <Select
+                  value={lead.status}
+                  disabled={isChangingStatus}
+                  onValueChange={(value) => changeStatus(value as LeadStatus)}
+                >
+                  <SelectTrigger className="w-full" aria-label={t.leads.detail.changeStatus}>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value={lead.status}>{t.leads.status[lead.status]}</SelectItem>
+                    {LEAD_STATUS_TRANSITIONS[lead.status].map((status) => (
+                      <SelectItem key={status} value={status}>
+                        {t.leads.status[status]}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              ) : (
+                <StatusBadge
+                  label={t.leads.status[lead.status]}
+                  tone={LEAD_STATUS_TONE[lead.status]}
+                />
+              )}
+            </div>
 
             <div>
               <p className="text-muted-foreground text-xs font-semibold tracking-wider uppercase">

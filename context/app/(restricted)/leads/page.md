@@ -14,13 +14,25 @@ version, collected fields, linked conversation summary). Gated on
 
 `lead:manage` now exists and gates a status control in `LeadDetailSheet`:
 `PATCH /api/v1/leads/{id}/status/` (`useLeadActions.ts`), offering only the
-legal next state(s) per `LeadStatus._TRANSITIONS`
-(`src/services/leads.ts`'s `LEAD_STATUS_TRANSITIONS`, mirroring the backend
-constant) — `new` → `contacted`/`disqualified`, `contacted` →
-`qualified`/`disqualified`, `qualified`/`disqualified` terminal. A 409
+legal next state(s) per `LEAD_STATUS_TRANSITIONS` in
+`apps/leads/constants.py` — `new` → `contacted`/`disqualified`, `contacted`
+→ `qualified`/`disqualified`, `qualified`/`disqualified` terminal. A 409
 (`lead_invalid_status_transition`) surfaces via the mutation's toast the same
 as any other error; the picker never offers an illegal transition in the
 first place.
+
+`src/services/leads.ts` mirrors that table by hand, and
+`src/services/__tests__/leads.test.ts` asserts the whole thing field for
+field: nothing else fails if the mirror drifts, the picker would just start
+offering a transition the API then refuses.
+
+The **status itself** is shown to everyone who can open the sheet; only
+changing it is gated. Terminal statuses, and users without `lead:manage`,
+get a read-only `StatusBadge` rather than a picker with nothing to pick.
+That badge's tone map lives in `leadStatusTone.ts`, shared with the list
+table — extracted the moment a second consumer appeared, since two copies
+drift and a lead reading "danger" in one place and "neutral" in the other is
+the kind of thing nobody notices until a screenshot.
 
 ## Collapsed from the Sprint 1 preview's two-table layout to one
 

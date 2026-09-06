@@ -10,7 +10,12 @@ import type { ApiResponse } from '@/types/api';
 import type { Lead, LeadStatus } from '@/types/lead';
 import { t } from '@/locales';
 
-/** Change a lead's status, one legal transition at a time (`useLeadDetail`'s sibling). */
+/**
+ * Change a lead's status, one legal transition at a time (`useLeadDetail`'s
+ * sibling). Fire-and-forget: nothing awaits the result, so this exposes
+ * `mutate` (which never rejects) rather than `mutateAsync`, whose rejection
+ * would go unhandled at the call site.
+ */
 export function useLeadActions(leadId: string) {
   const queryClient = useQueryClient();
 
@@ -24,7 +29,7 @@ export function useLeadActions(leadId: string) {
   });
 
   const changeStatus = (status: LeadStatus) =>
-    changeStatusMutation.mutateAsync({
+    changeStatusMutation.mutate({
       url: leadStatusEndpoint(leadId),
       method: 'patch',
       body: { status },

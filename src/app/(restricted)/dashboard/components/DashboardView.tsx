@@ -18,7 +18,20 @@ import type { ApiResponse } from '@/types/api';
 import type { LeadListItem } from '@/types/lead';
 
 import { useDashboardAnalytics } from '../hooks/useDashboardAnalytics';
-import { useSetupChecklist } from '../hooks/useSetupChecklist';
+import { useSetupChecklist, type SetupChecklistItemKey } from '../hooks/useSetupChecklist';
+
+/**
+ * Where each outstanding setup step is actually completed. A checklist that
+ * only reports state makes the user hunt for the page; these turn each
+ * remaining step into one click. `organization_created` has no entry: it is
+ * always already done by the time anyone can see this.
+ */
+const CHECKLIST_HREF: Partial<Record<SetupChecklistItemKey, string>> = {
+  team_member_invited: '/organization/members',
+  agent_created: '/agents',
+  agent_published: '/agents',
+  knowledge_source_added: '/agents',
+};
 
 const RECENT_LEADS_QUERY = {
   page: 1,
@@ -50,7 +63,12 @@ export function DashboardView() {
     isLoading: analyticsLoading,
   } = useDashboardAnalytics();
   const agentsList = useAgentsList();
-  const { items: checklistItems, isLoading: checklistLoading, isComplete } = useSetupChecklist();
+  const {
+    items: checklistItems,
+    isLoading: checklistLoading,
+    isComplete,
+    completedCount,
+  } = useSetupChecklist();
 
   const recentLeadsQuery = useAuthQuery<ApiResponse<LeadListItem[]>>(
     [LEADS_LIST_KEY, buildLeadListParams(RECENT_LEADS_QUERY)],
@@ -108,22 +126,37 @@ export function DashboardView() {
       {!checklistLoading && !isComplete && checklistItems.length > 0 && (
         <Card>
           <CardContent>
-            <h3 className="font-display mb-4 font-bold">{t.dashboard.checklist.title}</h3>
+            <h3 className="font-display mb-1 font-bold">{t.dashboard.checklist.title}</h3>
+            <p className="text-muted-foreground mb-4 text-sm">
+              {format(t.dashboard.checklist.progress, {
+                done: completedCount,
+                total: checklistItems.length,
+              })}
+            </p>
             <div className="flex flex-col divide-y">
-              {checklistItems.map((item) => (
-                <div key={item.key} className="flex items-center gap-3 py-2.5">
-                  {item.done ? (
-                    <CircleCheck className="text-success size-4 shrink-0" aria-hidden />
-                  ) : (
-                    <Circle className="text-muted-foreground size-4 shrink-0" aria-hidden />
-                  )}
-                  <span
-                    className={`text-sm ${item.done ? 'text-muted-foreground line-through' : ''}`}
-                  >
-                    {t.dashboard.checklist.items[item.key]}
-                  </span>
-                </div>
-              ))}
+              {checklistItems.map((item) => {
+                const href = CHECKLIST_HREF[item.key];
+                return (
+                  <div key={item.key} className="flex items-center gap-3 py-2.5">
+                    {item.done ? (
+                      <CircleCheck className="text-success size-4 shrink-0" aria-hidden />
+                    ) : (
+                      <Circle className="text-muted-foreground size-4 shrink-0" aria-hidden />
+                    )}
+                    {/* A done step is a record, not an action, so only the
+                        outstanding ones link anywhere. */}
+                    {item.done || !href ? (
+                      <span className="text-muted-foreground text-sm line-through">
+                        {t.dashboard.checklist.items[item.key]}
+                      </span>
+                    ) : (
+                      <Link href={href} className="text-sm font-medium hover:underline">
+                        {t.dashboard.checklist.items[item.key]}
+                      </Link>
+                    )}
+                  </div>
+                );
+              })}
             </div>
           </CardContent>
         </Card>

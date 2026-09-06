@@ -15,7 +15,17 @@ import type { ApiResponse } from '@/types/api';
 import type { Approval } from '@/types/approval';
 import { t } from '@/locales';
 
-/** Approve/reject one approval — mirrors `useLeadActions`. */
+/**
+ * Approve/reject one approval — mirrors `useLeadActions`.
+ *
+ * The two halves report errors differently on purpose. Approve is
+ * fire-and-forget, so it toasts from `onError` and exposes `mutate` (which
+ * never rejects) rather than `mutateAsync` — nothing awaits it, and an
+ * un-awaited `mutateAsync` leaves an unhandled rejection behind. Reject is
+ * awaited by its dialog (which closes only on success) and therefore carries
+ * no `onError` of its own: the dialog's `catch` → `applyApiError` is the
+ * single error surface, so a failure produces one toast, not two.
+ */
 export function useApprovalActions(approvalId: string) {
   const queryClient = useQueryClient();
 
@@ -37,11 +47,10 @@ export function useApprovalActions(approvalId: string) {
       toast.success(t.approvals.toast.rejected);
       invalidate();
     },
-    onError: (error) => toast.error(getAxiosError(error)),
   });
 
   return {
-    approve: () => approveMutation.mutateAsync({ url: approvalApproveEndpoint(approvalId) }),
+    approve: () => approveMutation.mutate({ url: approvalApproveEndpoint(approvalId) }),
     isApproving: approveMutation.isPending,
     reject: (rejection_reason: string) =>
       rejectMutation.mutateAsync({
