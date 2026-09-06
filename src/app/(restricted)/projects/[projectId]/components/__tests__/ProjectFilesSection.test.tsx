@@ -146,7 +146,10 @@ describe('ProjectFilesSection — rename', () => {
     usePermissions.mockReturnValue({ can: () => true });
     useMyProjectAccess.mockReturnValue({ hasEditorGrant: true });
 
-    const user = userEvent.setup();
+    // `delay: null` skips userEvent's per-keystroke timer hop. With the
+    // default, typing this name is slow enough to hit the 5s test timeout
+    // when the suite runs under load, which made this test flaky.
+    const user = userEvent.setup({ delay: null });
 
     render(<ProjectFilesSection projectId="project-1" />);
 
@@ -186,9 +189,16 @@ describe('ProjectFilesSection — PDF preview', () => {
       isError: false,
     });
 
+    const user = userEvent.setup({ delay: null });
+
     render(<ProjectFilesSection projectId="project-1" />);
 
-    await screen.findByRole('button', { name: /report/i }).then((button) => button.click());
+    // `userEvent.click`, not a raw DOM `.click()`: the latter is not
+    // act()-wrapped, so React's resulting state update was never flushed
+    // synchronously and the assertion below had to poll for it until the
+    // 5s timeout. That was this test's flakiness, and the source of its
+    // "not wrapped in act(...)" warning.
+    await user.click(await screen.findByRole('button', { name: /report/i }));
 
     expect(await screen.findByTestId('pdf-document')).toBeInTheDocument();
     expect(screen.getByTestId('pdf-page')).toBeInTheDocument();

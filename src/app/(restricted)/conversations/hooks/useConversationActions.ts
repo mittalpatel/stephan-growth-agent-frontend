@@ -35,8 +35,11 @@ export function useConversationActions(conversationId: string) {
   });
 
   return {
+    // Fire-and-forget, like `generateFollowup` below: `mutate` never rejects,
+    // so no caller is left with an unhandled rejection for an error `onError`
+    // has already toasted.
     assign: (operatorId: string) =>
-      assignMutation.mutateAsync({
+      assignMutation.mutate({
         url: conversationAssignEndpoint(conversationId),
         body: { operator_id: operatorId },
       }),

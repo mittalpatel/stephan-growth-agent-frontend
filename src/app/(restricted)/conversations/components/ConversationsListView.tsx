@@ -69,11 +69,7 @@ function AssignOperator({ conversationId }: Readonly<{ conversationId: string }>
             ))}
           </SelectContent>
         </Select>
-        <Button
-          size="sm"
-          disabled={!operatorId || isAssigning}
-          onClick={() => void assign(operatorId)}
-        >
+        <Button size="sm" disabled={!operatorId || isAssigning} onClick={() => assign(operatorId)}>
           {t.conversations.detail.assign}
         </Button>
       </div>

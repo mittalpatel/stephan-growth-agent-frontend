@@ -29,6 +29,18 @@ while `trialing`, renewal date while `active`, grace-period end while
 `past_due`, cancellation date once `canceled` — rather than a wall of empty
 rows. Statuses are rendered through the locale catalog, never as the raw enum.
 
+**The seats row is corrected client-side, deliberately.** `UsageSelector`
+reports `PlanLimit.max_seats` and its docstring says it will not consult
+`organization.seat_limit` (it does not want a second copy of that override
+logic). Invite-time enforcement does consult it:
+`MembershipService._effective_seat_limit()` prefers an explicit `seat_limit`
+and only falls back to the plan's `max_seats`. Left alone, an organization
+with an override would read a seat ceiling here that is not the one it hits
+when inviting. `useBilling` applies the same precedence using the
+`seat_limit` it already has from `useOrganizationPlan` (same query key as the
+settings page, so no extra request). If the backend ever folds the override
+into the selector, delete this and the number stays correct.
+
 `UsageSelector` returns the `PlanLimit` **field names** verbatim as its `key`s
 (`max_agents`, `max_seats`, …). Those are backend identifiers, not copy, so
 `BillingView` maps them through `t.billing.usage.keys` rather than printing

@@ -98,12 +98,12 @@ export function KnowledgeSourcesTable({ agentId, sources }: Props) {
                         </DropdownMenuItem>
                       )}
                       {canExecute && (
-                        <DropdownMenuItem onClick={() => void reprocess(source.id)}>
+                        <DropdownMenuItem onClick={() => reprocess(source.id)}>
                           {t.knowledge.actions.reprocess}
                         </DropdownMenuItem>
                       )}
                       {canExecute && source.source_type === 'website' && (
-                        <DropdownMenuItem onClick={() => void recrawl(source.id)}>
+                        <DropdownMenuItem onClick={() => recrawl(source.id)}>
                           {t.knowledge.actions.recrawl}
                         </DropdownMenuItem>
                       )}
@@ -143,8 +143,14 @@ export function KnowledgeSourcesTable({ agentId, sources }: Props) {
             <AlertDialogCancel>{t.knowledge.deleteConfirm.cancel}</AlertDialogCancel>
             <AlertDialogAction
               onClick={async () => {
-                if (deleteTarget) await remove(deleteTarget.id);
-                setDeleteTarget(null);
+                try {
+                  if (deleteTarget) await remove(deleteTarget.id);
+                  setDeleteTarget(null);
+                } catch {
+                  // Already surfaced by the mutation's error toast. Caught so
+                  // the rejection is not left unhandled; the dialog stays open
+                  // on failure, as it did before.
+                }
               }}
             >
               {t.knowledge.deleteConfirm.action}

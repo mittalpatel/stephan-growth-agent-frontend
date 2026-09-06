@@ -53,7 +53,8 @@ export function useIndexVersions(agentId: string) {
     totalPages: meta?.total_pages ?? 1,
     onPageChange: setPage,
 
-    buildIndex: () => buildMutation.mutateAsync({ url: agentBuildIndexEndpoint(agentId) }),
+    // Fire-and-forget (`mutate` never rejects); errors surface via `onError`.
+    buildIndex: () => buildMutation.mutate({ url: agentBuildIndexEndpoint(agentId) }),
     isBuilding: buildMutation.isPending,
   };
 }

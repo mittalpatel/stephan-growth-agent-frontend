@@ -1,7 +1,10 @@
 'use client';
 
+import { useMemo } from 'react';
+
 import { usePermissions } from '@/app/(restricted)/context/PermissionsContext';
 import { useAuthQuery } from '@/hooks/useAuthQuery';
+import { useOrganizationPlan } from '../../hooks/useOrganizationPlan';
 import {
   BILLING_PLANS_ENDPOINT,
   BILLING_PLANS_KEY,
@@ -40,6 +43,21 @@ export function useBilling() {
 
   const subscription = subscriptionQuery.data?.data;
 
+  // `UsageSelector` reports `PlanLimit.max_seats` and documents that it
+  // deliberately does NOT consult `organization.seat_limit` (it won't keep a
+  // second copy of that override logic). But invite-time enforcement does:
+  // `MembershipService._effective_seat_limit()` prefers an explicit
+  // `seat_limit` and only falls back to the plan's `max_seats`. Left as-is,
+  // an organization with an override sees a seat ceiling here that is not the
+  // one it actually hits when inviting. Applying the same precedence
+  // client-side is what makes the displayed number true.
+  const { seatLimit } = useOrganizationPlan();
+  const usage = useMemo(() => {
+    const rows = usageQuery.data?.data ?? [];
+    if (seatLimit === null) return rows;
+    return rows.map((row) => (row.key === 'max_seats' ? { ...row, limit: seatLimit } : row));
+  }, [usageQuery.data, seatLimit]);
+
   return {
     plans: plansQuery.data?.data ?? [],
     isPlansLoading: plansQuery.isLoading,
@@ -57,7 +75,7 @@ export function useBilling() {
      */
     currentPlanId: subscription?.plan_tier?.id ?? null,
 
-    usage: usageQuery.data?.data ?? [],
+    usage,
     isUsageLoading: usageQuery.isLoading,
     isUsageError: usageQuery.isError,
   };

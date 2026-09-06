@@ -74,7 +74,7 @@ export function IndexVersionsPanel({ agentId }: Props) {
           <p className="text-muted-foreground mt-1 text-sm">{t.knowledge.index.description}</p>
         </div>
         {canBuild && (
-          <Button onClick={() => void buildIndex()} disabled={isBuilding} variant="outline">
+          <Button onClick={() => buildIndex()} disabled={isBuilding} variant="outline">
             {isBuilding ? t.knowledge.index.building : t.knowledge.index.buildAction}
           </Button>
         )}

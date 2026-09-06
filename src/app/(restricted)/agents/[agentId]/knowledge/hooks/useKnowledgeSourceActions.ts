@@ -29,12 +29,13 @@ export function useKnowledgeSourceActions(agentId: string) {
     void queryClient.invalidateQueries({ queryKey: knowledgeSourcesListKey(agentId) });
   };
 
+  // No `onError`: `RenameSourceDialog` awaits this and binds field errors
+  // inline via `applyApiError`, so a toast here would double-report.
   const renameMutation = useAuthMutation<ApiResponse<KnowledgeSource>, KnowledgeSourceUpdateInput>({
     onSuccess: () => {
       toast.success(t.knowledge.toast.renamed);
       invalidate();
     },
-    onError: (error) => toast.error(getAxiosError(error)),
   });
 
   const deleteMutation = useAuthMutation<ApiResponse<null>, undefined>({
@@ -81,12 +82,13 @@ export function useKnowledgeSourceActions(agentId: string) {
       }),
     isDeleting: deleteMutation.isPending,
 
+    // Fire-and-forget (`mutate` never rejects); errors surface via `onError`.
     reprocess: (sourceId: string) =>
-      reprocessMutation.mutateAsync({ url: knowledgeSourceReprocessEndpoint(sourceId) }),
+      reprocessMutation.mutate({ url: knowledgeSourceReprocessEndpoint(sourceId) }),
     isReprocessing: reprocessMutation.isPending,
 
     recrawl: (websiteSourceId: string) =>
-      recrawlMutation.mutateAsync({ url: websiteRecrawlEndpoint(websiteSourceId) }),
+      recrawlMutation.mutate({ url: websiteRecrawlEndpoint(websiteSourceId) }),
     isRecrawling: recrawlMutation.isPending,
   };
 }

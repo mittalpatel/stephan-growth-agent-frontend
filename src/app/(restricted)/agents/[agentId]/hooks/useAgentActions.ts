@@ -22,6 +22,19 @@ import { t } from '@/locales';
  * change is visible there too) rather than writing an optimistic update — these
  * are low-frequency, high-stakes actions where a confirmed server read is worth
  * the extra round trip.
+ *
+ * Two error-reporting shapes, picked per action by how its caller consumes it:
+ *
+ * - `publish`/`rollback` are fire-and-forget, so they toast from `onError` and
+ *   expose `mutate`, which never rejects. `mutateAsync` with no awaiting caller
+ *   leaves an unhandled rejection behind even though the error was reported.
+ * - `update` is awaited by a form that binds field errors inline through
+ *   `applyApiError`, so it carries no `onError` of its own — otherwise a failed
+ *   save produces both a toast and an inline error for the same problem.
+ *
+ * `remove` is the one in between: awaited (the caller navigates away only on
+ * success) but with no field to bind to, so it keeps its `onError` toast and
+ * the call site swallows the rejection it has already reported.
  */
 export function useAgentActions(agentId: string) {
   const queryClient = useQueryClient();
@@ -36,7 +49,6 @@ export function useAgentActions(agentId: string) {
       toast.success(t.agents.toast.updated);
       invalidate();
     },
-    onError: (error) => toast.error(getAxiosError(error)),
   });
 
   const deleteMutation = useAuthMutation<ApiResponse<null>, undefined>({
@@ -72,11 +84,11 @@ export function useAgentActions(agentId: string) {
       deleteMutation.mutateAsync({ url: agentDetailEndpoint(agentId), method: 'delete' }),
     isDeleting: deleteMutation.isPending,
 
-    publish: () => publishMutation.mutateAsync({ url: agentPublishEndpoint(agentId) }),
+    publish: () => publishMutation.mutate({ url: agentPublishEndpoint(agentId) }),
     isPublishing: publishMutation.isPending,
 
     rollback: (targetVersionId: string) =>
-      rollbackMutation.mutateAsync({
+      rollbackMutation.mutate({
         url: agentRollbackEndpoint(agentId),
         body: { target_version_id: targetVersionId },
       }),

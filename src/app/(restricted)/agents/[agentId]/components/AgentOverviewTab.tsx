@@ -144,8 +144,14 @@ export function AgentOverviewTab({ agent }: Props) {
                   <AlertDialogCancel>{t.agents.detail.overview.cancel}</AlertDialogCancel>
                   <AlertDialogAction
                     onClick={async () => {
-                      await remove();
-                      router.push('/agents');
+                      try {
+                        await remove();
+                        router.push('/agents');
+                      } catch {
+                        // Already surfaced by the mutation's own error toast;
+                        // caught so the rejection is not left unhandled, and
+                        // so a failed delete stays on the page.
+                      }
                     }}
                   >
                     {t.agents.detail.overview.deleteConfirmAction}
