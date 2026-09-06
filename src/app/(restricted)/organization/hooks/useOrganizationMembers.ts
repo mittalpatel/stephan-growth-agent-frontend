@@ -13,6 +13,8 @@ import {
   organizationInvitesEndpoint,
   organizationInvitesKey,
   organizationMemberEndpoint,
+  organizationMemberReactivateEndpoint,
+  organizationMemberSuspendEndpoint,
   organizationMembersEndpoint,
   organizationMembersKey,
   organizationRolesEndpoint,
@@ -27,6 +29,8 @@ export interface OrganizationMember {
   full_name: string;
   role: { id: string; name: string; slug: string } | null;
   joined_at: string;
+  status: 'active' | 'suspended';
+  suspended_at: string | null;
 }
 
 export interface AssignableRole {
@@ -130,6 +134,44 @@ export function useOrganizationMembers() {
     [mutate, organizationId, membersQuery]
   );
 
+  const suspendMember = useCallback(
+    async (userId: string) => {
+      setPendingUserId(userId);
+      try {
+        await mutate({
+          url: organizationMemberSuspendEndpoint(organizationId, userId),
+          method: 'post',
+        });
+        toast.success(t.organizations.members.suspended);
+        await membersQuery.refetch();
+      } catch (error) {
+        applyApiError(error);
+      } finally {
+        setPendingUserId(null);
+      }
+    },
+    [mutate, organizationId, membersQuery]
+  );
+
+  const reactivateMember = useCallback(
+    async (userId: string) => {
+      setPendingUserId(userId);
+      try {
+        await mutate({
+          url: organizationMemberReactivateEndpoint(organizationId, userId),
+          method: 'post',
+        });
+        toast.success(t.organizations.members.reactivated);
+        await membersQuery.refetch();
+      } catch (error) {
+        applyApiError(error);
+      } finally {
+        setPendingUserId(null);
+      }
+    },
+    [mutate, organizationId, membersQuery]
+  );
+
   const removeMember = useCallback(
     async (userId: string) => {
       setPendingUserId(userId);
@@ -175,6 +217,8 @@ export function useOrganizationMembers() {
     pendingUserId,
     pendingInviteId,
     changeRole,
+    suspendMember,
+    reactivateMember,
     removeMember,
     revokeInvite,
     resendInvite,

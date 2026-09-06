@@ -50,6 +50,15 @@ a scope choice — flagging it here for whoever picks it up (the fix is
 either an `escalations` field on `ConversationDetailSerializer` or a
 `GET /conversations/{id}/escalations/` read).
 
+## Generate follow-up (Sprint-1 gap closure)
+
+`conversation:manage` also unlocks a "Generate follow-up" button next to
+"Assign operator": `POST /conversations/{id}/generate-followup/`
+(`useConversationActions.ts`'s `generateFollowup`), no body, always 202. The
+result isn't returned here — it shows up later as a `pending` row in the new
+`/approvals` inbox (`context/app/(restricted)/approvals/page.md`), since the
+endpoint only queues the work rather than running it synchronously.
+
 ## Removed with this phase
 
 `mockConversations.ts` and its `MOCK_CONVERSATIONS`/`ConversationIntent`

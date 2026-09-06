@@ -114,6 +114,13 @@ export const knowledge = {
     nameRequired: 'Name is required.',
     fileRequired: 'Choose a file to upload.',
   },
+  health: {
+    title: 'Knowledge health',
+    score: 'Health score',
+    sources: 'Sources',
+    indexedChunks: 'Indexed chunks',
+    lastUpdated: 'Last updated',
+  },
   index: {
     title: 'Search index',
     description: 'Publishing requires a ready index built from this agent’s knowledge sources.',

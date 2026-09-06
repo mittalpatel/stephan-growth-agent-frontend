@@ -1,10 +1,11 @@
 'use client';
 
 import { useState } from 'react';
-import { Trash2 } from 'lucide-react';
+import { Trash2, UserCheck, UserX } from 'lucide-react';
 import type { AssignableRole, OrganizationMember } from '../../hooks/useOrganizationMembers';
 import PermissionInspectorSheet from './PermissionInspectorSheet';
 import { ConfirmDialog } from '@/components/common/ConfirmDialog';
+import { StatusBadge } from '@/components/common/StatusBadge';
 import { Button } from '@/components/ui/button';
 import {
   Select,
@@ -30,6 +31,8 @@ type Props = Readonly<{
   canManage: boolean;
   pendingUserId: string | null;
   onChangeRole: (userId: string, roleId: string) => void;
+  onSuspend: (userId: string) => void;
+  onReactivate: (userId: string) => void;
   onRemove: (userId: string) => void;
 }>;
 
@@ -39,6 +42,8 @@ export default function MembersTable({
   canManage,
   pendingUserId,
   onChangeRole,
+  onSuspend,
+  onReactivate,
   onRemove,
 }: Props) {
   const [confirming, setConfirming] = useState<OrganizationMember | null>(null);
@@ -53,8 +58,10 @@ export default function MembersTable({
               <TableHead>{t.organizations.members.columns.name}</TableHead>
               <TableHead>{t.organizations.members.columns.email}</TableHead>
               <TableHead>{t.organizations.members.columns.role}</TableHead>
+              <TableHead>{t.organizations.members.columns.status}</TableHead>
               <TableHead>{t.organizations.members.columns.joined}</TableHead>
               <TableHead className="w-16" />
+              {canManage ? <TableHead className="w-12" /> : null}
               {canManage ? <TableHead className="w-12" /> : null}
             </TableRow>
           </TableHeader>
@@ -88,6 +95,16 @@ export default function MembersTable({
                     (member.role?.name ?? '—')
                   )}
                 </TableCell>
+                <TableCell>
+                  <StatusBadge
+                    label={
+                      member.status === 'suspended'
+                        ? t.organizations.members.status.suspended
+                        : t.organizations.members.status.active
+                    }
+                    tone={member.status === 'suspended' ? 'danger' : 'success'}
+                  />
+                </TableCell>
                 <TableCell className="text-muted-foreground">
                   {formatDate(member.joined_at)}
                 </TableCell>
@@ -96,6 +113,31 @@ export default function MembersTable({
                     {t.organizations.members.explain}
                   </Button>
                 </TableCell>
+                {canManage ? (
+                  <TableCell>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      aria-label={
+                        member.status === 'suspended'
+                          ? t.organizations.members.reactivate
+                          : t.organizations.members.suspend
+                      }
+                      disabled={pendingUserId === member.user_id}
+                      onClick={() =>
+                        member.status === 'suspended'
+                          ? onReactivate(member.user_id)
+                          : onSuspend(member.user_id)
+                      }
+                    >
+                      {member.status === 'suspended' ? (
+                        <UserCheck className="size-4" aria-hidden />
+                      ) : (
+                        <UserX className="size-4" aria-hidden />
+                      )}
+                    </Button>
+                  </TableCell>
+                ) : null}
                 {canManage ? (
                   <TableCell>
                     <Button

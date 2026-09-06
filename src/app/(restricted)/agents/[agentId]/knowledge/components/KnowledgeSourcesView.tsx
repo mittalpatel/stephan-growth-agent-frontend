@@ -15,6 +15,7 @@ import { useKnowledgeSources } from '../hooks/useKnowledgeSources';
 import { AddPdfDialog } from './AddPdfDialog';
 import { AddWebsiteDialog } from './AddWebsiteDialog';
 import { IndexVersionsPanel } from './IndexVersionsPanel';
+import { KnowledgeHealthPanel } from './KnowledgeHealthPanel';
 import { KnowledgeSourcesSkeleton } from './KnowledgeSourcesSkeleton';
 import { KnowledgeSourcesTable } from './KnowledgeSourcesTable';
 
@@ -86,6 +87,8 @@ export function KnowledgeSourcesView({ agentId }: Props) {
           <PageHeader title={t.knowledge.title} description={t.knowledge.description} />
         </div>
       </div>
+
+      <KnowledgeHealthPanel agentId={agentId} />
 
       <div className="space-y-4">
         {canManage && (

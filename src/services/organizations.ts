@@ -44,11 +44,20 @@ export interface OrganizationDetail {
  */
 export const ORGANIZATION_SWITCH_ROUTE = '/api/auth/organization-switch';
 
+export const organizationSetupChecklistEndpoint = (id: string): string =>
+  `${ORGANIZATIONS_ENDPOINT}${id}/setup-checklist/`;
+
 export const organizationMembersEndpoint = (id: string): string =>
   `${ORGANIZATIONS_ENDPOINT}${id}/members/`;
 
 export const organizationMemberEndpoint = (id: string, userId: string): string =>
   `${ORGANIZATIONS_ENDPOINT}${id}/members/${userId}/`;
+
+export const organizationMemberSuspendEndpoint = (id: string, userId: string): string =>
+  `${ORGANIZATIONS_ENDPOINT}${id}/members/${userId}/suspend/`;
+
+export const organizationMemberReactivateEndpoint = (id: string, userId: string): string =>
+  `${ORGANIZATIONS_ENDPOINT}${id}/members/${userId}/reactivate/`;
 
 export const organizationInvitesEndpoint = (id: string): string =>
   `${ORGANIZATIONS_ENDPOINT}${id}/invites/`;
@@ -99,9 +108,18 @@ export const organizationAuditParametersUrl = (id: string): string =>
 export const AUDIT_SEARCH_COLUMNS = ['actor', 'target'] as const;
 
 /** Builds the audit list URL from the shared list-param contract. */
-export function organizationAuditListUrl(id: string, query: ListQuery): string {
+export function organizationAuditListUrl(
+  id: string,
+  query: ListQuery,
+  dateRange?: { date_from?: string; date_to?: string }
+): string {
+  const params = buildListParams(query);
+  // `date_from`/`date_to` are specific to this endpoint (`AuditSelector`), not
+  // part of the shared list-params contract every list endpoint honours.
+  if (dateRange?.date_from) params.date_from = dateRange.date_from;
+  if (dateRange?.date_to) params.date_to = dateRange.date_to;
   const search = new URLSearchParams(
-    Object.entries(buildListParams(query)).map(([key, value]) => [key, String(value)])
+    Object.entries(params).map(([key, value]) => [key, String(value)])
   );
   return `${organizationAuditEndpoint(id)}?${search.toString()}`;
 }
@@ -140,6 +158,7 @@ export const myInviteDeclineEndpoint = (inviteId: string): string =>
 export const ORGANIZATIONS_LIST_KEY = 'organizations';
 export const organizationDetailKey = (id: string) => ['organization-detail', id];
 export const organizationMembersKey = (id: string) => ['organization-members', id];
+export const organizationSetupChecklistKey = (id: string) => ['organization-setup-checklist', id];
 export const organizationRolesKey = (id: string) => ['organization-roles', id];
 export const organizationInvitesKey = (id: string) => ['organization-invites', id];
 // Single-arg, matching `roleDetailEndpoint`: `RestrictedBreadcrumb`'s resolver

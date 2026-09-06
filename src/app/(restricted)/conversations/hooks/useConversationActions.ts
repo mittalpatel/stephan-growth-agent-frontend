@@ -6,7 +6,11 @@ import { toast } from 'sonner';
 import { useAuthMutation } from '@/hooks/useAuthMutation';
 import { getAxiosError } from '@/lib/helper';
 import { t } from '@/locales';
-import { conversationAssignEndpoint, conversationDetailKey } from '@/services/conversations';
+import {
+  conversationAssignEndpoint,
+  conversationDetailKey,
+  conversationGenerateFollowupEndpoint,
+} from '@/services/conversations';
 import type { ApiResponse } from '@/types/api';
 import type { Conversation } from '@/types/conversation';
 
@@ -23,6 +27,11 @@ export function useConversationActions(conversationId: string) {
     onError: (error) => toast.error(getAxiosError(error)),
   });
 
+  const generateFollowupMutation = useAuthMutation<ApiResponse<null>, undefined>({
+    onSuccess: () => toast.success(t.conversations.toast.followupQueued),
+    onError: (error) => toast.error(getAxiosError(error)),
+  });
+
   return {
     assign: (operatorId: string) =>
       assignMutation.mutateAsync({
@@ -30,5 +39,10 @@ export function useConversationActions(conversationId: string) {
         body: { operator_id: operatorId },
       }),
     isAssigning: assignMutation.isPending,
+    generateFollowup: () =>
+      generateFollowupMutation.mutateAsync({
+        url: conversationGenerateFollowupEndpoint(conversationId),
+      }),
+    isGeneratingFollowup: generateFollowupMutation.isPending,
   };
 }

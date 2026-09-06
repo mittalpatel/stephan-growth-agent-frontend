@@ -81,6 +81,21 @@ function AssignOperator({ conversationId }: Readonly<{ conversationId: string }>
   );
 }
 
+function GenerateFollowup({ conversationId }: Readonly<{ conversationId: string }>) {
+  const { generateFollowup, isGeneratingFollowup } = useConversationActions(conversationId);
+
+  return (
+    <Button
+      variant="outline"
+      size="sm"
+      disabled={isGeneratingFollowup}
+      onClick={() => void generateFollowup()}
+    >
+      {t.conversations.detail.generateFollowup}
+    </Button>
+  );
+}
+
 /**
  * Sprint 1 Phase 3: real conversations, wired to `GET
  * /agents/{id}/conversations/` and `GET /conversations/{id}/`. The backend
@@ -312,6 +327,7 @@ export function ConversationsListView() {
                     </p>
                   </div>
                   {canManage && <AssignOperator conversationId={conversation.id} />}
+                  {canManage && <GenerateFollowup conversationId={conversation.id} />}
                 </>
               )}
             </div>

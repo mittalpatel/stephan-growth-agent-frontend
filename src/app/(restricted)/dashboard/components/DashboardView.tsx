@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { ArrowRight, Bot, Sparkles, TrendingUp } from 'lucide-react';
+import { ArrowRight, Bot, Circle, CircleCheck, Sparkles, TrendingUp } from 'lucide-react';
 
 import { useAgentsList } from '@/app/(restricted)/agents/hooks/useAgentsList';
 import { useUser } from '@/app/(restricted)/context/UserContext';
@@ -18,6 +18,7 @@ import type { ApiResponse } from '@/types/api';
 import type { LeadListItem } from '@/types/lead';
 
 import { useDashboardAnalytics } from '../hooks/useDashboardAnalytics';
+import { useSetupChecklist } from '../hooks/useSetupChecklist';
 
 const RECENT_LEADS_QUERY = {
   page: 1,
@@ -49,6 +50,7 @@ export function DashboardView() {
     isLoading: analyticsLoading,
   } = useDashboardAnalytics();
   const agentsList = useAgentsList();
+  const { items: checklistItems, isLoading: checklistLoading, isComplete } = useSetupChecklist();
 
   const recentLeadsQuery = useAuthQuery<ApiResponse<LeadListItem[]>>(
     [LEADS_LIST_KEY, buildLeadListParams(RECENT_LEADS_QUERY)],
@@ -102,6 +104,30 @@ export function DashboardView() {
           </Button>
         </div>
       </div>
+
+      {!checklistLoading && !isComplete && checklistItems.length > 0 && (
+        <Card>
+          <CardContent>
+            <h3 className="font-display mb-4 font-bold">{t.dashboard.checklist.title}</h3>
+            <div className="flex flex-col divide-y">
+              {checklistItems.map((item) => (
+                <div key={item.key} className="flex items-center gap-3 py-2.5">
+                  {item.done ? (
+                    <CircleCheck className="text-success size-4 shrink-0" aria-hidden />
+                  ) : (
+                    <Circle className="text-muted-foreground size-4 shrink-0" aria-hidden />
+                  )}
+                  <span
+                    className={`text-sm ${item.done ? 'text-muted-foreground line-through' : ''}`}
+                  >
+                    {t.dashboard.checklist.items[item.key]}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-5">
         {metrics.map(({ label, value }) => (

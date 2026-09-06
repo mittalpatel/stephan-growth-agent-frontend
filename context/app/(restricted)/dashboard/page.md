@@ -35,6 +35,25 @@ had no backend equivalent.
 a mixed activity feed — there is no activity-log endpoint spanning
 conversations/content/integrations to source one from.
 
+## Setup checklist (Sprint-1 gap closure)
+
+New `useSetupChecklist.ts` reads `GET /api/v1/organizations/{id}/setup-checklist/`
+(`apps.organizations`'s `SetupChecklistSelector`, never cached, always a
+fixed 5-item list in order: `organization_created`, `team_member_invited`,
+`agent_created`, `agent_published`, `knowledge_source_added`). Rendered as a
+"Get set up" card between the header and the metrics grid, but only while
+at least one step is still undone — it disappears once every step is
+`done` rather than lingering as a completed checklist nobody needs to see
+again. A dedicated `GET /api/v1/dashboard/summary/` endpoint also landed
+this pass (`kpis.leads`/`kpis.conversations` + a lightweight per-agent
+`{id, name, status, agent_type}` list, gated `dashboard:view`) but is
+deliberately **not** wired in here: its counts are strictly narrower than
+what `useDashboardAnalytics`'s per-agent aggregation already provides
+(no range, no escalation/message/unresolved-topic breakdown), so adopting
+it would be a regression, not a simplification. Left unused pending a
+product decision on whether it's meant to replace the richer client-side
+aggregate for a different (e.g. permission-limited) audience.
+
 ## Dropped, not wired to nothing
 
 The business-value trend chart (`BusinessValueChart.tsx`, a dependency-free

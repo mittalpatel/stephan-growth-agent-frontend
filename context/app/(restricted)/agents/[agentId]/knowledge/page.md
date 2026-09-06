@@ -75,6 +75,14 @@ publish because the index isn't `ready` surfaces as the backend's own error
 message via the existing `useAgentActions` toast, not a separate frontend
 check.
 
+## Knowledge health (Sprint-1 gap closure)
+
+`KnowledgeHealthPanel.tsx`/`useKnowledgeHealth.ts` renders a live snapshot
+above the sources list: `GET /agents/{id}/knowledge/health/`
+(`KnowledgeSourceSelector.get_health_summary`, never cached) —
+`{score, last_updated, sources, indexed_chunks}`, gated `knowledge:view`
+same as the list itself.
+
 ## Route protection
 
 No new `ROUTE_PERMISSIONS` entry — `{ prefix: '/agents', resources: ['agent']

@@ -26,6 +26,7 @@ export const leads = {
   },
   detail: {
     title: 'Lead details',
+    statusLabel: 'Status',
     interestNote: 'Interest',
     consentNotice: 'Consent notice version',
     fieldsHeading: 'Collected fields',
@@ -36,5 +37,8 @@ export const leads = {
   consent: {
     given: 'Given',
     notGiven: 'Not given',
+  },
+  toast: {
+    statusChanged: 'Lead status updated.',
   },
 } as const;

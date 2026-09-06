@@ -16,6 +16,8 @@ export const conversationDetailEndpoint = (conversationId: string) =>
   `/api/v1/conversations/${conversationId}/`;
 export const conversationAssignEndpoint = (conversationId: string) =>
   `/api/v1/conversations/${conversationId}/assign/`;
+export const conversationGenerateFollowupEndpoint = (conversationId: string) =>
+  `/api/v1/conversations/${conversationId}/generate-followup/`;
 
 export const CONVERSATIONS_LIST_KEY = 'conversations-list';
 export const conversationsListKey = (agentId: string) => [CONVERSATIONS_LIST_KEY, agentId];

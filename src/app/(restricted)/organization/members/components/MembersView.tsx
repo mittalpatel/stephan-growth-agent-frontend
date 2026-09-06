@@ -24,6 +24,8 @@ export default function MembersView() {
     pendingUserId,
     pendingInviteId,
     changeRole,
+    suspendMember,
+    reactivateMember,
     removeMember,
     revokeInvite,
     resendInvite,
@@ -57,6 +59,8 @@ export default function MembersView() {
           canManage={canManage}
           pendingUserId={pendingUserId}
           onChangeRole={changeRole}
+          onSuspend={suspendMember}
+          onReactivate={reactivateMember}
           onRemove={removeMember}
         />
       )}

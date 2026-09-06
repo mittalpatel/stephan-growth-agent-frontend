@@ -49,6 +49,11 @@ export const ROUTE_PERMISSIONS: readonly RoutePermission[] = [
   // permission codes are vendored.
   { prefix: '/conversations', resources: ['conversation'] },
   { prefix: '/leads', resources: ['lead'] },
+  // Sprint-1 gap closure: an org-wide approvals inbox for AI-proposed actions.
+  { prefix: '/approvals', resources: ['approval'] },
+  // Third-party CRM/messaging connections catalog (currently stubbed backend-side).
+  { prefix: '/organization/integrations', resources: ['integration'] },
+  { prefix: '/organization/billing', resources: ['organization'] },
   // NOTE: `/admin/*` is deliberately absent. It is gated on `is_superuser`, not
   // on a permission code, so it is listed in PermissionGuard's SUPERUSER_PATHS
   // instead — a resource entry here would be an org-level permission granting a

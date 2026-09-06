@@ -74,9 +74,11 @@ export function useOrganizationAudit() {
     filter_by: queryParams.filter_by,
   };
 
+  const dateRange = { date_from: queryParams.start_date, date_to: queryParams.end_date };
+
   const listQuery = useAuthQuery<ApiResponse<AuditEventRow[]>>(
-    [...organizationAuditKey(organizationId), buildListParams(listQueryInput)],
-    organizationAuditListUrl(organizationId, listQueryInput),
+    [...organizationAuditKey(organizationId), buildListParams(listQueryInput), dateRange],
+    organizationAuditListUrl(organizationId, listQueryInput, dateRange),
     {
       enabled: Boolean(organizationId),
       // Keeps the current page rendered while the next loads, so paging through

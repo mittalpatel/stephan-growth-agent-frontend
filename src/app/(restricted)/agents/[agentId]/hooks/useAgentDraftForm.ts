@@ -139,6 +139,26 @@ export function useAgentDraftForm(
       form.setError('qualification_config', { message: t.agents.detail.draft.configMustBeObject });
       return;
     }
+    // Mirrors `AgentVersionUpdateSerializer.validate_qualification_config`'s
+    // `trigger_phrases` guard: a list of non-empty strings, when present.
+    const triggerPhrases = qualificationConfig.trigger_phrases;
+    if (
+      triggerPhrases !== undefined &&
+      (!Array.isArray(triggerPhrases) ||
+        !triggerPhrases.every((phrase) => typeof phrase === 'string' && phrase.trim().length > 0))
+    ) {
+      form.setError('qualification_config', {
+        message: t.agents.detail.draft.triggerPhraseInvalid,
+      });
+      return;
+    }
+
+    // Mirrors the backend's `theme_config.*_color` hex guard.
+    const HEX_COLOR = /^#[0-9A-Fa-f]{6}$/;
+    if (values.theme_primary_color && !HEX_COLOR.test(values.theme_primary_color)) {
+      form.setError('theme_primary_color', { message: t.agents.detail.draft.colorMustBeHex });
+      return;
+    }
 
     const theme_config: Record<string, string> = {};
     if (values.theme_primary_color) theme_config.primary_color = values.theme_primary_color;

@@ -3,6 +3,7 @@ import {
   Bot,
   Boxes,
   Building2,
+  CircleCheckBig,
   LayoutDashboard,
   Mail,
   MessagesSquare,
@@ -63,6 +64,9 @@ export const ENABLED_HREFS: readonly string[] = [
   '/organization/roles',
   '/organization/audit',
   '/organization/api-keys',
+  '/organization/integrations',
+  '/organization/billing',
+  '/approvals',
   '/admin/impersonation',
   // Demo module — removed by `npm run strip-demo`. Deliberately left off the
   // sidebar (this app has no use for it), but still reachable directly: the
@@ -139,6 +143,13 @@ export const NAV_ITEMS: NavItem[] = [
     href: '/analytics',
     icon: BarChart3,
   },
+  {
+    section: t.navigation.sections.main,
+    label: t.navigation.approvals,
+    href: '/approvals',
+    icon: CircleCheckBig,
+    requiredFunction: 'approval',
+  },
 
   // ── WORKSPACE ────────────────────────────────────────────────────────
   {
@@ -165,6 +176,15 @@ export const NAV_ITEMS: NavItem[] = [
         label: t.navigation.apiKeys,
         href: '/organization/api-keys',
         requiredFunction: 'apikey',
+      },
+      {
+        label: t.navigation.integrations,
+        href: '/organization/integrations',
+        requiredFunction: 'integration',
+      },
+      {
+        label: t.navigation.billing,
+        href: '/organization/billing',
       },
     ],
   },

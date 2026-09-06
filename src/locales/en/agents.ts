@@ -117,6 +117,8 @@ export const agents = {
       qualificationConfigLabel: 'Lead qualification config (JSON)',
       configPlaceholder: '{}',
       configMustBeObject: 'Enter a valid JSON object, e.g. {}',
+      triggerPhraseInvalid: '"trigger_phrases" must be a list of non-empty strings.',
+      colorMustBeHex: 'Enter a hex color like #0B1E3D.',
       save: 'Save draft',
       loading: 'Loading draft…',
     },

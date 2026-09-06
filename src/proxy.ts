@@ -70,6 +70,7 @@ const ENABLED_PREFIXES: readonly string[] = [
   '/conversations',
   '/leads',
   '/analytics',
+  '/approvals',
   '/invites',
   '/notifications',
   // Covers /organization, /organization/members, and /organization/roles — the

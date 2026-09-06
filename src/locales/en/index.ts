@@ -1,8 +1,11 @@
 import { agents } from './agents';
 import { analytics } from './analytics';
+import { approvals } from './approvals';
 import { auth } from './auth';
+import { billing } from './billing';
 import { buttons, common, dateRangePicker, navigation, pagination } from './common';
 import { conversations } from './conversations';
+import { integrations } from './integrations';
 import { dashboard } from './dashboard';
 import { errors } from './errors';
 import { header } from './header';
@@ -48,4 +51,7 @@ export const en = {
   conversations,
   leads,
   analytics,
+  approvals,
+  integrations,
+  billing,
 } as const;

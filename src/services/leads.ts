@@ -7,6 +7,7 @@ import { buildListParams, type ListQuery } from './listParams';
 
 export const LEADS_ENDPOINT = '/api/v1/leads/';
 export const leadDetailEndpoint = (id: string) => `${LEADS_ENDPOINT}${id}/`;
+export const leadStatusEndpoint = (id: string) => `${LEADS_ENDPOINT}${id}/status/`;
 
 export const LEADS_LIST_KEY = 'leads-list';
 export const leadDetailKey = (id: string) => ['lead-detail', id];
@@ -31,3 +32,18 @@ export function leadsListUrl(query: LeadListQuery): string {
  * endpoint cheap enough to build an option list from here.)
  */
 export const LEAD_STATUS_VALUES = ['new', 'contacted', 'qualified', 'disqualified'] as const;
+
+/**
+ * `LeadStatus._TRANSITIONS` (`apps/leads/constants.py`) mirrored so the
+ * status control only ever offers a legal next state. `new`/`contacted`
+ * branch two ways; `qualified`/`disqualified` are terminal (empty list).
+ */
+export const LEAD_STATUS_TRANSITIONS: Record<
+  (typeof LEAD_STATUS_VALUES)[number],
+  readonly (typeof LEAD_STATUS_VALUES)[number][]
+> = {
+  new: ['contacted', 'disqualified'],
+  contacted: ['qualified', 'disqualified'],
+  qualified: [],
+  disqualified: [],
+};

@@ -8,9 +8,19 @@ Sprint 1 Phase 3: wired to `apps.leads` — `GET /api/v1/leads/` (org-wide,
 filterable by `status`, sortable by `created_at`/`status`/`email`) and
 `GET /api/v1/leads/{id}/` (full record: interest note, consent notice
 version, collected fields, linked conversation summary). Gated on
-`lead:view` via `ROUTE_PERMISSIONS`/`NAV_ITEMS` — this app has no
-`lead:manage`, only `lead:view` (`LeadDetailView`/`LeadListView` are both
-read-only; there is no lead-editing endpoint).
+`lead:view` via `ROUTE_PERMISSIONS`/`NAV_ITEMS`.
+
+## Status transitions (Sprint-1 gap closure)
+
+`lead:manage` now exists and gates a status control in `LeadDetailSheet`:
+`PATCH /api/v1/leads/{id}/status/` (`useLeadActions.ts`), offering only the
+legal next state(s) per `LeadStatus._TRANSITIONS`
+(`src/services/leads.ts`'s `LEAD_STATUS_TRANSITIONS`, mirroring the backend
+constant) — `new` → `contacted`/`disqualified`, `contacted` →
+`qualified`/`disqualified`, `qualified`/`disqualified` terminal. A 409
+(`lead_invalid_status_transition`) surfaces via the mutation's toast the same
+as any other error; the picker never offers an illegal transition in the
+first place.
 
 ## Collapsed from the Sprint 1 preview's two-table layout to one
 

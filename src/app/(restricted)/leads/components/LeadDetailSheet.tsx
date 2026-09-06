@@ -1,5 +1,6 @@
 'use client';
 
+import { usePermissions } from '@/app/(restricted)/context/PermissionsContext';
 import {
   Sheet,
   SheetContent,
@@ -7,16 +8,28 @@ import {
   SheetHeader,
   SheetTitle,
 } from '@/components/ui/sheet';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Skeleton } from '@/components/ui/skeleton';
 import { formatDate } from '@/lib/i18n';
+import { LEAD_STATUS_TRANSITIONS } from '@/services/leads';
 import { t } from '@/locales';
+import type { LeadStatus } from '@/types/lead';
 
+import { useLeadActions } from '../hooks/useLeadActions';
 import { useLeadDetail } from '../hooks/useLeadDetail';
 
 type Props = Readonly<{ leadId: string | null; onOpenChange: (open: boolean) => void }>;
 
 export function LeadDetailSheet({ leadId, onOpenChange }: Props) {
   const { lead, isLoading } = useLeadDetail(leadId);
+  const { changeStatus, isChangingStatus } = useLeadActions(leadId ?? '');
+  const { can } = usePermissions();
 
   return (
     <Sheet open={Boolean(leadId)} onOpenChange={onOpenChange}>
@@ -34,6 +47,35 @@ export function LeadDetailSheet({ leadId, onOpenChange }: Props) {
           </div>
         ) : (
           <div className="flex flex-col gap-5 px-4 pb-6">
+            {can('lead', 'manage') && (
+              <div>
+                <p className="text-muted-foreground mb-1 text-xs font-semibold tracking-wider uppercase">
+                  {t.leads.detail.statusLabel}
+                </p>
+                {LEAD_STATUS_TRANSITIONS[lead.status].length === 0 ? (
+                  <p className="text-sm">{t.leads.status[lead.status]}</p>
+                ) : (
+                  <Select
+                    value={lead.status}
+                    disabled={isChangingStatus}
+                    onValueChange={(value) => void changeStatus(value as LeadStatus)}
+                  >
+                    <SelectTrigger className="w-full">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value={lead.status}>{t.leads.status[lead.status]}</SelectItem>
+                      {LEAD_STATUS_TRANSITIONS[lead.status].map((status) => (
+                        <SelectItem key={status} value={status}>
+                          {t.leads.status[status]}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
+              </div>
+            )}
+
             <div>
               <p className="text-muted-foreground text-xs font-semibold tracking-wider uppercase">
                 {t.leads.detail.interestNote}

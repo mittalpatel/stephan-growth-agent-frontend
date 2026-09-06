@@ -15,7 +15,7 @@ ships licensed fonts ships a licensing problem.
 
 ## RHF form primitives — `src/components/common/form/`
 
-`RHFTextField`, `RHFSelectField`, `RHFSwitchField`, plus `fieldStyles.ts`
+`RHFTextField`, `RHFTextareaField`, `RHFSelectField`, `RHFSwitchField`, plus `fieldStyles.ts`
 (`fieldInputCls`, `fieldLabelCls`, `getRhfError`).
 
 Use these inside a `<FormProvider>` rather than wiring controlled inputs per form.

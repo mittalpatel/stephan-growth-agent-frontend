@@ -30,4 +30,14 @@ export const dashboard = {
     title: 'Recent leads',
     empty: 'No recent leads yet.',
   },
+  checklist: {
+    title: 'Get set up',
+    items: {
+      organization_created: 'Create your organization',
+      team_member_invited: 'Invite a team member',
+      agent_created: 'Create an agent',
+      agent_published: 'Publish an agent',
+      knowledge_source_added: 'Add a knowledge source',
+    },
+  },
 } as const;

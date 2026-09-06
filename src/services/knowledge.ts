@@ -22,6 +22,8 @@ export const agentBuildIndexEndpoint = (agentId: string) =>
   `/api/v1/agents/${agentId}/knowledge/build-index/`;
 export const agentIndexVersionsEndpoint = (agentId: string) =>
   `/api/v1/agents/${agentId}/knowledge/index-versions/`;
+export const agentKnowledgeHealthEndpoint = (agentId: string) =>
+  `/api/v1/agents/${agentId}/knowledge/health/`;
 
 export const knowledgeSourceDetailEndpoint = (sourceId: string) =>
   `/api/v1/knowledge/sources/${sourceId}/`;
@@ -40,6 +42,7 @@ export const INDEX_VERSIONS_LIST_KEY = 'index-versions-list';
 
 export const knowledgeSourcesListKey = (agentId: string) => [KNOWLEDGE_SOURCES_LIST_KEY, agentId];
 export const indexVersionsListKey = (agentId: string) => [INDEX_VERSIONS_LIST_KEY, agentId];
+export const knowledgeHealthKey = (agentId: string) => ['knowledge-health', agentId];
 export const crawlJobKey = (agentId: string, jobId: string) => ['crawl-job', agentId, jobId];
 export const discoveredUrlsKey = (websiteSourceId: string) => ['discovered-urls', websiteSourceId];
 

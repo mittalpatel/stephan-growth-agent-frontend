@@ -38,6 +38,7 @@ export const conversations = {
     assignOperator: 'Assign operator',
     assignPlaceholder: 'Choose a team member',
     assign: 'Assign',
+    generateFollowup: 'Generate follow-up',
     citationsLabel: 'Sources',
     confidence: {
       answered: 'Answered',
@@ -48,5 +49,6 @@ export const conversations = {
   },
   toast: {
     assigned: 'Conversation assigned.',
+    followupQueued: 'Follow-up queued. It will appear in Approvals once ready.',
   },
 } as const;
