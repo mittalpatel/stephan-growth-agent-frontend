@@ -6,6 +6,7 @@ import { AlertTriangle } from 'lucide-react';
 import { EmptyState } from '@/components/common/EmptyState';
 import { FilterToolbar } from '@/components/common/FilterToolbar';
 import { ListPagination } from '@/components/common/ListPagination';
+import { PageHeader } from '@/components/common/PageHeader';
 import { StatusBadge, type StatusTone } from '@/components/common/StatusBadge';
 import { Button } from '@/components/ui/button';
 import {
@@ -118,10 +119,7 @@ export function LeadsListView() {
 
   return (
     <div className="flex flex-col gap-6">
-      <div>
-        <h1 className="font-display text-2xl font-bold tracking-tight">{t.leads.title}</h1>
-        <p className="text-muted-foreground mt-1 text-sm">{t.leads.description}</p>
-      </div>
+      <PageHeader title={t.leads.title} description={t.leads.description} />
 
       <FilterToolbar
         title={t.leads.title}

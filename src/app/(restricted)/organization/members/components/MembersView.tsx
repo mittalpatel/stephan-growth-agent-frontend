@@ -6,6 +6,7 @@ import MembersSkeleton from './MembersSkeleton';
 import InviteMemberDialog from './InviteMemberDialog';
 import PendingInvitesTable from './PendingInvitesTable';
 import { EmptyState } from '@/components/common/EmptyState';
+import { PageHeader } from '@/components/common/PageHeader';
 import { usePermissions } from '@/app/(restricted)/context/PermissionsContext';
 import { plural } from '@/lib/i18n';
 import { t } from '@/locales';
@@ -36,15 +37,13 @@ export default function MembersView() {
 
   return (
     <div className="space-y-6">
-      <header className="flex flex-wrap items-start justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight">{t.organizations.members.title}</h1>
-          <p className="text-muted-foreground mt-1 text-sm">
-            {plural(members.length, t.organizations.members.count, { count: members.length })}
-          </p>
-        </div>
-        {canManage ? <InviteMemberDialog roles={roles} onInvited={refetchAll} /> : null}
-      </header>
+      <PageHeader
+        title={t.organizations.members.title}
+        description={plural(members.length, t.organizations.members.count, {
+          count: members.length,
+        })}
+        actions={canManage ? <InviteMemberDialog roles={roles} onInvited={refetchAll} /> : null}
+      />
 
       {members.length === 0 ? (
         <EmptyState

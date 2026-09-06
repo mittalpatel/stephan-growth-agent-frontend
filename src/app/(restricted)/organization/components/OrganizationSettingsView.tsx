@@ -9,8 +9,10 @@ import {
   type OrganizationSettingsFormValues,
 } from '../hooks/useOrganizationSettingsForm';
 import { useTransferOwnershipForm } from '../hooks/useTransferOwnershipForm';
+import { useOrganizationPlan } from '../hooks/useOrganizationPlan';
 import { RHFSelectField, RHFTextField } from '@/components/common/form';
 import { ConfirmDialog } from '@/components/common/ConfirmDialog';
+import { PageHeader } from '@/components/common/PageHeader';
 import { Button } from '@/components/ui/button';
 import { t } from '@/locales';
 
@@ -27,6 +29,7 @@ export default function OrganizationSettingsView() {
     isPending: isTransferring,
     transferOwnership,
   } = useTransferOwnershipForm();
+  const { planTier, seatLimit, isLoading: isPlanLoading } = useOrganizationPlan();
 
   const canManage = can('organization', 'manage');
   const canDelete = can('organization', 'delete');
@@ -36,10 +39,7 @@ export default function OrganizationSettingsView() {
 
   return (
     <div className="max-w-2xl space-y-8">
-      <header>
-        <h1 className="text-2xl font-semibold tracking-tight">{t.organizations.title}</h1>
-        <p className="text-muted-foreground mt-1 text-sm">{t.organizations.description}</p>
-      </header>
+      <PageHeader title={t.organizations.title} description={t.organizations.description} />
 
       <section className="rounded-lg border border-border p-6">
         <h2 className="mb-4 text-lg font-medium">{t.organizations.settings.title}</h2>
@@ -61,6 +61,26 @@ export default function OrganizationSettingsView() {
                 {t.organizations.settings.slugHint}
               </p>
             </div>
+            {!isPlanLoading ? (
+              <div className="flex gap-8">
+                <div>
+                  <p className="text-muted-foreground text-sm font-medium">
+                    {t.organizations.settings.planLabel}
+                  </p>
+                  <p className="mt-1 text-sm">
+                    {planTier?.name ?? t.organizations.settings.planNone}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-muted-foreground text-sm font-medium">
+                    {t.organizations.settings.seatsLabel}
+                  </p>
+                  <p className="mt-1 text-sm">
+                    {seatLimit ?? t.organizations.settings.seatsUnlimited}
+                  </p>
+                </div>
+              </div>
+            ) : null}
             {canManage ? (
               <Button type="submit" disabled={isPending}>
                 {t.buttons.save}

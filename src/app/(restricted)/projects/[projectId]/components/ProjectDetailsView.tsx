@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { AlertTriangle, Info } from 'lucide-react';
 
 import { EmptyState } from '@/components/common/EmptyState';
+import { PageHeader } from '@/components/common/PageHeader';
 import { StatusBadge, type StatusTone } from '@/components/common/StatusBadge';
 import { Button } from '@/components/ui/button';
 import { formatDateTime } from '@/lib/i18n';
@@ -70,19 +71,19 @@ export function ProjectDetailsView({ projectId }: Readonly<{ projectId: string }
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <div className="min-w-0">
-          <h1 className="text-2xl font-semibold tracking-tight break-words">{project.name}</h1>
-          <p className="text-muted-foreground mt-1 text-sm">{t.projects.detail.title}</p>
-        </div>
-        <div className="flex items-center gap-2">
-          <StatusBadge
-            label={t.projects.status[project.status]}
-            tone={STATUS_TONE[project.status]}
-          />
-          <ProjectAccessSection projectId={projectId} ownerEmail={project.owner_email} />
-        </div>
-      </div>
+      <PageHeader
+        title={project.name}
+        description={t.projects.detail.title}
+        actions={
+          <>
+            <StatusBadge
+              label={t.projects.status[project.status]}
+              tone={STATUS_TONE[project.status]}
+            />
+            <ProjectAccessSection projectId={projectId} ownerEmail={project.owner_email} />
+          </>
+        }
+      />
 
       {!project.is_editable && (
         <div className="bg-warning text-warning-foreground flex gap-3 rounded-md p-4">

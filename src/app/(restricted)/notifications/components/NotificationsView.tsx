@@ -5,6 +5,7 @@ import { Bell } from 'lucide-react';
 import { EmptyState } from '@/components/common/EmptyState';
 import { FilterToolbar } from '@/components/common/FilterToolbar';
 import { ListPagination } from '@/components/common/ListPagination';
+import { PageHeader } from '@/components/common/PageHeader';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -110,15 +111,15 @@ export default function NotificationsView() {
 
   return (
     <div className="space-y-6">
-      <header className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight">{copy.title}</h1>
-          <p className="text-muted-foreground mt-1 text-sm">{copy.description}</p>
-        </div>
-        <Button variant="outline" onClick={() => void list.markAllRead()}>
-          {copy.markAllRead}
-        </Button>
-      </header>
+      <PageHeader
+        title={copy.title}
+        description={copy.description}
+        actions={
+          <Button variant="outline" onClick={() => void list.markAllRead()}>
+            {copy.markAllRead}
+          </Button>
+        }
+      />
 
       <FilterToolbar
         title={list.title}

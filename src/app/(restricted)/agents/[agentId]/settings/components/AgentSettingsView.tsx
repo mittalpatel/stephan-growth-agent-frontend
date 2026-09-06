@@ -5,6 +5,7 @@ import { ArrowLeft } from 'lucide-react';
 
 import { usePermissions } from '@/app/(restricted)/context/PermissionsContext';
 import { EmptyState } from '@/components/common/EmptyState';
+import { PageHeader } from '@/components/common/PageHeader';
 import { t } from '@/locales';
 
 import { AllowedDomainsSection } from './AllowedDomainsSection';
@@ -35,10 +36,9 @@ export function AgentSettingsView({ agentId }: Props) {
           <ArrowLeft className="size-4" aria-hidden />
           {t.agents.detail.backToList}
         </Link>
-        <h1 className="font-display mt-2 text-2xl font-bold tracking-tight">
-          {t.agents.settings.title}
-        </h1>
-        <p className="text-muted-foreground mt-1 text-sm">{t.agents.settings.description}</p>
+        <div className="mt-2">
+          <PageHeader title={t.agents.settings.title} description={t.agents.settings.description} />
+        </div>
       </div>
 
       {!canManage ? (

@@ -82,6 +82,9 @@ export const knowledge = {
       selectedCount: '{count} selected',
       extract: 'Extract selected pages',
       noPages: 'No pages were found on this site.',
+      addUrlPlaceholder: 'https://example.com/extra-page',
+      addUrlAction: 'Add URL',
+      removeUrl: 'Remove',
     },
     extracting: {
       title: 'Extracting selected pages…',

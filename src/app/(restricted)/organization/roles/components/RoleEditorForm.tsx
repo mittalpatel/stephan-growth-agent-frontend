@@ -71,7 +71,7 @@ export default function RoleEditorForm({
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div className="min-w-0">
             <div className="flex items-center gap-2">
-              <h1 className="text-2xl font-semibold tracking-tight break-words">
+              <h1 className="font-display text-2xl font-bold tracking-tight break-words">
                 {isCreate
                   ? t.organizations.roles.createTitle
                   : format(t.organizations.roles.editTitle, { name: role.name })}

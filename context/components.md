@@ -108,6 +108,17 @@ change that wires that page to a real endpoint, never a separate cleanup pass �
 preview page with the banner already removed is a silent lie about what the numbers
 on screen mean.
 
+## PageHeader
+
+`src/components/common/PageHeader.tsx`. `{ title, description?, actions? }` — the
+title/description/actions row every list and settings page renders at its top.
+Extracted from Dashboard's original inline markup (`font-display text-2xl font-bold
+tracking-tight` + `text-muted-foreground mt-1 text-sm`) once other pages drifted
+toward stock shadcn `font-semibold` headings instead of reusing it. A page whose
+title sits beside a badge or an inline back-link needs its own markup instead (see
+`AgentDetailView`/`RoleEditorForm`) — `PageHeader` covers the plain title+description
+case, not every header shape.
+
 ## EmptyState
 
 `title`, optional `description`, optional `icon`, optional `action`.

@@ -1,23 +1,27 @@
+import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 
-/** The loading state, shaped like the real table — see `ProjectsTableSkeleton`. */
+/** The loading state, shaped like the real card grid (`AgentsGrid`). */
 export function AgentsTableSkeleton({ rows = 10 }: Readonly<{ rows?: number }>) {
   return (
-    <div className="bg-card overflow-hidden rounded-lg border">
-      <div className="bg-muted/50 flex items-center gap-4 border-b px-4 py-3 sm:px-6">
-        <Skeleton className="h-4 w-32" />
-        <Skeleton className="h-4 w-20" />
-        <Skeleton className="hidden h-4 w-40 lg:block" />
-      </div>
+    <div className="grid gap-5 md:grid-cols-2">
       {Array.from({ length: rows }, (_, index) => (
-        <div
-          key={index}
-          className="flex items-center gap-4 border-b px-4 py-3.5 last:border-0 sm:px-6"
-        >
-          <Skeleton className="h-4 flex-1" />
-          <Skeleton className="h-6 w-16 rounded-full" />
-          <Skeleton className="hidden h-4 w-40 lg:block" />
-        </div>
+        <Card key={index}>
+          <CardContent className="flex flex-col gap-4">
+            <div className="flex items-start justify-between">
+              <Skeleton className="size-12 rounded-xl" />
+              <Skeleton className="h-6 w-16 rounded-full" />
+            </div>
+            <div className="space-y-2">
+              <Skeleton className="h-5 w-2/3" />
+              <Skeleton className="h-4 w-full" />
+            </div>
+            <div className="flex items-center justify-between border-t pt-4">
+              <Skeleton className="h-8 w-24" />
+              <Skeleton className="h-9 w-28 rounded-lg" />
+            </div>
+          </CardContent>
+        </Card>
       ))}
     </div>
   );

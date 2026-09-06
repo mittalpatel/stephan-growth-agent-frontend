@@ -31,12 +31,27 @@ export type LocalizedText = {
   information_email_sent_confirmation?: string;
 };
 
+/**
+ * Row shape from `GET /api/v1/agents/types/` and the `agent_type` embed on
+ * `AgentListItem`/`Agent`. Platform-wide catalog, not tenant data — see
+ * `AgentTypeSelector` in the backend. `capabilities` are not serialized here;
+ * there is currently no API surfacing `AgentTypeCapability` rows.
+ */
+export type AgentType = {
+  id: string;
+  slug: string;
+  name: string;
+  description: string;
+  is_available: boolean;
+};
+
 /** Row shape from `GET /api/v1/agents/` — narrower than the detail on purpose. */
 export type AgentListItem = {
   id: string;
   name: string;
   slug: string;
   status: AgentStatus;
+  agent_type: AgentType;
   human_inbox_email: string;
   created_at: string;
   updated_at: string;
@@ -56,6 +71,7 @@ export type Agent = {
   name: string;
   slug: string;
   status: AgentStatus;
+  agent_type: AgentType;
   default_language: string;
   enabled_languages: string[];
   human_inbox_email: string;
@@ -88,6 +104,7 @@ export type AgentVersionDetail = {
 /** Body for `POST /api/v1/agents/` — mirrors `AgentCreateSerializer`. */
 export type AgentCreateInput = {
   name: string;
+  agent_type?: string;
   default_language: string;
   enabled_languages: string[];
   human_inbox_email: string;

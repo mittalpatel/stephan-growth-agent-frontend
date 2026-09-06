@@ -104,6 +104,12 @@ export function AgentOverviewTab({ agent }: Props) {
             </div>
             <div>
               <p className="mb-1.5 block text-sm font-medium">
+                {t.agents.detail.overview.agentTypeLabel}
+              </p>
+              <p className="text-muted-foreground text-sm">{agent.agent_type?.name ?? '—'}</p>
+            </div>
+            <div>
+              <p className="mb-1.5 block text-sm font-medium">
                 {t.agents.detail.overview.createdAtLabel}
               </p>
               <p className="text-muted-foreground text-sm">{formatDate(agent.created_at)}</p>

@@ -14,6 +14,7 @@ import {
   PUBLIC_SIGNUP_VERIFY_ENDPOINT,
   PUBLIC_SIGNUP_RESEND_ENDPOINT,
   type AuthActionResponse,
+  type PublicSignupResponse,
 } from '@/services/auth';
 import { t } from '@/locales';
 import { DEFAULT_LANDING } from '@/constants/navItems';
@@ -68,12 +69,33 @@ export function usePublicSignupForm() {
     defaultValues: { otp: '' },
   });
 
+  // Re-authenticate through the normal credentials flow rather than
+  // hand-rolling a session from a verify/signup response — same convention
+  // as the invite-based signup flow (`useSignupForm`). Shared by the OTP step
+  // and by a signup call that activated the account immediately (no OTP
+  // required).
+  const signInAndRedirect = useCallback(
+    async (loginEmail: string, loginPassword: string) => {
+      const result = await signIn('credentials', {
+        redirect: false,
+        email: loginEmail,
+        password: loginPassword,
+      });
+      if (result?.error) {
+        router.push('/login');
+        return;
+      }
+      router.push(DEFAULT_LANDING);
+    },
+    [router]
+  );
+
   const onDetailsSubmit = detailsForm.handleSubmit(
     useCallback(
       async (values: DetailsStepValues) => {
         setIsLoading(true);
         try {
-          const { data } = await axiosPublic.post<AuthActionResponse>(PUBLIC_SIGNUP_ENDPOINT, {
+          const { data } = await axiosPublic.post<PublicSignupResponse>(PUBLIC_SIGNUP_ENDPOINT, {
             email: values.email,
             password: values.password,
             first_name: values.first_name.trim(),
@@ -81,6 +103,13 @@ export function usePublicSignupForm() {
           });
           setEmail(values.email);
           setPassword(values.password);
+          if (data.data) {
+            // Backend activated the account immediately
+            // (`SIGNUP_OTP_VERIFICATION_ENABLED=false`) — no OTP step to show.
+            toast.success(data.message || copy.accountVerified);
+            await signInAndRedirect(values.email, values.password);
+            return;
+          }
           toast.success(data.message || copy.otpSent);
           setStep('otp');
         } catch (err) {
@@ -92,7 +121,7 @@ export function usePublicSignupForm() {
           setIsLoading(false);
         }
       },
-      [detailsForm]
+      [detailsForm, signInAndRedirect]
     )
   );
 
@@ -106,15 +135,7 @@ export function usePublicSignupForm() {
             otp: values.otp,
           });
           toast.success(copy.accountVerified);
-          // Re-authenticate through the normal credentials flow rather than
-          // hand-rolling a session from the verify response — same convention
-          // as the invite-based signup flow (`useSignupForm`).
-          const result = await signIn('credentials', { redirect: false, email, password });
-          if (result?.error) {
-            router.push('/login');
-            return;
-          }
-          router.push(DEFAULT_LANDING);
+          await signInAndRedirect(email, password);
         } catch (err) {
           applyApiError<OtpStepValues>(err, {
             setError: otpForm.setError,
@@ -124,7 +145,7 @@ export function usePublicSignupForm() {
           setIsLoading(false);
         }
       },
-      [email, password, router, otpForm]
+      [email, password, otpForm, signInAndRedirect]
     )
   );
 

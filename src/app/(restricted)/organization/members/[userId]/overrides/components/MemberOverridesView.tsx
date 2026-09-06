@@ -14,6 +14,7 @@ import {
   userPermissionsExplainKey,
 } from '@/services/organizations';
 import { EmptyState } from '@/components/common/EmptyState';
+import { PageHeader } from '@/components/common/PageHeader';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -100,12 +101,12 @@ export default function MemberOverridesView({ userId }: Readonly<{ userId: strin
         >
           {t.organizations.overrides.backToMembers}
         </Link>
-        <h1 className="mt-2 text-2xl font-semibold tracking-tight">
-          {format(t.organizations.overrides.titleFor, { name: memberName })}
-        </h1>
-        <p className="text-muted-foreground mt-1 text-sm">
-          {t.organizations.overrides.description}
-        </p>
+        <div className="mt-2">
+          <PageHeader
+            title={format(t.organizations.overrides.titleFor, { name: memberName })}
+            description={t.organizations.overrides.description}
+          />
+        </div>
       </div>
 
       <OverridesEditor userId={userId} />

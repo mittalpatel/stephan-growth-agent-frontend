@@ -56,6 +56,12 @@ export function useDiscoveredUrls(websiteSourceId: string | null) {
       applyBulkAction(selected ? { select_ids: [urlId] } : { deselect_ids: [urlId] }),
     selectAll: () => applyBulkAction({ select_ids: urls.map((url) => url.id) }),
     deselectAll: () => applyBulkAction({ deselect_ids: urls.map((url) => url.id) }),
+    /** A URL outside what discovery found, added manually before extraction. */
+    addUrl: (url: string) => applyBulkAction({ add: [url] }),
+    /** Removes a page outright, distinct from deselecting: a deselected row
+     * stays in the list (excluded from extraction, still visible); this
+     * drops it entirely. */
+    removeUrl: (urlId: string) => applyBulkAction({ remove_ids: [urlId] }),
     invalidate: () =>
       queryClient.invalidateQueries({ queryKey: discoveredUrlsKey(websiteSourceId ?? '') }),
   };

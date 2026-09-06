@@ -17,6 +17,21 @@ export const ORGANIZATIONS_ENDPOINT = '/api/v1/organizations/';
 export const organizationDetailEndpoint = (id: string): string => `${ORGANIZATIONS_ENDPOINT}${id}/`;
 
 /**
+ * `GET /organizations/{id}/` response shape. `plan_tier` and `seat_limit` are
+ * operator-only fields (no self-serve billing exists yet) - read-only here,
+ * set from the Django admin.
+ */
+export interface OrganizationDetail {
+  id: string;
+  name: string;
+  slug: string;
+  is_active: boolean;
+  seat_limit: number | null;
+  plan_tier: { id: string; name: string } | null;
+  created_at: string;
+}
+
+/**
  * Same-origin route that performs an organization switch.
  *
  * Deliberately not the backend's `/organizations/<id>/switch/` endpoint. That

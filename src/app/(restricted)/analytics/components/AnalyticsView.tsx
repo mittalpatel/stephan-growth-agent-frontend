@@ -1,5 +1,6 @@
 'use client';
 
+import { PageHeader } from '@/components/common/PageHeader';
 import { PreviewBanner } from '@/components/common/PreviewBanner';
 import { Card, CardContent } from '@/components/ui/card';
 import { t } from '@/locales';
@@ -25,15 +26,15 @@ export function AnalyticsView() {
     <div className="flex flex-col gap-6">
       <PreviewBanner note={t.analytics.previewNotice} />
 
-      <div className="flex items-start justify-between gap-4">
-        <div>
-          <h1 className="font-display text-2xl font-bold tracking-tight">{t.analytics.title}</h1>
-          <p className="text-muted-foreground mt-1 text-sm">{t.analytics.description}</p>
-        </div>
-        <span className="border-border text-muted-foreground rounded-lg border px-3 py-1.5 text-sm">
-          {t.analytics.range.last7Days}
-        </span>
-      </div>
+      <PageHeader
+        title={t.analytics.title}
+        description={t.analytics.description}
+        actions={
+          <span className="border-border text-muted-foreground rounded-lg border px-3 py-1.5 text-sm">
+            {t.analytics.range.last7Days}
+          </span>
+        }
+      />
 
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-5">
         {MOCK_SUMMARY.map(({ label, value }) => (

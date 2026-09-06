@@ -15,8 +15,10 @@ export const organizations = {
     namePlaceholder: 'Acme Inc.',
     slugLabel: 'Handle',
     slugHint: 'Used in links and cannot be changed after creation.',
-    seatsLabel: 'Seats in use',
+    seatsLabel: 'Seat limit',
     seatsUnlimited: 'Unlimited',
+    planLabel: 'Plan',
+    planNone: 'No plan assigned',
     saved: 'Organization updated.',
   },
 

@@ -1,17 +1,18 @@
 'use client';
 
+import Link from 'next/link';
 import { AlertTriangle } from 'lucide-react';
 
 import { usePermissions } from '@/app/(restricted)/context/PermissionsContext';
 import { EmptyState } from '@/components/common/EmptyState';
-import { FilterToolbar } from '@/components/common/FilterToolbar';
 import { ListPagination } from '@/components/common/ListPagination';
+import { PageHeader } from '@/components/common/PageHeader';
 import { Button } from '@/components/ui/button';
 import { t } from '@/locales';
 
 import { useAgentsList } from '../hooks/useAgentsList';
 import CreateAgentDialog from './CreateAgentDialog';
-import { AgentsTable } from './AgentsTable';
+import { AgentsGrid } from './AgentsGrid';
 import { AgentsTableSkeleton } from './AgentsTableSkeleton';
 
 /**
@@ -66,47 +67,25 @@ export function AgentsListView() {
       );
     }
 
-    return <AgentsTable agents={list.agents} />;
+    return <AgentsGrid agents={list.agents} />;
   }
 
   return (
     <div className="flex flex-col gap-6">
-      <div>
-        <h1 className="font-display text-2xl font-bold tracking-tight">{t.agents.title}</h1>
-        <p className="text-muted-foreground mt-1 text-sm">{t.agents.description}</p>
-      </div>
+      <PageHeader
+        title={t.agents.title}
+        description={t.agents.description}
+        actions={
+          <div className="flex items-center gap-2">
+            <Button variant="outline" asChild>
+              <Link href="/agents/types">{t.agents.types.browseLink}</Link>
+            </Button>
+            {canCreate && <CreateAgentDialog onCreated={list.refetch} />}
+          </div>
+        }
+      />
 
       <div className="space-y-4">
-        {canCreate && (
-          <div className="flex justify-end">
-            <CreateAgentDialog onCreated={list.refetch} />
-          </div>
-        )}
-
-        <FilterToolbar
-          title={list.title}
-          total={list.total}
-          displayed={list.displayed}
-          isFetching={list.isFetching}
-          searchTerm={list.searchTerm}
-          onSearchChange={list.onSearchChange}
-          onSearchClear={list.onSearchClear}
-          searchPlaceholder={list.searchPlaceholder}
-          sortField={list.sortField}
-          sortDirection={list.sortDirection}
-          sortOptions={list.sortOptions}
-          onSortFieldChange={list.onSortFieldChange}
-          onSortDirectionToggle={list.onSortDirectionToggle}
-          limit={list.limit}
-          limitOptions={list.limitOptions}
-          onLimitChange={list.onLimitChange}
-          onResetFilters={list.onResetFilters}
-          filterConfigs={list.filterConfigs}
-          activeFilters={list.activeFilters}
-          onFilterChange={list.onFilterChange}
-          showDateRange={false}
-        />
-
         {renderBody()}
 
         {list.totalPages > 1 && (

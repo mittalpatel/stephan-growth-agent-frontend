@@ -5,6 +5,7 @@ import { ChevronRight, Plus } from 'lucide-react';
 import { useOrganizationRoles } from '../hooks/useOrganizationRoles';
 import RolesSkeleton from './RolesSkeleton';
 import { EmptyState } from '@/components/common/EmptyState';
+import { PageHeader } from '@/components/common/PageHeader';
 import { usePermissions } from '@/app/(restricted)/context/PermissionsContext';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -22,20 +23,20 @@ export default function RolesView() {
 
   return (
     <div className="space-y-6">
-      <header className="flex flex-wrap items-start justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight">{t.organizations.roles.title}</h1>
-          <p className="text-muted-foreground mt-1 text-sm">{t.organizations.roles.description}</p>
-        </div>
-        {canManage ? (
-          <Button asChild>
-            <Link href="/organization/roles/new">
-              <Plus className="size-4" aria-hidden />
-              {t.organizations.roles.createTitle}
-            </Link>
-          </Button>
-        ) : null}
-      </header>
+      <PageHeader
+        title={t.organizations.roles.title}
+        description={t.organizations.roles.description}
+        actions={
+          canManage ? (
+            <Button asChild>
+              <Link href="/organization/roles/new">
+                <Plus className="size-4" aria-hidden />
+                {t.organizations.roles.createTitle}
+              </Link>
+            </Button>
+          ) : null
+        }
+      />
 
       <div className="grid gap-4 sm:grid-cols-2">
         {roles.map((role) => (

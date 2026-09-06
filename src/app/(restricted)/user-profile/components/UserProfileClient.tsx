@@ -7,6 +7,7 @@ import { MfaSection } from './MfaSection';
 import { SessionsSection } from './SessionsSection';
 import { PersonalInfoForm } from './PersonalInfoForm';
 import { ChangePasswordForm } from './ChangePasswordForm';
+import { PageHeader } from '@/components/common/PageHeader';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { t } from '@/locales';
 
@@ -42,10 +43,7 @@ export function UserProfileClient() {
 
   return (
     <div className="flex flex-col gap-6 px-4 py-6 sm:px-6 lg:px-8">
-      <div>
-        <h1 className="text-2xl font-normal text-foreground">{copy.title}</h1>
-        <p className="mt-1 text-sm text-muted-foreground">{copy.subtitle}</p>
-      </div>
+      <PageHeader title={copy.title} description={copy.subtitle} />
 
       <Tabs defaultValue="profile" orientation="vertical" className="items-start">
         <TabsList className="w-full shrink-0 gap-1 rounded-2xl border border-input bg-card p-2 sm:w-56">

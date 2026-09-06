@@ -13,6 +13,7 @@ import {
   agentPublishEndpoint,
   agentRollbackEndpoint,
   agentTestAskEndpoint,
+  agentTypesEndpoint,
   AGENTS_ENDPOINT,
 } from '../agents';
 
@@ -25,6 +26,11 @@ describe('agent endpoints', () => {
     expect(agentTestAskEndpoint(AGENT_ID)).toBe(`${AGENTS_ENDPOINT}${AGENT_ID}/draft/test/`);
     expect(agentPublishEndpoint(AGENT_ID)).toBe(`${AGENTS_ENDPOINT}${AGENT_ID}/publish/`);
     expect(agentRollbackEndpoint(AGENT_ID)).toBe(`${AGENTS_ENDPOINT}${AGENT_ID}/rollback/`);
+  });
+
+  it('builds the agent-type catalog endpoint', () => {
+    expect(agentTypesEndpoint()).toBe(`${AGENTS_ENDPOINT}types/`);
+    expect(agentTypesEndpoint(true)).toBe(`${AGENTS_ENDPOINT}types/?include_unavailable=true`);
   });
 
   it('builds distinct query keys per agent', () => {

@@ -8,6 +8,7 @@ import { ConfirmDialog } from '@/components/common/ConfirmDialog';
 import { EmptyState } from '@/components/common/EmptyState';
 import { FilterToolbar } from '@/components/common/FilterToolbar';
 import { ListPagination } from '@/components/common/ListPagination';
+import { PageHeader } from '@/components/common/PageHeader';
 import { Badge, badgeVariants } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -139,10 +140,7 @@ export default function ApiKeysView() {
 
   return (
     <div className="space-y-4">
-      <header>
-        <h1 className="text-2xl font-semibold tracking-tight">{copy.title}</h1>
-        <p className="text-muted-foreground mt-1 text-sm">{copy.description}</p>
-      </header>
+      <PageHeader title={copy.title} description={copy.description} />
 
       <FilterToolbar
         title={list.title}

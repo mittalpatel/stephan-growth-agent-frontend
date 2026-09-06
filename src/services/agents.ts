@@ -9,6 +9,21 @@ import { buildListParams, type ListQuery } from './listParams';
 export const AGENTS_ENDPOINT = '/api/v1/agents/';
 
 export const agentDetailEndpoint = (id: string) => `${AGENTS_ENDPOINT}${id}/`;
+
+/**
+ * The platform-wide agent-type catalog (`GET`, `AgentTypeListView`) — not
+ * agent-scoped, so it doesn't nest under `agentDetailEndpoint`. Default
+ * (`includeUnavailable=false`) returns only creatable types (today just
+ * Website Sales & Support); `includeUnavailable=true` returns every seeded
+ * type, used by the `/agents/types` informational browse page — see
+ * `context/app/(restricted)/agents/page.md`.
+ */
+export const agentTypesEndpoint = (includeUnavailable = false) =>
+  includeUnavailable
+    ? `${AGENTS_ENDPOINT}types/?include_unavailable=true`
+    : `${AGENTS_ENDPOINT}types/`;
+export const AGENT_TYPES_KEY = ['agent-types'];
+export const ALL_AGENT_TYPES_KEY = ['agent-types', 'all'];
 export const agentDraftEndpoint = (id: string) => `${agentDetailEndpoint(id)}draft/`;
 export const agentTestAskEndpoint = (id: string) => `${agentDraftEndpoint(id)}test/`;
 export const agentPublishEndpoint = (id: string) => `${agentDetailEndpoint(id)}publish/`;

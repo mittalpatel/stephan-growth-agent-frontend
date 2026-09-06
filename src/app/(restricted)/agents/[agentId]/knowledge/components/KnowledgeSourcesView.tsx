@@ -7,6 +7,7 @@ import { usePermissions } from '@/app/(restricted)/context/PermissionsContext';
 import { EmptyState } from '@/components/common/EmptyState';
 import { FilterToolbar } from '@/components/common/FilterToolbar';
 import { ListPagination } from '@/components/common/ListPagination';
+import { PageHeader } from '@/components/common/PageHeader';
 import { Button } from '@/components/ui/button';
 import { t } from '@/locales';
 
@@ -81,8 +82,9 @@ export function KnowledgeSourcesView({ agentId }: Props) {
           <ArrowLeft className="size-4" aria-hidden />
           {t.knowledge.backToAgent}
         </Link>
-        <h1 className="font-display mt-2 text-2xl font-bold tracking-tight">{t.knowledge.title}</h1>
-        <p className="text-muted-foreground mt-1 text-sm">{t.knowledge.description}</p>
+        <div className="mt-2">
+          <PageHeader title={t.knowledge.title} description={t.knowledge.description} />
+        </div>
       </div>
 
       <div className="space-y-4">

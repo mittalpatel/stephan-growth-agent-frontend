@@ -6,31 +6,61 @@ import { useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 
 import { useAuthMutation } from '@/hooks/useAuthMutation';
-import { getAxiosError } from '@/lib/helper';
+import { applyApiError } from '@/lib/apiError';
 import { agentDraftEndpoint, agentDraftKey } from '@/services/agents';
 import type { AgentVersionDetail, LocalizedText } from '@/types/agent';
 import type { ApiResponse } from '@/types/api';
 import { t } from '@/locales';
 
+type LocalizedTextFormValues = Record<
+  string,
+  { greeting: string; fallback_message: string; disclosure_text: string }
+>;
+
 export type AgentDraftFormValues = {
   instructions: string;
   disclosure_enabled: boolean;
-  greeting: string;
-  fallback_message: string;
-  disclosure_text: string;
+  localized_text: LocalizedTextFormValues;
+  theme_primary_color: string;
+  theme_logo_url: string;
+  theme_launcher_position: string;
+  notes: string;
+  /** Raw JSON text — `behavior_config`/`qualification_config` are genuinely
+   * freeform on the backend (only validated as "must be an object"), so
+   * there's no fixed field set to build real inputs for. Field name matches
+   * the backend's error key exactly, so a `config_must_be_object` failure
+   * binds inline via `applyApiError` without a mapping table. */
+  behavior_config: string;
+  qualification_config: string;
 };
 
+function buildLocalizedTextDefaults(
+  languages: string[],
+  existing: Record<string, LocalizedText>
+): LocalizedTextFormValues {
+  return Object.fromEntries(
+    languages.map((lang) => [
+      lang,
+      {
+        greeting: existing[lang]?.greeting ?? '',
+        fallback_message: existing[lang]?.fallback_message ?? '',
+        disclosure_text: existing[lang]?.disclosure_text ?? '',
+      },
+    ])
+  );
+}
+
 /**
- * Editing the draft's instructions and the *default language*'s required
- * localized text (`greeting`/`fallback_message`/`disclosure_text` — the three
- * `AgentService.publish()` checks before allowing a publish). Sprint 1's UI
- * scope: a full per-language editor over every `enabled_languages` entry is
- * left for a later pass; this covers the one language every agent has.
+ * Editing the full draft config: instructions, disclosure, every
+ * `enabled_languages` entry's required localized text, `theme_config`'s
+ * three named keys (`primary_color`/`logo_url`/`launcher_position`),
+ * `notes`, and `behavior_config`/`qualification_config` as raw JSON (see
+ * `AgentDraftFormValues`'s docstring on why those two stay freeform).
  */
 export function useAgentDraftForm(
   agentId: string,
   draft: AgentVersionDetail | undefined,
-  defaultLanguage: string
+  enabledLanguages: string[]
 ) {
   const queryClient = useQueryClient();
   const { mutateAsync, isPending } = useAuthMutation<
@@ -39,6 +69,10 @@ export function useAgentDraftForm(
       instructions: string;
       disclosure_enabled: boolean;
       localized_text: Record<string, LocalizedText>;
+      theme_config: Record<string, unknown>;
+      behavior_config: Record<string, unknown>;
+      qualification_config: Record<string, unknown>;
+      notes: string;
     }>
   >();
 
@@ -46,28 +80,72 @@ export function useAgentDraftForm(
     defaultValues: {
       instructions: '',
       disclosure_enabled: true,
-      greeting: '',
-      fallback_message: '',
-      disclosure_text: '',
+      localized_text: buildLocalizedTextDefaults(enabledLanguages, {}),
+      theme_primary_color: '',
+      theme_logo_url: '',
+      theme_launcher_position: '',
+      notes: '',
+      behavior_config: '{}',
+      qualification_config: '{}',
     },
   });
 
-  // Reset once the draft loads (or the default language changes) so the form
+  // Reset once the draft loads (or enabled_languages changes) so the form
   // reflects the server's current values instead of staying blank.
   useEffect(() => {
     if (!draft) return;
-    const localized = draft.localized_text[defaultLanguage];
+    const theme = draft.theme_config as Record<string, unknown>;
     form.reset({
       instructions: draft.instructions,
       disclosure_enabled: draft.disclosure_enabled,
-      greeting: localized?.greeting ?? '',
-      fallback_message: localized?.fallback_message ?? '',
-      disclosure_text: localized?.disclosure_text ?? '',
+      localized_text: buildLocalizedTextDefaults(enabledLanguages, draft.localized_text),
+      theme_primary_color: typeof theme.primary_color === 'string' ? theme.primary_color : '',
+      theme_logo_url: typeof theme.logo_url === 'string' ? theme.logo_url : '',
+      theme_launcher_position:
+        typeof theme.launcher_position === 'string' ? theme.launcher_position : '',
+      notes: draft.notes,
+      behavior_config: JSON.stringify(draft.behavior_config ?? {}, null, 2),
+      qualification_config: JSON.stringify(draft.qualification_config ?? {}, null, 2),
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [draft, defaultLanguage]);
+  }, [draft, enabledLanguages.join(',')]);
 
   const submit = form.handleSubmit(async (values) => {
+    let behaviorConfig: Record<string, unknown>;
+    let qualificationConfig: Record<string, unknown>;
+    try {
+      behaviorConfig = JSON.parse(values.behavior_config || '{}');
+      if (
+        typeof behaviorConfig !== 'object' ||
+        behaviorConfig === null ||
+        Array.isArray(behaviorConfig)
+      ) {
+        throw new Error('not an object');
+      }
+    } catch {
+      form.setError('behavior_config', { message: t.agents.detail.draft.configMustBeObject });
+      return;
+    }
+    try {
+      qualificationConfig = JSON.parse(values.qualification_config || '{}');
+      if (
+        typeof qualificationConfig !== 'object' ||
+        qualificationConfig === null ||
+        Array.isArray(qualificationConfig)
+      ) {
+        throw new Error('not an object');
+      }
+    } catch {
+      form.setError('qualification_config', { message: t.agents.detail.draft.configMustBeObject });
+      return;
+    }
+
+    const theme_config: Record<string, string> = {};
+    if (values.theme_primary_color) theme_config.primary_color = values.theme_primary_color;
+    if (values.theme_logo_url) theme_config.logo_url = values.theme_logo_url;
+    if (values.theme_launcher_position)
+      theme_config.launcher_position = values.theme_launcher_position;
+
     try {
       await mutateAsync({
         url: agentDraftEndpoint(agentId),
@@ -75,21 +153,20 @@ export function useAgentDraftForm(
         body: {
           instructions: values.instructions,
           disclosure_enabled: values.disclosure_enabled,
-          localized_text: {
-            ...draft?.localized_text,
-            [defaultLanguage]: {
-              ...draft?.localized_text[defaultLanguage],
-              greeting: values.greeting,
-              fallback_message: values.fallback_message,
-              disclosure_text: values.disclosure_text,
-            },
-          },
+          localized_text: values.localized_text,
+          theme_config,
+          behavior_config: behaviorConfig,
+          qualification_config: qualificationConfig,
+          notes: values.notes,
         },
       });
       toast.success(t.agents.toast.draftSaved);
       void queryClient.invalidateQueries({ queryKey: agentDraftKey(agentId) });
     } catch (error) {
-      toast.error(getAxiosError(error));
+      applyApiError<AgentDraftFormValues>(error, {
+        setError: form.setError,
+        fields: ['instructions', 'behavior_config', 'qualification_config', 'notes'],
+      });
     }
   });
 

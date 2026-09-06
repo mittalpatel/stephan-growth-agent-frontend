@@ -44,12 +44,11 @@ export default function LayoutWrapper({ children }: Readonly<{ children: React.R
         <HeaderOne onMenuClick={() => setSidebarOpen(true)} />
         <RestrictedBreadcrumb />
         <main className="flex-1">
-          <div className="mx-auto flex w-full max-w-[1400px] flex-col px-4 pt-4 sm:px-6 sm:pt-6 md:px-10">
+          <div className="mx-auto flex w-full max-w-[1400px] flex-col px-4 py-7">
             {/* Global page-entrance motion: keyed by route so every restricted page
                 fades + lifts in on each navigation — wired once, here, instead of
                 per page. Honours prefers-reduced-motion via PageTransition. */}
             <PageTransition key={pathname}>{children}</PageTransition>
-            <div aria-hidden className="h-4 shrink-0 sm:h-6" />
           </div>
         </main>
       </div>

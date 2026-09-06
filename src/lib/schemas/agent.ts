@@ -5,6 +5,8 @@ import { t } from '@/locales';
 /**
  * Create validation for an agent — field names match `AgentCreateSerializer`
  * exactly (see `src/lib/schemas/project.ts` for why that's load-bearing).
+ * `agent_type` is optional (a slug from `GET /agent-types/`); omitting it
+ * lets the backend default to Website Sales & Support.
  */
 export const agentCreateSchema = z.object({
   name: z
@@ -12,6 +14,7 @@ export const agentCreateSchema = z.object({
     .trim()
     .min(1, t.agents.validation.nameRequired)
     .max(200, t.agents.validation.nameTooLong),
+  agent_type: z.string().trim().optional(),
   human_inbox_email: z.string().trim().email(t.agents.validation.emailInvalid),
   default_language: z
     .string()

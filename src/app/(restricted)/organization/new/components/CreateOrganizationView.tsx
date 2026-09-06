@@ -35,7 +35,9 @@ export default function CreateOrganizationView() {
           <Building2 className="text-muted-foreground size-6" aria-hidden />
         </span>
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight">{t.organizations.create.title}</h1>
+          <h1 className="font-display text-2xl font-bold tracking-tight">
+            {t.organizations.create.title}
+          </h1>
           <p className="text-muted-foreground mt-1 text-sm">{t.organizations.create.description}</p>
         </div>
       </div>

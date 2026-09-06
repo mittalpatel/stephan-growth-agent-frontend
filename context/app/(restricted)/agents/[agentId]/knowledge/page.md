@@ -45,7 +45,12 @@ failure state per polling step):
    `GET /knowledge/website/{id}/discovered-urls/` and toggles selection via
    `PATCH .../discovered-urls/` (`select_ids`/`deselect_ids`), one bulk call
    per checkbox rather than batched client-side — the list is small enough
-   that this keeps selection state server-driven.
+   that this keeps selection state server-driven. Also wires the same
+   endpoint's `add`/`remove_ids`: a text input above the list (`addUrl`)
+   posts `{ add: [url] }` for a page outside what discovery found, and each
+   row has a "Remove" button (`removeUrl`, `{ remove_ids: [id] }`) that
+   drops the page outright — distinct from deselecting, which keeps the row
+   visible but excludes it from extraction.
 4. **extracting** — `POST /knowledge/website/{id}/extract/`, polled the same
    way as discovery.
 5. **done** — the knowledge sources list is invalidated so the new source

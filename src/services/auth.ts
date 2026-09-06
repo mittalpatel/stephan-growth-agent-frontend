@@ -55,3 +55,13 @@ export interface ResendPublicSignupOtpPayload {
 }
 
 export type AuthActionResponse = AuthEnvelope<null>;
+
+/**
+ * `POST /auth/public-signup/` returns `data: null` when the backend still
+ * requires OTP verification (`SIGNUP_OTP_VERIFICATION_ENABLED=true`), or a
+ * truthy session payload when it activates the account immediately
+ * (`SIGNUP_OTP_VERIFICATION_ENABLED=false`, the backend default). The
+ * frontend has no visibility into that flag and must not infer it - it
+ * branches on which shape a given response actually is.
+ */
+export type PublicSignupResponse = AuthEnvelope<Record<string, unknown> | null>;

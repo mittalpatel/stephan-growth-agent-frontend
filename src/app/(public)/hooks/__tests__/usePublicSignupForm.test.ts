@@ -60,6 +60,30 @@ describe('usePublicSignupForm', () => {
     expect(result.current.email).toBe(detailsValues.email);
   });
 
+  it('signs in immediately and skips the otp step when the backend returns a session', async () => {
+    vi.mocked(axiosPublic.post).mockResolvedValueOnce({
+      data: { message: 'Account created successfully.', data: { access_token: 'x' } },
+    });
+    vi.mocked(signIn).mockResolvedValueOnce({ ok: true, error: null, status: 200, url: null });
+    const { result } = renderHook(() => usePublicSignupForm());
+
+    act(() => {
+      Object.entries(detailsValues).forEach(([key, value]) => {
+        result.current.detailsForm.setValue(key as keyof typeof detailsValues, value);
+      });
+    });
+
+    await act(() => result.current.onDetailsSubmit({ preventDefault: vi.fn() }));
+
+    expect(result.current.step).toBe('details');
+    expect(signIn).toHaveBeenCalledWith('credentials', {
+      redirect: false,
+      email: detailsValues.email,
+      password: detailsValues.password,
+    });
+    expect(mockPush).toHaveBeenCalledWith(DEFAULT_LANDING);
+  });
+
   it('binds a duplicate-email error to the email field', async () => {
     vi.mocked(axiosPublic.post).mockRejectedValueOnce(
       axiosErrorWithCode('email_already_registered')

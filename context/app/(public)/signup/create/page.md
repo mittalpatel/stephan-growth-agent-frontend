@@ -17,22 +17,28 @@ src/app/(public)/
 
 ## Flow
 
-Two steps, driven entirely by `usePublicSignupForm`:
+Driven entirely by `usePublicSignupForm`. The backend's `SIGNUP_OTP_VERIFICATION_ENABLED`
+flag (off by default) decides whether an OTP step happens at all — the frontend has no
+visibility into that flag and never reads or infers it. Instead `onDetailsSubmit`
+branches on the actual shape of the `POST /api/v1/auth/public-signup/` response:
 
-1. **Details** — name, email, password. `POST /api/v1/auth/public-signup/` creates an
-   `is_active=False` account (or refreshes one left over from an abandoned prior
-   attempt at the same email) and emails a 6-digit code.
-2. **OTP** — `POST /api/v1/auth/public-signup/verify/` activates the account and
-   assigns it the backend's configured default role. On success the hook calls
-   `signIn('credentials', { email, password })` to establish the session through the
-   normal NextAuth path — the same convention `useSignupForm` (the invite flow) uses,
-   rather than hand-rolling a session from the verify response — then redirects to
-   `DEFAULT_LANDING`. A "resend code" action calls
-   `POST /api/v1/auth/public-signup/resend/` without changing steps.
+- **`data: null`** (flag on) — the account stays `is_active=False`, a 6-digit code is
+  emailed, and the hook advances to the **OTP** step.
+  `POST /api/v1/auth/public-signup/verify/` activates the account and assigns it the
+  backend's configured default role (or, in multi-tenant mode, provisions the user's
+  own organization). On success the hook calls
+  `signIn('credentials', { email, password })` to establish the session through the
+  normal NextAuth path — the same convention `useSignupForm` (the invite flow) uses,
+  rather than hand-rolling a session from the verify response — then redirects to
+  `DEFAULT_LANDING`. A "resend code" action calls
+  `POST /api/v1/auth/public-signup/resend/` without changing steps.
+- **`data` truthy** (flag off, the backend default) — the account activated
+  immediately and there's nothing to verify. The hook skips the OTP step entirely and
+  calls the same `signIn('credentials', ...)` + redirect path directly, using the
+  same shared `signInAndRedirect` helper as the OTP-success path above.
 
-If `signIn` fails after a successful verify (e.g. session establishment races a
-password change), the hook falls back to `/login` rather than stranding the user on
-a dead step.
+Either way, if `signIn` fails (e.g. session establishment races a password change),
+the hook falls back to `/login` rather than stranding the user on a dead step.
 
 ## Opt-in, not always on
 

@@ -9,6 +9,7 @@ import { usePermissions } from '@/app/(restricted)/context/PermissionsContext';
 import { EmptyState } from '@/components/common/EmptyState';
 import { FilterToolbar } from '@/components/common/FilterToolbar';
 import { ListPagination } from '@/components/common/ListPagination';
+import { PageHeader } from '@/components/common/PageHeader';
 import { StatusBadge, type StatusTone } from '@/components/common/StatusBadge';
 import { useAuthQuery } from '@/hooks/useAuthQuery';
 import { Button } from '@/components/ui/button';
@@ -172,10 +173,7 @@ export function ConversationsListView() {
 
   return (
     <div className="flex flex-col gap-6">
-      <div>
-        <h1 className="font-display text-2xl font-bold tracking-tight">{t.conversations.title}</h1>
-        <p className="text-muted-foreground mt-1 text-sm">{t.conversations.description}</p>
-      </div>
+      <PageHeader title={t.conversations.title} description={t.conversations.description} />
 
       <div className="flex flex-wrap items-end gap-3">
         <div className="flex flex-col gap-1.5">

@@ -3,10 +3,11 @@
 import { useEffect, useState } from 'react';
 import { useForm, FormProvider } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Globe, Loader2 } from 'lucide-react';
+import { Globe, Loader2, X } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Input } from '@/components/ui/input';
 import {
   Dialog,
   DialogContent,
@@ -65,8 +66,9 @@ function DiscoveredUrlsReview({
   onExtract: () => void;
   isExtracting: boolean;
 }>) {
-  const { urls, isLoading, selectedCount, toggle, selectAll, deselectAll } =
+  const { urls, isLoading, selectedCount, toggle, selectAll, deselectAll, addUrl, removeUrl } =
     useDiscoveredUrls(websiteSourceId);
+  const [newUrl, setNewUrl] = useState('');
 
   if (isLoading) {
     return (
@@ -76,53 +78,89 @@ function DiscoveredUrlsReview({
     );
   }
 
-  if (urls.length === 0) {
-    return <EmptyState title={t.knowledge.addWebsite.review.noPages} />;
-  }
+  const submitNewUrl = () => {
+    const trimmed = newUrl.trim();
+    if (!trimmed) return;
+    void addUrl(trimmed);
+    setNewUrl('');
+  };
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <p className="text-muted-foreground text-sm">
-          {format(t.knowledge.addWebsite.review.description, { count: urls.length })}
-        </p>
-        <div className="flex gap-2">
-          <Button type="button" variant="ghost" size="sm" onClick={() => void selectAll()}>
-            {t.knowledge.addWebsite.review.selectAll}
-          </Button>
-          <Button type="button" variant="ghost" size="sm" onClick={() => void deselectAll()}>
-            {t.knowledge.addWebsite.review.deselectAll}
-          </Button>
-        </div>
+      <div className="flex items-center gap-2">
+        <Input
+          value={newUrl}
+          onChange={(event) => setNewUrl(event.target.value)}
+          placeholder={t.knowledge.addWebsite.review.addUrlPlaceholder}
+          onKeyDown={(event) => {
+            if (event.key === 'Enter') {
+              event.preventDefault();
+              submitNewUrl();
+            }
+          }}
+        />
+        <Button type="button" variant="outline" onClick={submitNewUrl} disabled={!newUrl.trim()}>
+          {t.knowledge.addWebsite.review.addUrlAction}
+        </Button>
       </div>
 
-      <div className="max-h-80 space-y-1 overflow-y-auto rounded-md border p-2">
-        {urls.map((url) => (
-          <label
-            key={url.id}
-            className="hover:bg-accent flex items-center gap-2 rounded-md px-2 py-1.5 text-sm"
+      {urls.length === 0 ? (
+        <EmptyState title={t.knowledge.addWebsite.review.noPages} />
+      ) : (
+        <>
+          <div className="flex items-center justify-between">
+            <p className="text-muted-foreground text-sm">
+              {format(t.knowledge.addWebsite.review.description, { count: urls.length })}
+            </p>
+            <div className="flex gap-2">
+              <Button type="button" variant="ghost" size="sm" onClick={() => void selectAll()}>
+                {t.knowledge.addWebsite.review.selectAll}
+              </Button>
+              <Button type="button" variant="ghost" size="sm" onClick={() => void deselectAll()}>
+                {t.knowledge.addWebsite.review.deselectAll}
+              </Button>
+            </div>
+          </div>
+
+          <div className="max-h-80 space-y-1 overflow-y-auto rounded-md border p-2">
+            {urls.map((url) => (
+              <div
+                key={url.id}
+                className="hover:bg-accent flex items-center gap-2 rounded-md px-2 py-1.5 text-sm"
+              >
+                <label className="flex min-w-0 flex-1 items-center gap-2">
+                  <Checkbox
+                    checked={url.is_selected}
+                    onCheckedChange={(checked) => void toggle(url.id, checked === true)}
+                  />
+                  <span className="truncate">{url.url}</span>
+                </label>
+                <button
+                  type="button"
+                  aria-label={t.knowledge.addWebsite.review.removeUrl}
+                  onClick={() => void removeUrl(url.id)}
+                  className="text-muted-foreground hover:text-destructive shrink-0 rounded p-1"
+                >
+                  <X className="size-3.5" aria-hidden />
+                </button>
+              </div>
+            ))}
+          </div>
+
+          <p className="text-muted-foreground text-sm">
+            {format(t.knowledge.addWebsite.review.selectedCount, { count: selectedCount })}
+          </p>
+
+          <Button
+            type="button"
+            className="w-full"
+            disabled={selectedCount === 0 || isExtracting}
+            onClick={onExtract}
           >
-            <Checkbox
-              checked={url.is_selected}
-              onCheckedChange={(checked) => void toggle(url.id, checked === true)}
-            />
-            <span className="truncate">{url.url}</span>
-          </label>
-        ))}
-      </div>
-
-      <p className="text-muted-foreground text-sm">
-        {format(t.knowledge.addWebsite.review.selectedCount, { count: selectedCount })}
-      </p>
-
-      <Button
-        type="button"
-        className="w-full"
-        disabled={selectedCount === 0 || isExtracting}
-        onClick={onExtract}
-      >
-        {t.knowledge.addWebsite.review.extract}
-      </Button>
+            {t.knowledge.addWebsite.review.extract}
+          </Button>
+        </>
+      )}
     </div>
   );
 }
