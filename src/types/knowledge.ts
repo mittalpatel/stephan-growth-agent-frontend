@@ -24,10 +24,14 @@ export type PageDiscoverySource = 'sitemap' | 'robots_crawl' | 'fallback_link_sc
 /** Mirrors `IndexVersionStatus` in `apps/knowledge/constants.py`. */
 export type IndexVersionStatus = 'building' | 'ready' | 'failed';
 
-/** Row shape from `GET /agents/{id}/knowledge/sources/`. */
+/**
+ * Row shape from `GET /knowledge/`. No `agent` field: as of the backend's
+ * 2026-09-06 change a source belongs to the organization, and an agent
+ * narrows to a subset of them via `AgentKnowledgeTarget` instead of owning
+ * any.
+ */
 export type KnowledgeSourceListItem = {
   id: string;
-  agent: string;
   source_type: KnowledgeSourceType;
   status: KnowledgeSourceStatus;
   display_name: string;
@@ -38,7 +42,6 @@ export type KnowledgeSourceListItem = {
 /** Full record shape — response of the discover/pdf-upload/detail endpoints. */
 export type KnowledgeSource = {
   id: string;
-  agent: string;
   source_type: KnowledgeSourceType;
   status: KnowledgeSourceStatus;
   display_name: string;
@@ -50,13 +53,13 @@ export type KnowledgeSource = {
 /** Body for `PATCH /knowledge/sources/{id}/`. */
 export type KnowledgeSourceUpdateInput = { display_name: string };
 
-/** Body for `POST /agents/{id}/knowledge/website/discover/`. */
+/** Body for `POST /knowledge/website/discover/`. */
 export type WebsiteDiscoverInput = {
   root_url: string;
   scope_config?: Record<string, unknown>;
 };
 
-/** Response of `POST /agents/{id}/knowledge/website/discover/`. */
+/** Response of `POST /knowledge/website/discover/`. */
 export type WebsiteDiscoverResult = {
   source: KnowledgeSource;
   crawl_job: CrawlJob;
@@ -107,6 +110,33 @@ export type IndexVersion = {
   built_at: string | null;
   created_at: string;
 };
+
+/**
+ * `AgentKnowledgeTargetSerializer` — one row of an agent's narrowing set.
+ * `source` is the `KnowledgeSource` id, not an embedded object.
+ */
+export type AgentKnowledgeTarget = {
+  id: string;
+  source: string;
+  created_at: string;
+};
+
+/**
+ * Response of `GET`/`PUT /agents/{id}/knowledge/targets/`.
+ *
+ * `is_narrowed` is the backend's own derived flag and is the meaningful bit:
+ * no target rows means the agent reads the org's entire shared knowledge
+ * layer, which is a different state from "narrowed to nothing" being
+ * impossible to express. Sending an empty `source_ids` is how an agent is
+ * explicitly un-narrowed.
+ */
+export type AgentKnowledgeTargets = {
+  targets: AgentKnowledgeTarget[];
+  is_narrowed: boolean;
+};
+
+/** Body for `PUT /agents/{id}/knowledge/targets/` — replaces the whole set. */
+export type AgentKnowledgeTargetSetInput = { source_ids: string[] };
 
 /** A crawl job is done polling once it leaves these two states. */
 export const CRAWL_JOB_ACTIVE_STATUSES: readonly CrawlJobStatus[] = ['pending', 'running'];

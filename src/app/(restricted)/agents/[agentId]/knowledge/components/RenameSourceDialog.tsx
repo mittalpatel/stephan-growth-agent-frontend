@@ -24,13 +24,12 @@ import type { KnowledgeSourceListItem } from '@/types/knowledge';
 import { useKnowledgeSourceActions } from '../hooks/useKnowledgeSourceActions';
 
 type Props = Readonly<{
-  agentId: string;
   source: KnowledgeSourceListItem | null;
   onOpenChange: (open: boolean) => void;
 }>;
 
-export function RenameSourceDialog({ agentId, source, onOpenChange }: Props) {
-  const { rename, isRenaming } = useKnowledgeSourceActions(agentId);
+export function RenameSourceDialog({ source, onOpenChange }: Props) {
+  const { rename, isRenaming } = useKnowledgeSourceActions();
 
   const form = useForm<KnowledgeSourceRenameFormValues>({
     resolver: zodResolver(knowledgeSourceRenameSchema),

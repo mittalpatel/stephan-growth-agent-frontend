@@ -25,7 +25,7 @@ import { useAddWebsiteFlow } from '../hooks/useAddWebsiteFlow';
 import { useCrawlJob } from '../hooks/useCrawlJob';
 import { useDiscoveredUrls } from '../hooks/useDiscoveredUrls';
 
-type Props = Readonly<{ agentId: string }>;
+type Props = Readonly<{ agentId: string; onCreated?: (sourceId: string) => void }>;
 
 function CrawlProgress({
   agentId,
@@ -170,9 +170,9 @@ function DiscoveredUrlsReview({
  * done. `useAddWebsiteFlow` owns the step machine; this component renders
  * whichever step is active and feeds job-completion callbacks back in.
  */
-export function AddWebsiteDialog({ agentId }: Props) {
+export function AddWebsiteDialog({ agentId, onCreated }: Props) {
   const [open, setOpen] = useState(false);
-  const flow = useAddWebsiteFlow(agentId);
+  const flow = useAddWebsiteFlow(agentId, onCreated);
 
   const form = useForm<WebsiteDiscoverFormValues>({
     resolver: zodResolver(websiteDiscoverSchema),

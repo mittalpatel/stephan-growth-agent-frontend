@@ -45,13 +45,13 @@ const STATUS_TONE: Record<KnowledgeSourceStatus, StatusTone> = {
   disabled: 'neutral',
 };
 
-type Props = Readonly<{ agentId: string; sources: KnowledgeSourceListItem[] }>;
+type Props = Readonly<{ sources: KnowledgeSourceListItem[] }>;
 
-export function KnowledgeSourcesTable({ agentId, sources }: Props) {
+export function KnowledgeSourcesTable({ sources }: Props) {
   const { can } = usePermissions();
   const canManage = can('knowledge', 'manage');
   const canExecute = can('knowledge', 'execute');
-  const { remove, reprocess, recrawl } = useKnowledgeSourceActions(agentId);
+  const { remove, reprocess, recrawl } = useKnowledgeSourceActions();
   const [renameTarget, setRenameTarget] = useState<KnowledgeSourceListItem | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<KnowledgeSourceListItem | null>(null);
 
@@ -125,7 +125,6 @@ export function KnowledgeSourcesTable({ agentId, sources }: Props) {
       </DataTable>
 
       <RenameSourceDialog
-        agentId={agentId}
         source={renameTarget}
         onOpenChange={(open) => !open && setRenameTarget(null)}
       />

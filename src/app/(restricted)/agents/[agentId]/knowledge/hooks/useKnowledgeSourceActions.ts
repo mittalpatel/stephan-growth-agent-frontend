@@ -21,12 +21,15 @@ import type { ApiResponse } from '@/types/api';
  * list on success rather than patching it locally — low-frequency actions
  * where a confirmed server read is worth the round trip, same rationale as
  * `useAgentActions`.
+ *
+ * Takes no agent id: every one of these routes is source-scoped, and the
+ * list they invalidate is the organization's single shared one.
  */
-export function useKnowledgeSourceActions(agentId: string) {
+export function useKnowledgeSourceActions() {
   const queryClient = useQueryClient();
 
   const invalidate = () => {
-    void queryClient.invalidateQueries({ queryKey: knowledgeSourcesListKey(agentId) });
+    void queryClient.invalidateQueries({ queryKey: knowledgeSourcesListKey() });
   };
 
   // No `onError`: `RenameSourceDialog` awaits this and binds field errors

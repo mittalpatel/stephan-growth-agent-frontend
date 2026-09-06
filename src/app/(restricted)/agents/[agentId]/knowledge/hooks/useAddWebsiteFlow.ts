@@ -6,7 +6,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useAuthMutation } from '@/hooks/useAuthMutation';
 import { applyApiError } from '@/lib/apiError';
 import {
-  agentWebsiteDiscoverEndpoint,
+  KNOWLEDGE_WEBSITE_DISCOVER_ENDPOINT,
   knowledgeSourcesListKey,
   websiteExtractEndpoint,
 } from '@/services/knowledge';
@@ -28,8 +28,14 @@ export type AddWebsiteStep =
  * (`discoverJobId`/`websiteSourceId`/`extractJobId`) — the actual polling
  * happens in `useCrawlJob`, called from the dialog component with whichever
  * job id is currently active, so this hook stays a plain state machine.
+ *
+ * Discovery is org-level (the source is shared), but crawl-job progress is
+ * still read through an agent-scoped route, so `agentId` is kept for the
+ * polling step. `onCreated` fires as soon as the source exists rather than
+ * at the end of the flow: a narrowed agent has to be able to see the source
+ * before its own crawl-job read will resolve it at all.
  */
-export function useAddWebsiteFlow(agentId: string) {
+export function useAddWebsiteFlow(agentId: string, onCreated?: (sourceId: string) => void) {
   const queryClient = useQueryClient();
   const [step, setStep] = useState<AddWebsiteStep>('form');
   const [websiteSourceId, setWebsiteSourceId] = useState<string | null>(null);
@@ -53,9 +59,10 @@ export function useAddWebsiteFlow(agentId: string) {
     async (input: WebsiteDiscoverInput) => {
       try {
         const response = await discoverMutation.mutateAsync({
-          url: agentWebsiteDiscoverEndpoint(agentId),
+          url: KNOWLEDGE_WEBSITE_DISCOVER_ENDPOINT,
           body: input,
         });
+        onCreated?.(response.data.source.id);
         setWebsiteSourceId(response.data.crawl_job.website_source);
         setDiscoverJobId(response.data.crawl_job.id);
         setStep('discovering');
@@ -65,7 +72,7 @@ export function useAddWebsiteFlow(agentId: string) {
         return false;
       }
     },
-    [agentId, discoverMutation]
+    [discoverMutation, onCreated]
   );
 
   /** Called by the dialog once `useCrawlJob` reports the discovery run is done. */
@@ -92,13 +99,13 @@ export function useAddWebsiteFlow(agentId: string) {
   const onExtractionFinished = useCallback(
     (job: CrawlJob) => {
       if (job.status === 'completed') {
-        void queryClient.invalidateQueries({ queryKey: knowledgeSourcesListKey(agentId) });
+        void queryClient.invalidateQueries({ queryKey: knowledgeSourcesListKey() });
         setStep('done');
       } else {
         setStep('extraction-failed');
       }
     },
-    [agentId, queryClient]
+    [queryClient]
   );
 
   return {

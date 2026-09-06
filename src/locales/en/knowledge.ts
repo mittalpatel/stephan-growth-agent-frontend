@@ -28,7 +28,9 @@ export const knowledge = {
     errorTitle: 'Could not load knowledge sources',
     errorDescription: 'Something went wrong while loading these sources. Please try again.',
     emptyTitle: 'No knowledge sources yet',
-    emptyDescription: 'Add a website or upload a PDF to give this agent something to answer from.',
+    emptyDescription: 'Add a website or upload a PDF to give your agents something to answer from.',
+    sharedNotice:
+      'Knowledge sources are shared across your whole organization. Every agent can read them unless you narrow it to a subset below.',
     emptyFilteredTitle: 'No sources match your filters',
     emptyFilteredDescription: 'Try adjusting or clearing your filters.',
   },
@@ -113,6 +115,17 @@ export const knowledge = {
     rootUrlInvalid: 'Enter a valid URL.',
     nameRequired: 'Name is required.',
     fileRequired: 'Choose a file to upload.',
+  },
+  targets: {
+    title: 'Knowledge scope',
+    description:
+      'Choose which of the shared sources this agent answers from. This affects what its next index build covers.',
+    modeAll: 'All shared sources, including ones added later',
+    modeSelected: 'Only the sources I select',
+    noSources: 'There are no shared sources to select yet.',
+    truncated: 'Showing the first {shown} of {total} sources.',
+    saved: 'Knowledge scope updated.',
+    error: 'Knowledge scope could not be loaded.',
   },
   health: {
     title: 'Knowledge health',

@@ -15,14 +15,14 @@ import { t } from '@/locales';
 
 import { useAddPdfSource } from '../hooks/useAddPdfSource';
 
-type Props = Readonly<{ agentId: string }>;
+type Props = Readonly<{ onCreated?: (sourceId: string) => void }>;
 
-export function AddPdfDialog({ agentId }: Props) {
+export function AddPdfDialog({ onCreated }: Props) {
   const [open, setOpen] = useState(false);
   const [file, setFile] = useState<File | null>(null);
   const [fileError, setFileError] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
-  const { upload, isUploading } = useAddPdfSource(agentId);
+  const { upload, isUploading } = useAddPdfSource(onCreated);
 
   const reset = () => {
     setFile(null);

@@ -22,13 +22,15 @@ import type { KnowledgeSourceListItem } from '@/types/knowledge';
 const NAMESPACE = 'knowledge';
 
 /**
- * A single agent's knowledge sources, as one flat bag of props — mirrors
- * `useAgentsList`. The filter config is built from client-known enum values
+ * The organization's shared knowledge sources, as one flat bag of props —
+ * mirrors `useAgentsList`. Org-wide, not per-agent: every agent's knowledge
+ * page shows the same list, and an agent narrows to a subset of it through
+ * `useKnowledgeTargets` rather than owning rows of its own. The filter config is built from client-known enum values
  * rather than fetched, since `AgentKnowledgeSourceListView` never wires up
  * `?type=parameters` even though its selector supports it (see
  * `src/services/knowledge.ts`).
  */
-export function useKnowledgeSources(agentId: string) {
+export function useKnowledgeSources() {
   const {
     queryParams,
     setSearch,
@@ -58,9 +60,9 @@ export function useKnowledgeSources(agentId: string) {
   };
 
   const listQuery = useAuthQuery<ApiResponse<KnowledgeSourceListItem[]>>(
-    [...knowledgeSourcesListKey(agentId), buildKnowledgeSourceListParams(listQueryInput)],
-    knowledgeSourcesListUrl(agentId, listQueryInput),
-    { enabled: Boolean(agentId), placeholderData: (previous) => previous }
+    [...knowledgeSourcesListKey(), buildKnowledgeSourceListParams(listQueryInput)],
+    knowledgeSourcesListUrl(listQueryInput),
+    { placeholderData: (previous) => previous }
   );
 
   const sources = listQuery.data?.data ?? [];

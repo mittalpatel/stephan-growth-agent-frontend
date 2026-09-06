@@ -30,9 +30,21 @@ export function BrandSettingsTab() {
           disabled={!canManage}
         />
         <RHFTextField<BrandSettingsFormValues>
+          name="favicon_url"
+          label={t.organizations.settingsTabs.brand.faviconUrlLabel}
+          placeholder={t.organizations.settingsTabs.brand.faviconUrlPlaceholder}
+          disabled={!canManage}
+        />
+        <RHFTextField<BrandSettingsFormValues>
           name="color_primary"
           label={t.organizations.settingsTabs.brand.colorLabel}
           placeholder="#0B1E3D"
+          disabled={!canManage}
+        />
+        <RHFTextField<BrandSettingsFormValues>
+          name="color_secondary"
+          label={t.organizations.settingsTabs.brand.colorSecondaryLabel}
+          placeholder="#C9A227"
           disabled={!canManage}
         />
         <RHFTextField<BrandSettingsFormValues>
@@ -47,6 +59,37 @@ export function BrandSettingsTab() {
           placeholder={t.organizations.settingsTabs.brand.descriptionPlaceholder}
           disabled={!canManage}
         />
+
+        <div className="border-border space-y-4 border-t pt-4">
+          <div>
+            <h3 className="text-sm font-medium">
+              {t.organizations.settingsTabs.brand.whiteLabelTitle}
+            </h3>
+            <p className="text-muted-foreground mt-1 text-sm">
+              {t.organizations.settingsTabs.brand.whiteLabelDescription}
+            </p>
+          </div>
+          <RHFTextField<BrandSettingsFormValues>
+            name="display_name"
+            label={t.organizations.settingsTabs.brand.displayNameLabel}
+            placeholder={t.organizations.settingsTabs.brand.displayNamePlaceholder}
+            disabled={!canManage}
+          />
+          <RHFTextField<BrandSettingsFormValues>
+            name="email_from_name"
+            label={t.organizations.settingsTabs.brand.emailFromNameLabel}
+            placeholder={t.organizations.settingsTabs.brand.emailFromNamePlaceholder}
+            disabled={!canManage}
+          />
+          <RHFTextField<BrandSettingsFormValues>
+            name="email_reply_to"
+            label={t.organizations.settingsTabs.brand.emailReplyToLabel}
+            type="email"
+            placeholder={t.organizations.settingsTabs.brand.emailReplyToPlaceholder}
+            disabled={!canManage}
+          />
+        </div>
+
         {canManage && (
           <Button type="submit" disabled={isPending}>
             {t.buttons.save}

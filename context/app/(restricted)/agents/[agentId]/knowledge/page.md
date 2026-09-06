@@ -1,19 +1,57 @@
-# Agent knowledge sources
+# Agent knowledge
 
 **Source:** `src/app/(restricted)/agents/[agentId]/knowledge/page.tsx`, view
 in `components/KnowledgeSourcesView.tsx`.
 
-Net-new page (Sprint 1 Phase 2 of the frontend integration plan,
-`origin/sprint-1-phase2-6-snapshot` on the backend, `apps/knowledge`). No
-mock precedent — nested under the agent per the plan's routing decision.
-Linked from `AgentDetailView`'s header (a "Knowledge sources" button, gated
-`knowledge:view`).
+Introduced in Sprint 1 Phase 2 (`apps/knowledge`), reworked for the backend's
+2026-09-06 org-shared-knowledge change. Linked from `AgentDetailView`'s
+header (a "Knowledge sources" button, gated `knowledge:view`).
+
+## Knowledge is org-shared, not agent-owned (backend 2026-09-06)
+
+`KnowledgeSource.agent` was removed on the backend: a crawl or PDF now
+belongs to the organization, and an agent optionally narrows to a subset of
+the org's sources through `AgentKnowledgeTarget`. **No target rows means the
+agent reads everything**, which is the fallback in
+`KnowledgeSourceSelector.resolve_applicable_sources()` — the empty set is
+"unnarrowed", never "reads nothing".
+
+Frontend consequences, all in `src/services/knowledge.ts`:
+
+- Creation and listing moved off the agent prefix:
+  `GET /knowledge/`, `POST /knowledge/website/discover/`,
+  `POST /knowledge/pdfs/`. The old `agents/{id}/knowledge/sources|website/discover|pdfs`
+  endpoints are gone, and calling them 404s.
+- `knowledgeSourcesListKey()` takes no agent id any more. One org-wide cache
+  entry, so a source added from any agent's page invalidates the list every
+  other agent reads.
+- `KnowledgeSourceListItem`/`KnowledgeSource` no longer carry an `agent`
+  field.
+
+**The page is still routed under the agent**, which is a deliberate choice
+rather than leftover structure. Two reasons: crawl-job progress is only
+readable through `agents/{id}/knowledge/crawl-jobs/{job}/`, so the
+add-website flow needs an agent id to poll at all; and narrowing — the thing
+an operator usually comes here to adjust — is meaningless without one. The
+list is labelled `t.knowledge.list.sharedNotice` so its scope is not mistaken
+for per-agent.
+
+### The narrowed-agent trap, and how it is avoided
+
+`AgentCrawlJobDetailView` filters the job by `resolve_applicable_sources()`.
+For a _narrowed_ agent, a source it just created is not yet in its target
+set, so its own crawl-job poll would 404 mid-flow and the discovery step
+would hang. `useKnowledgeTargets.includeSource` closes this: both add flows
+call it with the new source id the moment the source exists, and it appends
+to the target set only when the agent is actually narrowed. For an
+unnarrowed agent it is correctly a no-op, since adding one row there would
+silently narrow the agent to exactly that one source.
 
 ## List page
 
 `useKnowledgeSources` (`hooks/useKnowledgeSources.ts`) follows the
 `useAgentsList` pattern — `useQueryParams('knowledge')`, paginated
-`GET /agents/{id}/knowledge/sources/`. Unlike agents, this endpoint's
+`GET /knowledge/` (org-wide; it takes no agent id). Unlike agents, this endpoint's
 selector (`KnowledgeSourceSelector.build_parameters_config()`) is never
 wired up by its view to `?type=parameters`, so the hook builds its
 `FilterConfig[]` by hand from the client-known `status`/`source_type` enum
@@ -35,7 +73,9 @@ state machine (`form → discovering → review → extracting → done`, plus a
 failure state per polling step):
 
 1. **form** — `root_url` only (`WebsiteDiscoverSerializer`'s one required
-   field), `POST .../knowledge/website/discover/`.
+   field), `POST /knowledge/website/discover/` (org-level). `onCreated` fires
+   here, not at the end of the flow, so a narrowed agent can see the source
+   before its own crawl-job read has to resolve it.
 2. **discovering** — `useCrawlJob.ts` polls
    `GET .../knowledge/crawl-jobs/{id}/` every 3s until the job leaves
    `pending`/`running`. The website source id needed for every later step
@@ -61,8 +101,41 @@ failure state per polling step):
 `AddPdfDialog` + `useAddPdfSource.ts` — a plain `useState`-managed file
 input (not React Hook Form; see `ProjectFilesSection.tsx`'s `Dropzone` for
 the established precedent that file inputs are the one exception to the
-RHF+Zod rule) posting `multipart/form-data` to
-`POST /agents/{id}/knowledge/pdfs/`.
+RHF+Zod rule) posting `multipart/form-data` to `POST /knowledge/pdfs/`
+(org-level). Takes an `onCreated` callback for the same narrowing reason as
+the website flow.
+
+## Knowledge scope (narrowing)
+
+`KnowledgeTargetsPanel.tsx` + `useKnowledgeTargets.ts` +
+`useAllKnowledgeSources.ts` — `GET`/`PUT
+/agents/{id}/knowledge/targets/`, gated `knowledge:view` to read and
+`knowledge:manage` to write (the backend splits them via
+`method_permissions`).
+
+Presented as two explicit modes rather than one checkbox list with a zero
+case, because the difference is about the future: an agent on "all sources"
+picks up sources added later, a narrowed one does not. Clearing every
+checkbox is deliberately _not_ the same as choosing "all", so the save button
+stays disabled on an empty selection instead of silently un-narrowing the
+agent.
+
+`useAllKnowledgeSources` is a separate read from the paginated list on
+purpose: the picker must show every source to be correct, and the toolbar's
+page/search/filter state would otherwise decide which sources an operator can
+narrow to. It requests one max-size page (`page_size=100`, the backend's
+`DefaultPagination.max_page_size`) and reports the shortfall in the UI rather
+than silently truncating if an org ever exceeds that.
+
+Saving invalidates the health summary as well as the targets read — health's
+source and chunk counts are computed from exactly this set.
+
+The panel holds local edits in a single nullable `edit` object and _derives_
+the unedited case from server state rather than copying it in via an effect,
+so a refetch can never leave the two out of sync. `save` takes an `onSaved`
+callback that fires only on success, which is what lets it drop local edits
+at the right moment: keeping them through a failed save is the difference
+between retrying and retyping.
 
 ## Search index
 
@@ -81,7 +154,10 @@ check.
 above the sources list: `GET /agents/{id}/knowledge/health/`
 (`KnowledgeSourceSelector.get_health_summary`, never cached) —
 `{score, last_updated, sources, indexed_chunks}`, gated `knowledge:view`
-same as the list itself.
+same as the list itself. The response shape did not change with the
+org-shared move, but its _meaning_ did: the counts now cover whatever
+`resolve_applicable_sources()` returns for this agent, so they follow the
+narrowing set rather than a set of agent-owned rows.
 
 The score is shown as `n/100` and suppressed to a dash when `sources === 0`:
 the backend returns `0` in that case, which reads as "broken" rather than

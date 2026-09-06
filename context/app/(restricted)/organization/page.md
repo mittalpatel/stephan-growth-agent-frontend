@@ -37,14 +37,38 @@ to load.
 ## Settings tabs (Sprint-1 gap closure)
 
 `OrganizationSettingsView` now wraps its content in `Tabs`: the existing
-rename/danger-zone content moved unchanged into a "General" tab; four new
+rename/danger-zone content moved unchanged into a "General" tab; seven other
 tabs each own one settings resource, resolved against the session tenant
-(`/api/v1/settings/{organization,brand,ai-preferences,security}/` — no
-organization id in the URL, unlike every other endpoint on this page):
+(`/api/v1/settings/{organization,brand,profile,features,domains,ai-preferences,security}/`
+— no organization id in the URL, unlike every other endpoint on this page).
+The `TabsList` scrolls horizontally: eight tabs no longer fit a narrow
+viewport, and wrapping them would push the panel below the fold on mobile.
 
-- **Brand** (`BrandSettingsTab`/`useBrandSettingsForm.ts`): logo URL, primary
-  color (client-validated hex, mirroring the backend's own
-  `THEME_COLOR_MUST_BE_HEX`-style guard), tone of voice, company description.
+- **Brand** (`BrandSettingsTab`/`useBrandSettingsForm.ts`): logo and favicon
+  URLs, primary and secondary colors (client-validated hex, mirroring the
+  backend's `_validate_hex`), tone of voice, company description, plus a
+  white-label group added 2026-09-06 (`display_name`, `email_from_name`,
+  `email_reply_to`). `display_name` is deliberately a _branding_ field rather
+  than an edit to the General tab's `name`: the backend keeps them separate so
+  rebranding a tenant's public-facing name never touches its slug or anything
+  derived from the original name.
+- **Profile** (`OrganizationProfileTab`/`useOrganizationProfileForm.ts`):
+  contact and business details (legal name, website, contact email/phone,
+  address). Split from Brand on the backend because it is company information
+  with no bearing on rendering, and because the two are expected to diverge on
+  who may edit them.
+- **Features** (`FeatureFlagsTab`/`useFeatureFlagsForm.ts`): three switches
+  over `Organization.settings["features"]`. The backend enforces an allowlist
+  (`FEATURE_FLAG_KEYS`), so adding a flag is a two-sided change: an unknown
+  key is rejected outright. Its errors arrive as `non_field_errors`, which has
+  no field to bind to, so `applyApiError` toasts them.
+- **Domains** (`DomainsTab`/`useOrganizationDomains.ts`): claim, verify,
+  promote, and remove custom domains. **This is data-model groundwork on the
+  backend** — nothing routes on these rows, there is no TLS provisioning, and
+  `verify` flips a flag without performing a DNS lookup. The tab says so
+  rather than implying a working custom-domain feature. Verification tokens
+  are shown only while a domain is unverified, since republishing the record
+  after the fact changes nothing.
 - **AI preferences** (`AiPreferencesTab`/`useAiPreferencesForm.ts`): three
   switches — require approval before outreach/publishing, allow
   auto-CRM-updates.
@@ -54,8 +78,16 @@ organization id in the URL, unlike every other endpoint on this page):
   history + request (`GET`/`POST /api/v1/settings/data/export/`) and delete
   (`POST .../data/delete/` emails a confirmation link).
 
-All four gate their editable controls on `organization:manage`, matching the
-General tab's existing convention; Data's export/delete actions gate on the
+### The bootstrap endpoint is deliberately unused
+
+`GET /api/v1/settings/bootstrap/` returns every tab in one response, and the
+frontend does not use it. Each tab owns its own cache entry and refetches only
+itself after its own `PATCH`; collapsing the reads would mean invalidating all
+six whenever any one is saved. Worth revisiting if this page ever paints every
+tab at once instead of one at a time.
+
+All of these gate their editable controls on `organization:manage`, matching
+the General tab's existing convention; Data's export/delete actions gate on the
 more specific `organization:export`/`organization:delete` instead, since
 they're independently-granted codes (see `AGENTS.md`'s `MANAGE_IMPLIED` note).
 

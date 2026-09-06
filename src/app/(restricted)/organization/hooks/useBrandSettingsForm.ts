@@ -25,9 +25,14 @@ export function useBrandSettingsForm() {
     resolver: zodResolver(brandSettingsSchema),
     defaultValues: {
       logo_url: '',
+      favicon_url: '',
       color_primary: '',
+      color_secondary: '',
       tone_of_voice: '',
       company_description: '',
+      display_name: '',
+      email_from_name: '',
+      email_reply_to: '',
     },
   });
 
@@ -36,9 +41,14 @@ export function useBrandSettingsForm() {
     if (!brand) return;
     form.reset({
       logo_url: brand.logo_url,
+      favicon_url: brand.favicon_url,
       color_primary: brand.color_primary,
+      color_secondary: brand.color_secondary,
       tone_of_voice: brand.tone_of_voice,
       company_description: brand.company_description,
+      display_name: brand.display_name,
+      email_from_name: brand.email_from_name,
+      email_reply_to: brand.email_reply_to,
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [brand]);
@@ -51,7 +61,17 @@ export function useBrandSettingsForm() {
     } catch (error) {
       applyApiError<BrandSettingsFormValues>(error, {
         setError: form.setError,
-        fields: ['logo_url', 'color_primary', 'tone_of_voice', 'company_description'],
+        fields: [
+          'logo_url',
+          'favicon_url',
+          'color_primary',
+          'color_secondary',
+          'tone_of_voice',
+          'company_description',
+          'display_name',
+          'email_from_name',
+          'email_reply_to',
+        ],
       });
     }
   });

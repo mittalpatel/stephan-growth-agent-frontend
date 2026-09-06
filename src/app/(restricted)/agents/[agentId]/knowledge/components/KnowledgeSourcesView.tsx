@@ -12,22 +12,31 @@ import { Button } from '@/components/ui/button';
 import { t } from '@/locales';
 
 import { useKnowledgeSources } from '../hooks/useKnowledgeSources';
+import { useKnowledgeTargets } from '../hooks/useKnowledgeTargets';
 import { AddPdfDialog } from './AddPdfDialog';
 import { AddWebsiteDialog } from './AddWebsiteDialog';
 import { IndexVersionsPanel } from './IndexVersionsPanel';
 import { KnowledgeHealthPanel } from './KnowledgeHealthPanel';
 import { KnowledgeSourcesSkeleton } from './KnowledgeSourcesSkeleton';
 import { KnowledgeSourcesTable } from './KnowledgeSourcesTable';
+import { KnowledgeTargetsPanel } from './KnowledgeTargetsPanel';
 
 type Props = Readonly<{ agentId: string }>;
 
 /**
- * An agent's knowledge sources: list + add-website/add-pdf flows + the
- * index build history. Net-new page, no mock precedent — nested under the
- * agent per the plan's routing decision.
+ * The organization's shared knowledge sources, plus the parts that belong to
+ * one agent: its health summary, its narrowing set, and its index builds.
+ *
+ * Still routed under the agent even though the sources themselves are now
+ * org-wide. Two reasons, both practical: crawl-job progress is only readable
+ * through an agent-scoped route, so the add-website flow needs an agent id to
+ * poll at all; and narrowing is the thing an operator is usually here to
+ * adjust, which is meaningless without one. The list is labelled as shared so
+ * the scope is not mistaken for per-agent.
  */
 export function KnowledgeSourcesView({ agentId }: Props) {
-  const list = useKnowledgeSources(agentId);
+  const list = useKnowledgeSources();
+  const { includeSource } = useKnowledgeTargets(agentId);
   const { can } = usePermissions();
   const canManage = can('knowledge', 'manage');
 
@@ -70,7 +79,7 @@ export function KnowledgeSourcesView({ agentId }: Props) {
       );
     }
 
-    return <KnowledgeSourcesTable agentId={agentId} sources={list.sources} />;
+    return <KnowledgeSourcesTable sources={list.sources} />;
   }
 
   return (
@@ -90,11 +99,18 @@ export function KnowledgeSourcesView({ agentId }: Props) {
 
       <KnowledgeHealthPanel agentId={agentId} />
 
+      <KnowledgeTargetsPanel agentId={agentId} />
+
       <div className="space-y-4">
+        <p className="text-muted-foreground text-sm">{t.knowledge.list.sharedNotice}</p>
+
         {canManage && (
           <div className="flex justify-end gap-2">
-            <AddPdfDialog agentId={agentId} />
-            <AddWebsiteDialog agentId={agentId} />
+            {/* `includeSource` keeps a narrowed agent from creating a source
+                it cannot then see — and, before that, from 404ing on its own
+                crawl-job poll. It is a no-op for an un-narrowed agent. */}
+            <AddPdfDialog onCreated={includeSource} />
+            <AddWebsiteDialog agentId={agentId} onCreated={includeSource} />
           </div>
         )}
 

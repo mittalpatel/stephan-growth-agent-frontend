@@ -1,0 +1,162 @@
+'use client';
+
+import { useState } from 'react';
+
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Skeleton } from '@/components/ui/skeleton';
+import { format } from '@/lib/i18n';
+import { t } from '@/locales';
+
+import { useAllKnowledgeSources } from '../hooks/useAllKnowledgeSources';
+import { useKnowledgeTargets } from '../hooks/useKnowledgeTargets';
+
+type Props = Readonly<{ agentId: string }>;
+
+/**
+ * Which of the organization's shared sources this agent reads.
+ *
+ * Two states, not one list with a zero case: "all sources" (no target rows,
+ * the backend's fallback) and "selected sources". They are presented as an
+ * explicit choice because the difference matters going forward — an agent on
+ * "all" picks up sources added later, a narrowed one does not. Clearing every
+ * checkbox is deliberately not the same as choosing "all", so the save button
+ * stays disabled on an empty selection rather than silently un-narrowing the
+ * agent behind the operator's back.
+ */
+export function KnowledgeTargetsPanel({ agentId }: Props) {
+  const { selectedIds, isNarrowed, canManage, isLoading, isError, refetch, save, isSaving } =
+    useKnowledgeTargets(agentId);
+  const {
+    sources,
+    isTruncated,
+    total,
+    isLoading: isSourcesLoading,
+    isError: isSourcesError,
+    refetch: refetchSources,
+  } = useAllKnowledgeSources();
+
+  // Server state is the default; local state exists only once the operator
+  // has actually edited something, and is dropped again on a successful save.
+  // Deriving the unedited case rather than copying it into state via an
+  // effect means a refetch cannot leave the two out of sync, and there is no
+  // render where the panel shows a stale copy of what the server just
+  // returned.
+  const [edit, setEdit] = useState<{ mode: 'all' | 'selected'; draft: string[] } | null>(null);
+
+  const mode = edit?.mode ?? (isNarrowed ? 'selected' : 'all');
+  const draft = edit?.draft ?? selectedIds;
+  const setMode = (next: 'all' | 'selected') => setEdit({ mode: next, draft });
+
+  if (isLoading || isSourcesLoading) return <Skeleton className="h-40 w-full" />;
+
+  if (isError || isSourcesError) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>{t.knowledge.targets.title}</CardTitle>
+        </CardHeader>
+        <CardContent className="flex items-center justify-between gap-3">
+          <p className="text-muted-foreground text-sm">{t.knowledge.targets.error}</p>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => {
+              void refetch();
+              void refetchSources();
+            }}
+          >
+            {t.buttons.tryAgain}
+          </Button>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  const toggle = (sourceId: string, checked: boolean) => {
+    setEdit({
+      mode,
+      draft: checked ? [...draft, sourceId] : draft.filter((id) => id !== sourceId),
+    });
+  };
+
+  const isDirty =
+    mode !== (isNarrowed ? 'selected' : 'all') ||
+    (mode === 'selected' &&
+      draft.slice().sort().join(',') !== selectedIds.slice().sort().join(','));
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>{t.knowledge.targets.title}</CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <p className="text-muted-foreground text-sm">{t.knowledge.targets.description}</p>
+
+        <div className="space-y-2">
+          <label className="flex items-center gap-2 text-sm">
+            <input
+              type="radio"
+              name="knowledge-targets-mode"
+              checked={mode === 'all'}
+              disabled={!canManage}
+              onChange={() => setMode('all')}
+              className="accent-primary"
+            />
+            {t.knowledge.targets.modeAll}
+          </label>
+          <label className="flex items-center gap-2 text-sm">
+            <input
+              type="radio"
+              name="knowledge-targets-mode"
+              checked={mode === 'selected'}
+              disabled={!canManage}
+              onChange={() => setMode('selected')}
+              className="accent-primary"
+            />
+            {t.knowledge.targets.modeSelected}
+          </label>
+        </div>
+
+        {mode === 'selected' && (
+          <div className="max-h-64 space-y-1 overflow-y-auto rounded-md border p-2">
+            {sources.length === 0 ? (
+              <p className="text-muted-foreground p-2 text-sm">{t.knowledge.targets.noSources}</p>
+            ) : (
+              sources.map((source) => (
+                <label
+                  key={source.id}
+                  className="hover:bg-accent flex items-center gap-2 rounded-md px-2 py-1.5 text-sm"
+                >
+                  <Checkbox
+                    checked={draft.includes(source.id)}
+                    disabled={!canManage}
+                    onCheckedChange={(checked) => toggle(source.id, checked === true)}
+                  />
+                  <span className="truncate">{source.display_name}</span>
+                </label>
+              ))
+            )}
+          </div>
+        )}
+
+        {mode === 'selected' && isTruncated && (
+          <p className="text-muted-foreground text-xs">
+            {format(t.knowledge.targets.truncated, { shown: sources.length, total })}
+          </p>
+        )}
+
+        {canManage && (
+          <Button
+            type="button"
+            disabled={isSaving || !isDirty || (mode === 'selected' && draft.length === 0)}
+            onClick={() => save(mode === 'all' ? [] : draft, () => setEdit(null))}
+          >
+            {t.buttons.save}
+          </Button>
+        )}
+      </CardContent>
+    </Card>
+  );
+}

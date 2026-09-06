@@ -161,7 +161,14 @@ describe('ProjectFilesSection — rename', () => {
     await user.click(within(dialog).getByRole('button', { name: /^rename$/i }));
 
     expect(rename).toHaveBeenCalledWith('f1', 'Renamed report');
-  });
+    // 15s, not the 5s default. This file mounts `ProjectFilesSection`, which
+    // pulls `PdfPreview` in through `next/dynamic`; that import is
+    // transformed on first use and the whole file runs ~10s in a full
+    // parallel suite versus ~3s alone. The default left almost no margin, so
+    // this test failed only under load and never in isolation. The timeout is
+    // headroom for a slow environment, not a wait for a real async condition
+    // (every assertion here is still awaited on its own).
+  }, 15000);
 
   it('hides the rename control for a viewer-only grant', () => {
     mockFilesHook();
@@ -191,6 +198,17 @@ describe('ProjectFilesSection — PDF preview', () => {
 
     const user = userEvent.setup({ delay: null });
 
+    // `ProjectFilesSection` pulls in `PdfPreview` through `next/dynamic`, so
+    // the preview only mounts once that chunk's import promise resolves.
+    // Importing it here first puts the module in the registry before the
+    // click, leaving `next/dynamic` a promise that settles on the next
+    // microtask instead of one that has to transform and evaluate the module
+    // (plus react-pdf's CSS imports) while the assertion below is already
+    // counting down. That transform is what pushed this test past the default
+    // 1s `findBy*` timeout under full-suite load, and it is why this test
+    // failed only in a full run and never in isolation.
+    await import('../PdfPreview');
+
     render(<ProjectFilesSection projectId="project-1" />);
 
     // `userEvent.click`, not a raw DOM `.click()`: the latter is not
@@ -200,8 +218,12 @@ describe('ProjectFilesSection — PDF preview', () => {
     // "not wrapped in act(...)" warning.
     await user.click(await screen.findByRole('button', { name: /report/i }));
 
-    expect(await screen.findByTestId('pdf-document')).toBeInTheDocument();
+    // Still generous on top of the preload: a dynamic boundary means at least
+    // one extra tick, and the CI box this runs on is not the one it was
+    // measured on.
+    expect(await screen.findByTestId('pdf-document', {}, { timeout: 5000 })).toBeInTheDocument();
     expect(screen.getByTestId('pdf-page')).toBeInTheDocument();
     expect(screen.getByText('Page 1 of 3')).toBeInTheDocument();
-  });
+    // See the rename test above for why this file gets a raised timeout.
+  }, 15000);
 });
