@@ -78,7 +78,7 @@ export function PersonalInfoForm({ profile }: Readonly<{ profile: UserProfile }>
             <Button
               type="submit"
               disabled={isSaving}
-              className={cn('bg-primary text-white hover:bg-primary/90', themedButton)}
+              className={cn('bg-primary text-primary-foreground hover:bg-primary/90', themedButton)}
             >
               {isSaving ? copy.saving : copy.saveButton}
             </Button>

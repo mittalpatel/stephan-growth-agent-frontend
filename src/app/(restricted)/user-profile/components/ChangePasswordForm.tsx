@@ -73,7 +73,10 @@ export function ChangePasswordForm({ profile }: Readonly<{ profile: UserProfile 
               <Button
                 type="submit"
                 disabled={isSaving}
-                className={cn('bg-primary text-white hover:bg-primary/90', themedButton)}
+                className={cn(
+                  'bg-primary text-primary-foreground hover:bg-primary/90',
+                  themedButton
+                )}
               >
                 {isSaving ? copy.updatingPassword : copy.changePasswordButton}
               </Button>

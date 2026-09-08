@@ -74,7 +74,7 @@ export default function ImpersonationBanner({ session }: { session: Impersonatio
         className={
           session.write_enabled
             ? 'rounded-full bg-red-600/15 px-2 py-0.5 text-xs font-medium text-red-700'
-            : 'rounded-full bg-black/10 px-2 py-0.5 text-xs font-medium'
+            : 'rounded-full bg-foreground/10 px-2 py-0.5 text-xs font-medium'
         }
       >
         {session.write_enabled ? copy.writesEnabled : copy.readOnly}

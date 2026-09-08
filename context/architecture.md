@@ -2,21 +2,21 @@
 
 ## Stack
 
-| Layer                   | Technology                                                                    |
-| ----------------------- | ----------------------------------------------------------------------------- |
-| Framework               | Next.js 16 — App Router, `src/` directory                                     |
-| Language                | TypeScript                                                                    |
-| Styling                 | Tailwind CSS v4 — CSS-based config via `@theme inline {}` in `globals.css`    |
-| UI Components           | shadcn/ui only — Nexus-branded token values, `src/components/ui/` (generated) |
-| Auth                    | NextAuth v4 — JWT strategy, Credentials provider (SSO is a documented seam)   |
-| Data fetching           | TanStack Query v5 — `useAuthQuery` wrapper around `axiosAuth`                 |
-| Forms                   | React Hook Form + Zod                                                         |
-| Date picker             | react-day-picker v10 (use `autoFocus`, not `initialFocus`)                    |
-| Testing                 | Vitest (unit), Playwright (E2E)                                               |
-| Linting                 | ESLint + lint-staged on pre-commit; typecheck + tests on pre-push             |
-| Security (SAST)         | `eslint-plugin-security` (in ESLint config) + Semgrep scan on pre-push & CI   |
-| Security (secrets)      | Gitleaks — staged scan on pre-commit, full-history scan in CI                 |
-| Security (supply chain) | `npm audit` (prod deps, CI) + Dependabot PRs + CycloneDX SBOM artifact        |
+| Layer                   | Technology                                                                                     |
+| ----------------------- | ---------------------------------------------------------------------------------------------- |
+| Framework               | Next.js 16 — App Router, `src/` directory                                                      |
+| Language                | TypeScript                                                                                     |
+| Styling                 | Tailwind CSS v4 — CSS-based config via `@theme inline {}` in `globals.css`                     |
+| UI Components           | shadcn/ui only — YB Inspire-branded token values, dark-first, `src/components/ui/` (generated) |
+| Auth                    | NextAuth v4 — JWT strategy, Credentials provider (SSO is a documented seam)                    |
+| Data fetching           | TanStack Query v5 — `useAuthQuery` wrapper around `axiosAuth`                                  |
+| Forms                   | React Hook Form + Zod                                                                          |
+| Date picker             | react-day-picker v10 (use `autoFocus`, not `initialFocus`)                                     |
+| Testing                 | Vitest (unit), Playwright (E2E)                                                                |
+| Linting                 | ESLint + lint-staged on pre-commit; typecheck + tests on pre-push                              |
+| Security (SAST)         | `eslint-plugin-security` (in ESLint config) + Semgrep scan on pre-push & CI                    |
+| Security (secrets)      | Gitleaks — staged scan on pre-commit, full-history scan in CI                                  |
+| Security (supply chain) | `npm audit` (prod deps, CI) + Dependabot PRs + CycloneDX SBOM artifact                         |
 
 ## Security scanning
 
@@ -113,7 +113,7 @@ contracts/            # Backend-generated JSON, asserted in src/__tests__
 - **Business logic in hooks** — components are pure JSX, all state/fetch/transform lives in `hooks/use*.ts`
 - **URL-based filter state** — `useQueryParams(namespace)` stores filters in the URL with prefixed keys (e.g. `widgets_page`)
 - **Locale via `t.*`** — never hardcode strings; import `t` from `@/locales`. Enforced as an ESLint error, covering `aria-label`/`placeholder`/`alt`/`toast` too
-- **Design tokens** — shadcn's stock semantic token _names_, carrying Nexus brand _values_, plus one added pair (`--brand-accent`) (`bg-background`, `text-muted-foreground`, `border-border`). No hex, no raw Tailwind palette classes (`bg-white`, `text-gray-500`) outside `globals.css`. This is what makes dark mode free
+- **Design tokens** — shadcn's stock semantic token _names_, carrying YB Inspire brand _values_ (ADR-0017, dark-first), plus three added pairs (`--brand-accent`, `--brand-surface`, `--surface-raised`) (`bg-background`, `text-muted-foreground`, `border-border`). No hex, no raw Tailwind palette classes (`bg-white`, `text-gray-500`) outside `globals.css`. This is what makes dark mode free
 - **`Readonly<Props>`** — all component props wrapped in `Readonly<>`
 - **No comments** unless the WHY is non-obvious
 

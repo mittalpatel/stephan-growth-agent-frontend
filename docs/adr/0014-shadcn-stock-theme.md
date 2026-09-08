@@ -1,6 +1,10 @@
 # ADR-0014: shadcn stock neutral theme, no brand palette; `@base-ui/react` removed
 
-**Status:** Accepted
+**Status:** Accepted. The "stock neutral palette" and "branding is a `--primary`-pair
+edit" parts of this decision are superseded by
+[ADR-0017](0017-yb-inspire-brand-theme.md), which applies the client's actual brand.
+The component-library and colour-token-discipline decisions below are unaffected and
+still current.
 
 ## Context
 

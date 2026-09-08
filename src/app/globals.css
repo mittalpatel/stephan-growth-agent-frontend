@@ -5,23 +5,44 @@
 
 /*
  * ─────────────────────────────────────────────────────────────────────────────
- * Design tokens
+ * Design tokens — YB Inspire brand system (brandbook v1.0, September 2026)
  *
- * shadcn/ui's stock neutral theme, unmodified. There is no brand palette here
- * on purpose (ADR-0014): a generated app should look deliberate and neutral,
- * and every shadcn component added later — today's and next year's — matches
- * automatically. A custom accent is exactly what breaks that.
+ * This is the client's brand, not a generated default and not shadcn's stock
+ * neutral theme. It is **dark-first**: `.dark` is the canonical expression and
+ * the app's default theme (see `src/providers/ThemeProvider.tsx`), because the
+ * brand's main ground is a colour — bleu petrole — not a shade of white. The
+ * `:root` block is a genuine light mode, kept working and reviewed, but it is
+ * the secondary expression.
  *
- * To brand a generated app, edit the `--primary` pair below (and only that
- * pair) in both blocks. Nothing else needs to change, and nothing else should.
+ * ## The palette
+ *
+ *   Bleu petrole  #0A3D51  main ground, "confiance"
+ *   Bleu nuit     #071F2B  contrast bands, focus, sidebar
+ *   Teal Inspire  #5EBCB8  the brand: fills, links, icons, focus
+ *   Jaune Action  #F5E723  CTA, proof, active state — deliberately rare
+ *   Blanc         #FFFFFF  primary text on dark
+ *   Teal profond  #0D4A4E  the only text colour used on jaune
+ *
+ * ## Two rules that are not negotiable
+ *
+ * **1. White never sits on teal.** It is 2.24:1, and the brandbook rules it out
+ * by name. Teal fills take bleu nuit text, which is why `--primary-foreground`
+ * is dark here rather than the near-white it is in most themes. Every other
+ * pairing the brand uses clears AA comfortably: white on petrole 11.67:1, teal
+ * on petrole 5.20:1, jaune on petrole 9.08:1, teal profond on jaune 7.76:1.
+ *
+ * **2. Jaune stays rare.** "Le CTA jaune reste visible mais rare"; stacking
+ * yellow buttons is called out as a mistake. So teal is `--primary` and fills
+ * the ordinary button, while jaune lives in `--brand-accent` and reaches a
+ * button only through the opt-in `cta` variant.
  *
  * ## The one rule
  *
  * **This file is the only place a colour literal may appear.** Components use
  * semantic utilities — `bg-background`, `text-muted-foreground`,
- * `border-border` — never `bg-white`, never `text-gray-500`, never a hex. That
- * is what makes dark mode free: a single literal colour hardcodes one theme and
- * silently breaks the other. Enforced by `npm run lint:colors`.
+ * `border-border` — never `bg-white`, never `text-gray-500`, never a hex. A
+ * single literal colour renders correctly in one theme and is unreadable in the
+ * other, and nobody notices until a user screenshots it.
  *
  * Colours are `oklch` because it is perceptually uniform: two tokens with the
  * same lightness actually look equally light, so contrast survives a hue change.
@@ -29,141 +50,168 @@
  */
 
 :root {
-  /* One radius token. Everything else derives from it, so roundness is a single
-     decision rather than a per-component opinion. Raised from shadcn's stock
-     0.625rem so `rounded-xl` lands on 16px — the card roundness the Nexus
-     design uses, reached by changing one number rather than every component. */
-  --radius: 0.75rem;
+  color-scheme: light;
 
-  --background: oklch(0.985 0.003 106.4);
-  --foreground: oklch(0.205 0.01 268.2);
+  /* 14px, the reference site's card radius. Pills are not derived from this —
+     a capsule is `rounded-full`, and the tension between the two is the point:
+     soft-cornered cards carrying hard-round CTAs. */
+  --radius: 0.875rem;
+
+  --background: oklch(0.99 0.003 210);
+  --foreground: oklch(0.227 0.038 233.4);
   --card: oklch(1 0 0);
-  --card-foreground: oklch(0.205 0.01 268.2);
+  --card-foreground: oklch(0.227 0.038 233.4);
   --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.205 0.01 268.2);
-  --primary: oklch(0.347 0.073 256.7);
-  --primary-foreground: oklch(0.985 0.003 106.4);
-  --secondary: oklch(0.963 0.004 106.5);
-  --secondary-foreground: oklch(0.205 0.01 268.2);
-  --muted: oklch(0.963 0.004 106.5);
-  --muted-foreground: oklch(0.551 0.013 264.5);
+  --popover-foreground: oklch(0.227 0.038 233.4);
+
+  /* Petrole, the logo's "bleu petrole + teal sur blanc" variant. White text on
+     it is 11.67:1. */
+  --primary: oklch(0.338 0.061 229.9);
+  --primary-foreground: oklch(1 0 0);
+
+  --secondary: oklch(0.965 0.006 210);
+  --secondary-foreground: oklch(0.227 0.038 233.4);
+  --muted: oklch(0.965 0.006 210);
+  --muted-foreground: oklch(0.5 0.03 225);
+
   /* shadcn's `accent` is the subtle hover/active surface, not the brand
-     highlight — a tinted brand wash keeps hovers quiet. The gold highlight
-     lives in `--brand-accent` below. */
-  --accent: oklch(0.957 0.008 253.9);
-  --accent-foreground: oklch(0.347 0.073 256.7);
+     highlight — a tinted teal wash keeps hovers quiet. Jaune lives in
+     `--brand-accent` below and never enters a hover state. */
+  --accent: oklch(0.955 0.015 191.7);
+  --accent-foreground: oklch(0.375 0.059 201.7);
+
   --destructive: oklch(0.543 0.174 29.7);
-  --destructive-foreground: oklch(0.985 0.003 106.4);
-  --border: oklch(0.922 0.007 88.6);
-  --input: oklch(0.922 0.007 88.6);
-  --ring: oklch(0.347 0.073 256.7);
+  --destructive-foreground: oklch(1 0 0);
+  --border: oklch(0.9 0.01 210);
+  --input: oklch(0.9 0.01 210);
+  --ring: oklch(0.55 0.08 195);
 
-  /* The one added token pair. Gold, used for the small uppercase eyebrow above
-     a page title and nothing else — it carries the brand's warmth without
-     entering the hover/active surfaces that `--accent` owns. Added in all three
-     places (`:root`, `.dark`, `@theme inline`) per the rule above. */
-  --brand-accent: oklch(0.671 0.123 76.5);
-  --brand-accent-foreground: oklch(0.961 0.027 83.5);
+  /* Jaune Action. Its foreground is teal profond and only teal profond: the
+     brandbook gives no other text colour for a yellow ground. */
+  --brand-accent: oklch(0.911 0.187 104.9);
+  --brand-accent-foreground: oklch(0.375 0.059 201.7);
 
-  /* A large brand-coloured surface (the auth hero panel). Deliberately NOT
-     `--primary`: `--primary` is a control fill, so dark mode lightens it, which
-     is right for a button and wrong for a full-height panel. Pointing the panel
-     at `--primary` made it a pale slab in dark mode (in stock shadcn, where dark
-     `--primary` is near-white, it was a white one). This pair keeps the same
-     navy in both themes, because a brand surface is not theme-dependent. */
-  --brand-surface: oklch(0.347 0.073 256.7);
-  --brand-surface-foreground: oklch(0.985 0.003 106.4);
+  /* A large brand-coloured surface (the auth hero panel, the landing CTA band).
+     Deliberately NOT `--primary`: `--primary` is a control fill, so the themes
+     move it in opposite directions, which is right for a button and wrong for a
+     full-height panel. Bleu nuit in both blocks, because a brand surface is not
+     theme-dependent. */
+  --brand-surface: oklch(0.227 0.038 233.4);
+  --brand-surface-foreground: oklch(1 0 0);
 
-  /* Status tones. Not part of stock shadcn, but every enterprise app renders
-     state — and the alternative is `bg-emerald-50` scattered through components,
-     which hardcodes light mode. `destructive` above already covers "danger", so
-     these three complete the set. Each pair is a surface plus text guaranteed to
-     hit 4.5:1 on it. */
-  --success: oklch(0.956 0.015 171.1);
-  --success-foreground: oklch(0.533 0.104 163.8);
-  --warning: oklch(0.959 0.028 81.5);
-  --warning-foreground: oklch(0.624 0.132 70.1);
-  --info: oklch(0.955 0.016 253.9);
-  --info-foreground: oklch(0.538 0.135 254.2);
+  /* The reference site builds every card as a translucent wash over the ground
+     rather than a lighter solid — `rgba(255,255,255,0.04)` on a 10% border.
+     Translucency is the whole effect, so this cannot be flattened to a solid.
+     `--card` stays solid alongside it, for popovers and dialogs that float over
+     an unknown surface and would smear if they were see-through. */
+  --surface-raised: oklch(0.338 0.061 229.9 / 4%);
+  --surface-raised-border: oklch(0.338 0.061 229.9 / 12%);
 
-  /* Chart tokens ship with the theme so a chart added later is already
-     on-palette and colour-blind-safe. Ordered brand → gold → green → blue →
-     violet: adjacent pairs differ in lightness as well as hue, so the series
-     stays readable in greyscale and to a dichromat. */
-  --chart-1: oklch(0.347 0.073 256.7);
-  --chart-2: oklch(0.671 0.123 76.5);
-  --chart-3: oklch(0.533 0.104 163.8);
-  --chart-4: oklch(0.538 0.135 254.2);
-  --chart-5: oklch(0.542 0.185 296.2);
+  /* Focus is a soft halo on this brand, not a hard ring. */
+  --ring-halo: oklch(0.55 0.08 195 / 15%);
+
+  /* Status tones. Each pair is a surface plus a text colour guaranteed to hit
+     4.5:1 on it. `destructive` above already covers danger, so these three
+     complete the set. */
+  --success: oklch(0.95 0.03 165);
+  --success-foreground: oklch(0.48 0.1 164);
+  --warning: oklch(0.96 0.06 100);
+  --warning-foreground: oklch(0.48 0.1 90);
+  --info: oklch(0.95 0.025 200);
+  --info-foreground: oklch(0.45 0.07 205);
+
+  /* Ordered petrole → jaune → green → blue → violet: adjacent pairs differ in
+     lightness as well as hue, so the series stays readable in greyscale and to
+     a dichromat. */
+  --chart-1: oklch(0.338 0.061 229.9);
+  --chart-2: oklch(0.75 0.15 100);
+  --chart-3: oklch(0.52 0.1 164);
+  --chart-4: oklch(0.52 0.12 250);
+  --chart-5: oklch(0.54 0.15 310);
 
   --sidebar: oklch(1 0 0);
-  --sidebar-foreground: oklch(0.205 0.01 268.2);
-  --sidebar-primary: oklch(0.347 0.073 256.7);
-  --sidebar-primary-foreground: oklch(0.985 0.003 106.4);
-  --sidebar-accent: oklch(0.957 0.008 253.9);
-  --sidebar-accent-foreground: oklch(0.347 0.073 256.7);
-  --sidebar-border: oklch(0.922 0.007 88.6);
-  --sidebar-ring: oklch(0.347 0.073 256.7);
+  --sidebar-foreground: oklch(0.227 0.038 233.4);
+  --sidebar-primary: oklch(0.338 0.061 229.9);
+  --sidebar-primary-foreground: oklch(1 0 0);
+  --sidebar-accent: oklch(0.955 0.015 191.7);
+  --sidebar-accent-foreground: oklch(0.375 0.059 201.7);
+  --sidebar-border: oklch(0.9 0.01 210);
+  --sidebar-ring: oklch(0.55 0.08 195);
 }
 
 .dark {
-  /* The source design ships light mode only. This block is derived from it
-     rather than invented: every token keeps its light-mode hue and swaps
-     lightness, so the palette reads as the same brand with the lights off. */
-  --background: oklch(0.185 0.008 268.2);
-  --foreground: oklch(0.965 0.003 106.4);
-  --card: oklch(0.225 0.009 268.2);
-  --card-foreground: oklch(0.965 0.003 106.4);
-  --popover: oklch(0.225 0.009 268.2);
-  --popover-foreground: oklch(0.965 0.003 106.4);
-  /* The light-mode navy is too dark to sit under white text on a dark surface;
-     lifted and slightly desaturated so it still reads as the same blue. */
-  --primary: oklch(0.72 0.088 256.7);
-  --primary-foreground: oklch(0.205 0.01 268.2);
-  --secondary: oklch(0.275 0.008 268.2);
-  --secondary-foreground: oklch(0.965 0.003 106.4);
-  --muted: oklch(0.275 0.008 268.2);
-  --muted-foreground: oklch(0.715 0.012 264.5);
-  --accent: oklch(0.295 0.021 256.7);
-  --accent-foreground: oklch(0.93 0.02 253.9);
+  color-scheme: dark;
+
+  /* Bleu petrole. The brandbook calls this the "fond principal"; the reference
+     site sets it as `--bg` and builds everything on top of it. */
+  --background: oklch(0.338 0.061 229.9);
+  --foreground: oklch(1 0 0);
+
+  /* Petrole lifted by roughly the site's 4% white wash, as a solid — see the
+     `--surface-raised` note in `:root` for why both exist. */
+  --card: oklch(0.368 0.058 229.9);
+  --card-foreground: oklch(1 0 0);
+  --popover: oklch(0.368 0.058 229.9);
+  --popover-foreground: oklch(1 0 0);
+
+  /* Teal Inspire, with bleu nuit text. Not white: see rule 1 in the header. */
+  --primary: oklch(0.737 0.09 191.7);
+  --primary-foreground: oklch(0.227 0.038 233.4);
+
+  --secondary: oklch(0.398 0.055 229.9);
+  --secondary-foreground: oklch(1 0 0);
+  --muted: oklch(0.398 0.055 229.9);
+  /* White at 65%, the site's `--text-mid` for secondary copy. */
+  --muted-foreground: oklch(0.768 0.021 229.9);
+
+  --accent: oklch(0.408 0.052 210);
+  --accent-foreground: oklch(0.86 0.06 191.7);
+
   --destructive: oklch(0.704 0.165 29.7);
-  --destructive-foreground: oklch(0.985 0.003 106.4);
-  /* Borders and inputs are translucent white rather than a flat grey so they
-     read correctly over both `--background` and the lighter `--card`. */
+  --destructive-foreground: oklch(1 0 0);
+  /* Translucent white rather than a flat grey, so they read correctly over both
+     `--background` and the lighter `--card`. This is also exactly the site's
+     own `--border`. */
   --border: oklch(1 0 0 / 10%);
   --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.62 0.08 256.7);
+  --ring: oklch(0.737 0.09 191.7);
 
-  --brand-accent: oklch(0.78 0.115 78);
-  --brand-accent-foreground: oklch(0.24 0.03 80);
+  --brand-accent: oklch(0.911 0.187 104.9);
+  --brand-accent-foreground: oklch(0.375 0.059 201.7);
 
   /* Intentionally identical to the light-mode values. See the note there. */
-  --brand-surface: oklch(0.347 0.073 256.7);
-  --brand-surface-foreground: oklch(0.985 0.003 106.4);
+  --brand-surface: oklch(0.227 0.038 233.4);
+  --brand-surface-foreground: oklch(1 0 0);
 
-  /* Inverted: a dim tinted surface with a light tinted text, rather than the
-     light-mode pair, which glows on a dark background. */
-  --success: oklch(0.3 0.05 164);
-  --success-foreground: oklch(0.82 0.12 164);
-  --warning: oklch(0.31 0.05 72);
-  --warning-foreground: oklch(0.85 0.12 78);
-  --info: oklch(0.3 0.05 254);
-  --info-foreground: oklch(0.83 0.1 254);
+  --surface-raised: oklch(1 0 0 / 4%);
+  --surface-raised-border: oklch(1 0 0 / 10%);
+  --ring-halo: oklch(0.737 0.09 191.7 / 8%);
 
-  --chart-1: oklch(0.72 0.088 256.7);
-  --chart-2: oklch(0.78 0.115 78);
-  --chart-3: oklch(0.7 0.11 164);
-  --chart-4: oklch(0.7 0.12 254);
-  --chart-5: oklch(0.68 0.15 296);
+  /* Inverted against the light block: a dim tinted surface carrying light
+     tinted text, rather than the pale surfaces, which glow on a dark ground. */
+  --success: oklch(0.36 0.05 164);
+  --success-foreground: oklch(0.84 0.11 164);
+  --warning: oklch(0.38 0.06 100);
+  --warning-foreground: oklch(0.9 0.15 104.9);
+  --info: oklch(0.36 0.05 210);
+  --info-foreground: oklch(0.85 0.08 200);
 
-  --sidebar: oklch(0.225 0.009 268.2);
-  --sidebar-foreground: oklch(0.965 0.003 106.4);
-  --sidebar-primary: oklch(0.72 0.088 256.7);
-  --sidebar-primary-foreground: oklch(0.205 0.01 268.2);
-  --sidebar-accent: oklch(0.295 0.021 256.7);
-  --sidebar-accent-foreground: oklch(0.93 0.02 253.9);
+  --chart-1: oklch(0.737 0.09 191.7);
+  --chart-2: oklch(0.911 0.187 104.9);
+  --chart-3: oklch(0.72 0.11 160);
+  --chart-4: oklch(0.68 0.12 250);
+  --chart-5: oklch(0.7 0.15 310);
+
+  /* Bleu nuit. The brandbook reserves it for "sections de contraste", and the
+     app's deepest chrome is exactly that. */
+  --sidebar: oklch(0.227 0.038 233.4);
+  --sidebar-foreground: oklch(1 0 0);
+  --sidebar-primary: oklch(0.737 0.09 191.7);
+  --sidebar-primary-foreground: oklch(0.227 0.038 233.4);
+  --sidebar-accent: oklch(0.3 0.045 225);
+  --sidebar-accent-foreground: oklch(0.88 0.05 191.7);
   --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.62 0.08 256.7);
+  --sidebar-ring: oklch(0.737 0.09 191.7);
 }
 
 @theme inline {
@@ -189,6 +237,7 @@
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
+  --color-ring-halo: var(--ring-halo);
   --color-success: var(--success);
   --color-success-foreground: var(--success-foreground);
   --color-warning: var(--warning);
@@ -199,6 +248,8 @@
   --color-brand-accent-foreground: var(--brand-accent-foreground);
   --color-brand-surface: var(--brand-surface);
   --color-brand-surface-foreground: var(--brand-surface-foreground);
+  --color-surface-raised: var(--surface-raised);
+  --color-surface-raised-border: var(--surface-raised-border);
 
   --color-chart-1: var(--chart-1);
   --color-chart-2: var(--chart-2);
@@ -221,27 +272,32 @@
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
 
+  /* The reference site's easing, used for every transition it considers part of
+     the brand. Exposed as `ease-brand` so a component picks it up by name
+     instead of re-typing the curve. */
+  --ease-brand: cubic-bezier(0.77, 0, 0.18, 1);
+
   /* Loaded by next/font in src/app/layout.tsx — self-hosted, so no external
      request and no layout shift. */
-  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-sans: var(--font-work-sans), ui-sans-serif, system-ui, sans-serif;
   --font-mono: var(--font-jetbrains-mono), ui-monospace, monospace;
-  /* Headings, dialog/card titles and metric values. Pairing a display face with
-     a text face is most of what separates this look from stock — but used below
-     ~18px it just reads as a slightly wrong body font, so it is deliberately not
-     the default.
-     
+  /* Poppins carries headings, dialog and card titles, and metric values. Pairing
+     a display face with a text face is most of what separates this look from
+     stock — but used below ~18px it just reads as a slightly wrong body font, so
+     it is deliberately not the default.
+
      `--font-heading` is the name four shadcn components (card, dialog,
      alert-dialog, sheet) already reference via `font-heading`. No such token was
      ever declared, so that utility was inert and those titles silently fell back
      to the body font. Declaring it here is what makes them pick up the display
      face; the alias keeps both names working. */
-  --font-display: var(--font-manrope), var(--font-inter), ui-sans-serif, sans-serif;
+  --font-display: var(--font-poppins), var(--font-work-sans), ui-sans-serif, sans-serif;
   --font-heading: var(--font-display);
 }
 
 @layer base {
   * {
-    @apply border-border outline-ring/50;
+    @apply border-border;
   }
 
   body {
@@ -264,12 +320,86 @@
    * Visible focus, always. Removing the outline without replacing it makes an
    * app unusable by keyboard, and it is the single most common accessibility
    * regression in a design pass.
+   *
+   * This brand's focus indicator is the reference site's soft halo — a 6px teal
+   * bloom over a 1px edge — rather than a hard offset ring. The 1px edge is what
+   * carries the indicator when the halo is too faint to see (high-contrast
+   * modes, and against `--card`, which sits close to the halo in lightness), so
+   * both layers are load-bearing, not decoration.
    */
   :focus-visible {
-    @apply ring-ring ring-2 ring-offset-2 outline-none;
-    --tw-ring-offset-color: var(--background);
+    box-shadow:
+      0 0 0 1px var(--ring),
+      0 0 0 6px var(--ring-halo);
+    outline: none;
+  }
+}
+
+@layer components {
+  /*
+   * ───────────────────────────────────────────────────────────────────────────
+   * Brand grammar
+   *
+   * The palette alone does not make this look like YB Inspire. These five
+   * classes are the structural half of the identity, lifted from the reference
+   * site's stylesheet. They are opt-in: the brandbook's own instruction is
+   * "structurer avant de decorer", so they belong on a few high-value surfaces,
+   * not sprayed across every panel.
+   * ───────────────────────────────────────────────────────────────────────────
+   */
+
+  /*
+   * The monospace label. Every CTA, eyebrow, step number and metric label on the
+   * reference site is JetBrains Mono 700, uppercase, tracked out — it is the
+   * loudest brand signal in the system, and it is typographic rather than
+   * chromatic. `--font-accent` on the site, and p.16 of the brandbook.
+   */
+  .cta-label {
+    @apply font-mono text-xs font-bold tracking-[0.08em] uppercase;
   }
 
+  /*
+   * The translucent card: a 4% wash on a 10% border. Distinct from `.elevated`,
+   * which is the solid `--card` treatment used where something floats.
+   */
+  .surface-raised {
+    @apply bg-surface-raised border-surface-raised-border rounded-lg border;
+  }
+
+  /*
+   * A full-width band in bleu nuit, the brandbook's "sections de contraste".
+   * The site alternates these with the petrole ground to structure a long page.
+   */
+  .band-deep {
+    @apply bg-brand-surface text-brand-surface-foreground;
+  }
+
+  /*
+   * The fine technical grid and the ambient wash behind it. "Les grilles et
+   * filets techniques guident l'oeil sans concurrencer le message" — so both are
+   * held at the site's own single-digit opacities and are strictly non-content.
+   */
+  .grid-lines {
+    background-image:
+      linear-gradient(to right, var(--ring-halo) 1px, transparent 1px),
+      linear-gradient(to bottom, var(--ring-halo) 1px, transparent 1px);
+    background-size: 48px 48px;
+  }
+
+  .glow-brand {
+    background-image: radial-gradient(circle, var(--ring-halo) 0%, transparent 70%);
+  }
+
+  /*
+   * The teal-to-nothing rule under an eyebrow label. Small, and most of what
+   * makes a heading block read as this brand rather than a generic one.
+   */
+  .accent-rule {
+    background-image: linear-gradient(90deg, var(--primary), transparent);
+  }
+}
+
+@layer base {
   /* Honour the OS "reduce motion" setting. This is not a nicety: for people
      with vestibular disorders, animation causes real symptoms. */
   @media (prefers-reduced-motion: reduce) {

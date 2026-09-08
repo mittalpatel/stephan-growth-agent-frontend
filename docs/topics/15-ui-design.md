@@ -19,25 +19,52 @@ Semantic tokens only:
 `bg-background` · `text-foreground` · `text-muted-foreground` · `border-border` ·
 `bg-card` · `bg-primary` / `text-primary-foreground` · `bg-muted` · `bg-accent` ·
 `text-destructive` · `bg-success` / `bg-warning` / `bg-info` and their `-foreground` pairs
+· `bg-brand-accent` / `bg-brand-surface` and their `-foreground` pairs ·
+`bg-surface-raised` / `border-surface-raised-border`
 
 **Never** a hex, and never a raw Tailwind palette class. `bg-white` and `text-gray-500`
 are not hex but hardcode one theme just as firmly. This is the rule that makes dark mode
 free: one literal renders correctly in one theme and is unreadable in the other, and
 nobody notices until a user screenshots it.
 
-To brand the app, edit the `--primary` pair in `globals.css` — in **both** the `:root`
-and `.dark` blocks — and nothing else.
+The palette is the client's brand ([ADR-0017](../adr/0017-yb-inspire-brand-theme.md)),
+**dark-first** — dark is the default theme, light a genuine but secondary one:
 
-The one exception is `src/app/global-error.tsx`, which renders when the stylesheet may
-have failed to load, and says so.
+| Role          | Token                       | Value                  | Rule                                                          |
+| ------------- | --------------------------- | ---------------------- | ------------------------------------------------------------- |
+| Main ground   | `--background` (dark)       | Bleu petrole `#0A3D51` |                                                               |
+| Contrast band | `--brand-surface`           | Bleu nuit `#071F2B`    | Identical in both themes                                      |
+| Brand fill    | `--primary` (dark)          | Teal `#5EBCB8`         | Foreground is dark, **never white** — 2.24:1, below AA        |
+| Rare CTA      | `--brand-accent`            | Jaune `#F5E723`        | One per screen; use `<Button variant="cta">`, not `--primary` |
+| Text on jaune | `--brand-accent-foreground` | Teal profond `#0D4A4E` | The only text colour the brand uses on yellow                 |
+
+Rebranding is **not** a one-token edit any more: it means the full token set in
+`globals.css` (`:root`, `.dark`, `@theme inline`) plus, per ADR-0017, the capsule shape
+and `cta` variant hand-edited into `src/components/ui/button.tsx` — a shadcn primitive,
+so that edit needs to be re-applied after any future `npx shadcn@latest add button`.
+
+The one exception to "tokens only" is `src/app/global-error.tsx`, which renders when the
+stylesheet may have failed to load, and says so.
 
 ## Scale
 
 - **Spacing:** Tailwind's 4px scale. Pick from it; do not invent values.
-- **Radius:** one `--radius` token, everything derives from it.
-- **Elevation:** one level, **border-based**. A shadow tuned for a light background
-  disappears on a dark one, so the elevation cue has to be the border.
-- **Type:** Tailwind defaults. One scale.
+- **Radius:** one `--radius` token (14px), everything derives from it — except buttons,
+  which are `rounded-full` capsules by design (ADR-0017); the tension between soft-cornered
+  cards and hard-round CTAs is deliberate, not an inconsistency.
+- **Elevation:** border-based for `--card`, plus a translucent `.surface-raised` utility
+  (4% fill, 10% border) for the brand's own in-page card texture. A shadow tuned for a
+  light background disappears on a dark one, so the elevation cue has to be the border.
+- **Type:** Poppins for headings and metric values (`font-display`), Work Sans for body
+  (`font-sans`), JetBrains Mono for labels, CTAs and data (`font-mono`) — the brand's own
+  three-family split. CTAs and eyebrow labels use the `.cta-label` utility (mono, 700,
+  uppercase, tracked out): the single loudest signal in the brand, and typographic rather
+  than chromatic.
+- **Focus:** a soft halo, `box-shadow: 0 0 0 1px var(--ring), 0 0 0 6px var(--ring-halo)`,
+  not a hard offset ring — still always visible, per Accessibility below.
+- **Texture:** `.grid-lines` and `.glow-brand` utilities for the brand's fine technical
+  grid and ambient wash, held at single-digit opacity. Structural, not decorative — use
+  on a handful of high-value surfaces (auth hero, marketing hero), not everywhere.
 
 ## Every state is designed
 

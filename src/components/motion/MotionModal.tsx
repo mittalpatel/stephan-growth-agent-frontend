@@ -30,7 +30,7 @@ export function MotionModal({ open, onClose, panelClassName, children }: Props) 
       {open && (
         <div className="fixed inset-0 z-50 flex items-center justify-center">
           <m.div
-            className="absolute inset-0 bg-black/50"
+            className="absolute inset-0 bg-foreground/50"
             onClick={onClose}
             initial={{ opacity: 0, backdropFilter: 'blur(0px)' }}
             animate={{ opacity: 1, backdropFilter: 'blur(4px)' }}

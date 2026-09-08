@@ -149,7 +149,7 @@ export function DateRangePicker({
           <button
             type="button"
             onClick={handleApply}
-            className="rounded-md bg-primary px-4 py-1.5 text-sm font-semibold text-white transition hover:bg-primary/90"
+            className="rounded-md bg-primary px-4 py-1.5 text-sm font-semibold text-primary-foreground transition hover:bg-primary/90"
           >
             {t.buttons.apply}
           </button>

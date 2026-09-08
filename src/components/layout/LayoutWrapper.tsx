@@ -33,7 +33,7 @@ export default function LayoutWrapper({ children }: Readonly<{ children: React.R
         <button
           type="button"
           aria-label={t.common.closeMenu}
-          className="fixed inset-0 z-40 w-full bg-black/50 lg:hidden"
+          className="fixed inset-0 z-40 w-full bg-foreground/50 lg:hidden"
           onClick={() => setSidebarOpen(false)}
         />
       )}

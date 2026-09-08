@@ -9,9 +9,11 @@ from lint and coverage, added with `npx shadcn@latest add <name>`, never hand-ed
 
 ## Typography
 
-`Geist` and `Geist_Mono` via `next/font`, self-hosted, exposed as `--font-sans` and
-`--font-mono`. One type scale, Tailwind defaults. No custom faces: a template that
-ships licensed fonts ships a licensing problem.
+The YB Inspire brand's three families (ADR-0017), all self-hosted via `next/font`: Work
+Sans as `--font-sans` (body, all UI text), Poppins as `--font-display`/`--font-heading`
+(headings, metric values), JetBrains Mono as `--font-mono` (labels, CTAs, data). CTAs and
+eyebrow labels use the `.cta-label` utility (mono, 700, uppercase, `0.08em` tracking) —
+the brand's loudest single signal, and typographic rather than chromatic.
 
 ## RHF form primitives — `src/components/common/form/`
 

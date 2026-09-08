@@ -18,7 +18,10 @@ Top-level HTML shell. Applies fonts, global CSS, and wraps the entire app in sha
 
 ## Fonts
 
-Geist Sans + Geist Mono via `next/font/google`. Applied as CSS variables `--font-geist-sans` / `--font-geist-mono`.
+The YB Inspire brand's own three-family split (ADR-0017), via `next/font/google`, self-hosted:
+Work Sans (body, `--font-work-sans`), Poppins (headings/display, `--font-poppins`), JetBrains
+Mono (labels/CTAs/data, `--font-jetbrains-mono`). Bridged into `--font-sans` / `--font-display`
+/ `--font-mono` in `globals.css`'s `@theme inline`.
 
 ## Metadata
 

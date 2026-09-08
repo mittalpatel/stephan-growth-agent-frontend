@@ -38,13 +38,13 @@ export function BrandSettingsTab() {
         <RHFTextField<BrandSettingsFormValues>
           name="color_primary"
           label={t.organizations.settingsTabs.brand.colorLabel}
-          placeholder="#0B1E3D"
+          placeholder={t.organizations.settingsTabs.brand.colorPrimaryPlaceholder}
           disabled={!canManage}
         />
         <RHFTextField<BrandSettingsFormValues>
           name="color_secondary"
           label={t.organizations.settingsTabs.brand.colorSecondaryLabel}
-          placeholder="#C9A227"
+          placeholder={t.organizations.settingsTabs.brand.colorSecondaryPlaceholder}
           disabled={!canManage}
         />
         <RHFTextField<BrandSettingsFormValues>

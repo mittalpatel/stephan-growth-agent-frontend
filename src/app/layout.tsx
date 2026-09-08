@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { Inter, JetBrains_Mono, Manrope } from 'next/font/google';
+import { JetBrains_Mono, Poppins, Work_Sans } from 'next/font/google';
 import { headers } from 'next/headers';
 import { Toaster } from 'sonner';
 
@@ -18,20 +18,29 @@ import './globals.css';
 // render-blocking stylesheet, and no layout shift from a late font swap.
 // Rebranding means changing these three lines and nothing else.
 //
-// Manrope is the display face, used for headings and metric values only (see
-// `--font-display` in globals.css); Inter carries body and all UI text;
-// JetBrains Mono is reserved for numerics. Weights are pinned to the ones the
-// design actually uses rather than shipping the full variable range.
-const inter = Inter({ variable: '--font-inter', subsets: ['latin'] });
-const manrope = Manrope({
-  variable: '--font-manrope',
+// Poppins is the display face, used for headings and metric values only (see
+// `--font-display` in globals.css); Work Sans carries body and all UI text;
+// JetBrains Mono carries labels, CTAs and data — the YB Inspire brand system's
+// own three-family split (brandbook v1.0, p.16). Weights are pinned to the
+// ones the design actually uses rather than shipping the full variable range.
+// Poppins has no variable-font axis on Google Fonts, so its weight array is
+// required rather than a nicety — omitting it is a build error. Mono gains 700
+// here, which the brand's capsule CTAs and labels need and the previous theme
+// never used.
+const workSans = Work_Sans({
+  variable: '--font-work-sans',
+  subsets: ['latin'],
+  weight: ['400', '500', '600', '700'],
+});
+const poppins = Poppins({
+  variable: '--font-poppins',
   subsets: ['latin'],
   weight: ['600', '700', '800'],
 });
 const jetbrainsMono = JetBrains_Mono({
   variable: '--font-jetbrains-mono',
   subsets: ['latin'],
-  weight: ['400', '500', '600'],
+  weight: ['400', '500', '600', '700'],
 });
 
 export const metadata: Metadata = {
@@ -54,7 +63,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
       // language (and therefore screen-reader pronunciation and hyphenation)
       // without touching this file.
       lang={DEFAULT_LANGUAGE}
-      className={`${inter.variable} ${manrope.variable} ${jetbrainsMono.variable} h-full`}
+      className={`${workSans.variable} ${poppins.variable} ${jetbrainsMono.variable} h-full`}
       // next-themes writes `class="dark"` here before paint. Without this
       // React logs a hydration mismatch on every load, and the real warnings
       // get lost in the noise.

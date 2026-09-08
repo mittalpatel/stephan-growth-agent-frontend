@@ -45,7 +45,7 @@ export default function ProfilePopup() {
         <button
           type="button"
           aria-label={t.header.profile}
-          className="flex size-9 shrink-0 items-center justify-center rounded-full text-[13px] font-semibold text-white outline-none transition-opacity bg-primary hover:opacity-90"
+          className="flex size-9 shrink-0 items-center justify-center rounded-full text-[13px] font-semibold text-primary-foreground outline-none transition-opacity bg-primary hover:opacity-90"
         >
           {initials}
         </button>
