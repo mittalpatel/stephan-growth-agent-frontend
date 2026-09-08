@@ -14,7 +14,7 @@ export default function NoRolePage(): React.JSX.Element {
 
   return (
     <section className="flex min-h-[60vh] flex-col items-center justify-center gap-6 text-center">
-      <span className="inline-flex items-center gap-2 rounded-full border border-brand/20 bg-brand/10 px-5 py-2 text-xs font-semibold uppercase text-foreground">
+      <span className="border-brand-accent/20 bg-brand-accent/10 text-foreground inline-flex items-center gap-2 rounded-full border px-5 py-2 text-xs font-semibold uppercase">
         {t.errors.noRole.badge}
       </span>
       <div className="max-w-xl space-y-4">
