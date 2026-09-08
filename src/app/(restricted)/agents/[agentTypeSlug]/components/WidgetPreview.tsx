@@ -48,10 +48,14 @@ const SHADOW_CSS: Record<string, string> = {
   lg: '0 12px 32px rgba(0,0,0,0.24)',
 };
 
-const PANEL_SIZE_CSS: Record<string, { width: number; height: number }> = {
-  compact: { width: 260, height: 320 },
-  standard: { width: 300, height: 380 },
-  large: { width: 340, height: 440 },
+// Percentages of the frame's own box, not fixed pixels — the frame itself
+// is `w-full` (whatever column it's given, e.g. the 320px draft-tab
+// sidebar), so a hardcoded pixel panel size previously overflowed that
+// column outright rather than scaling to fit it.
+const PANEL_SIZE_CSS: Record<string, { width: string; height: string }> = {
+  compact: { width: '68%', height: '60%' },
+  standard: { width: '80%', height: '70%' },
+  large: { width: '92%', height: '80%' },
 };
 
 const LAUNCHER_RADIUS_CSS: Record<string, string> = {
@@ -60,14 +64,17 @@ const LAUNCHER_RADIUS_CSS: Record<string, string> = {
   pill: '9999px',
 };
 
+// A small fixed margin reads correctly regardless of the frame's own size
+// (a real widget sits a fixed real-world distance from the corner), unlike
+// the panel's own width/height above.
 const POSITION_CSS: Record<
   string,
-  { top?: number; bottom?: number; left?: number; right?: number }
+  { top?: string; bottom?: string; left?: string; right?: string }
 > = {
-  bottom_right: { bottom: 12, right: 12 },
-  bottom_left: { bottom: 12, left: 12 },
-  top_right: { top: 12, right: 12 },
-  top_left: { top: 12, left: 12 },
+  bottom_right: { bottom: '8px', right: '8px' },
+  bottom_left: { bottom: '8px', left: '8px' },
+  top_right: { top: '8px', right: '8px' },
+  top_left: { top: '8px', left: '8px' },
 };
 
 function pick<T>(map: Record<string, T>, key: string, fallback: T): T {
@@ -124,7 +131,10 @@ export function WidgetPreview({ defaultLanguage }: Readonly<{ defaultLanguage: s
   const textOnPrimary = checkContrast('#FFFFFF', primary).passesAaNormalText ? '#FFFFFF' : text;
   const textOnSurface = checkContrast(text, surface).passesAaNormalText ? text : '#0F172A';
 
-  const frame = device === 'mobile' ? { width: 260, height: 480 } : { width: 420, height: 480 };
+  // `w-full` and an aspect ratio, not a fixed pixel size: the frame fills
+  // whatever column it's given (the 320px draft-tab sidebar today) instead
+  // of assuming a specific viewport width.
+  const frameAspect = device === 'mobile' ? '9 / 16' : '4 / 5';
   const panelFillsFrame = device === 'mobile' && isMobileLayout;
 
   return (
@@ -154,8 +164,12 @@ export function WidgetPreview({ defaultLanguage }: Readonly<{ defaultLanguage: s
       </div>
 
       <div
-        className="relative mx-auto overflow-hidden rounded-md border bg-white"
-        style={{ width: frame.width, height: frame.height }}
+        className={
+          device === 'mobile'
+            ? 'relative mx-auto w-full max-w-55 overflow-hidden rounded-md border bg-white'
+            : 'relative mx-auto w-full overflow-hidden rounded-md border bg-white'
+        }
+        style={{ aspectRatio: frameAspect }}
       >
         {/* A stand-in for the host page the widget would sit on top of. */}
         <div className="absolute inset-0 bg-[repeating-linear-gradient(45deg,#00000005,#00000005_10px,transparent_10px,transparent_20px)]" />

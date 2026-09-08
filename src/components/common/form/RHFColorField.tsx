@@ -50,14 +50,20 @@ export function RHFColorField<T extends FieldValues>({
           aria-hidden
           tabIndex={-1}
           disabled={disabled || isSubmitting}
-          value={isValidHex ? value : '#000000'}
+          // A neutral starting point for the OS picker when nothing is set
+          // yet — not pure black, which would otherwise read as "this field
+          // is already set to black" rather than "unset".
+          value={isValidHex ? value : '#9CA3AF'}
           onChange={(e) =>
             setValue(name, e.target.value as never, {
               shouldDirty: true,
               shouldValidate: true,
             })
           }
-          className="border-input h-8 w-8 shrink-0 cursor-pointer rounded-md border p-0.5 disabled:cursor-not-allowed disabled:opacity-50"
+          className={cn(
+            'border-input h-8 w-8 shrink-0 cursor-pointer rounded-md border p-0.5 disabled:cursor-not-allowed disabled:opacity-50',
+            !isValidHex && 'opacity-40'
+          )}
         />
         <input
           id={name}
