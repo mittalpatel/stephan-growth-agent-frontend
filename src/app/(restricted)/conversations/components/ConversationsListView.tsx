@@ -95,9 +95,13 @@ function GenerateFollowup({ conversationId }: Readonly<{ conversationId: string 
 /**
  * Sprint 1 Phase 3: real conversations, wired to `GET
  * /agents/{id}/conversations/` and `GET /conversations/{id}/`. The backend
- * has no cross-agent conversations endpoint, so this page keeps an
- * agent-picker up top rather than moving under `/agents/[agentId]/...` — the
- * sidebar keeps one top-level "Conversations" nav item.
+ * has no cross-agent conversations endpoint, so the standalone
+ * `/conversations` page keeps an agent-picker up top and the sidebar keeps
+ * one top-level "Conversations" nav item.
+ *
+ * Passing `agentId` pins it to one agent and drops both the page header and
+ * the picker, which is how the agent detail page's Conversations tab reuses
+ * it. There is deliberately only one implementation of this screen.
  *
  * Escalation resolve (plan Phase 3) is intentionally not built: the backend
  * exposes `POST /escalations/{id}/resolve/` but no read path returns an
@@ -105,7 +109,12 @@ function GenerateFollowup({ conversationId }: Readonly<{ conversationId: string 
  * no escalations) — a real backend gap, documented in
  * `context/app/(restricted)/conversations/page.md`.
  */
-export function ConversationsListView() {
+type Props = Readonly<{
+  /** Pins the view to one agent, for the agent detail page's tab. */
+  agentId?: string;
+}>;
+
+export function ConversationsListView({ agentId: pinnedAgentId }: Props = {}) {
   const { agents, isLoading: agentsLoading } = useAgentOptions();
   const { can } = usePermissions();
   const canManage = can('conversation', 'manage');
@@ -113,7 +122,7 @@ export function ConversationsListView() {
   // Defaults to the first agent once agents load, without an effect: the
   // selection is derived, so there's nothing to synchronize back into state
   // until the user actually picks a different agent.
-  const agentId = selectedAgentId || (agents[0]?.id ?? '');
+  const agentId = pinnedAgentId ?? (selectedAgentId || (agents[0]?.id ?? ''));
 
   const list = useConversationsList(agentId);
   const [selectedConversationId, setSelectedConversationId] = useState<string | null>(null);
@@ -184,9 +193,11 @@ export function ConversationsListView() {
 
   return (
     <div className="flex flex-col gap-6">
-      <PageHeader title={t.conversations.title} description={t.conversations.description} />
+      {!pinnedAgentId && (
+        <PageHeader title={t.conversations.title} description={t.conversations.description} />
+      )}
 
-      <div className="flex flex-wrap items-end gap-3">
+      <div className={pinnedAgentId ? 'hidden' : 'flex flex-wrap items-end gap-3'}>
         <div className="flex flex-col gap-1.5">
           <label className="text-muted-foreground text-xs font-medium">
             {t.conversations.agentPicker.label}
@@ -213,7 +224,7 @@ export function ConversationsListView() {
         </div>
       </div>
 
-      {!agentsLoading && agents.length === 0 ? (
+      {!pinnedAgentId && !agentsLoading && agents.length === 0 ? (
         <EmptyState title={t.conversations.agentPicker.empty} />
       ) : (
         <>

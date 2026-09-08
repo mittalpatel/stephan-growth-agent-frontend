@@ -19,13 +19,17 @@ import type { LeadListItem } from '@/types/lead';
 const NAMESPACE = 'leads';
 
 /**
- * The org-wide leads list, as one flat bag of props — mirrors
- * `useKnowledgeSources`. No search field: `LeadSelector` declares none. The
- * filter config is built from client-known enum values rather than fetched,
- * since `LeadListView` never wires up `?type=parameters` (see
- * `src/services/leads.ts`).
+ * The leads list, as one flat bag of props — mirrors `useKnowledgeSources`.
+ * No search field: `LeadSelector` declares none. The filter config is built
+ * from client-known enum values rather than fetched, since `LeadListView`
+ * never wires up `?type=parameters` (see `src/services/leads.ts`).
+ *
+ * Passing `agentId` pins the list to one agent, for the agent detail page's
+ * Prospects tab. It appends to the user's own filters rather than replacing
+ * them, keeping `filter`/`filter_by` positionally aligned, and maps to
+ * `LeadSelector._FILTER_FIELDS`' `agent` key. Omit it for the org-wide page.
  */
-export function useLeadsList() {
+export function useLeadsList(agentId?: string) {
   const {
     queryParams,
     setSort,
@@ -43,8 +47,8 @@ export function useLeadsList() {
     search_by: '',
     sort: queryParams.sort,
     sort_direction: queryParams.sort_direction,
-    filter: queryParams.filter,
-    filter_by: queryParams.filter_by,
+    filter: agentId ? [...queryParams.filter, agentId] : queryParams.filter,
+    filter_by: agentId ? [...queryParams.filter_by, 'agent'] : queryParams.filter_by,
   };
 
   const listQuery = useAuthQuery<ApiResponse<LeadListItem[]>>(

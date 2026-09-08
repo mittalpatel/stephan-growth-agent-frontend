@@ -25,14 +25,22 @@ import { LEAD_STATUS_TONE } from '../leadStatusTone';
 import { useLeadsList } from '../hooks/useLeadsList';
 import { LeadDetailSheet } from './LeadDetailSheet';
 
+type Props = Readonly<{
+  /**
+   * Pins the list to one agent and drops the page header, for the agent
+   * detail page's Prospects tab. Omitted on the org-wide `/leads` page.
+   */
+  agentId?: string;
+}>;
+
 /**
- * Sprint 1 Phase 3: the org-wide leads list, wired to `GET /api/v1/leads/`.
+ * Sprint 1 Phase 3: the leads list, wired to `GET /api/v1/leads/`.
  * The Sprint 1 static preview's metric row and "website prospects" tab had
  * no backend equivalent (no leads-summary endpoint, no prospect/outreach
  * split in the data model) — collapsed to a single real table per the plan.
  */
-export function LeadsListView() {
-  const list = useLeadsList();
+export function LeadsListView({ agentId }: Props = {}) {
+  const list = useLeadsList(agentId);
   const [selectedId, setSelectedId] = useState<string | null>(null);
 
   function renderBody() {
@@ -115,7 +123,7 @@ export function LeadsListView() {
 
   return (
     <div className="flex flex-col gap-6">
-      <PageHeader title={t.leads.title} description={t.leads.description} />
+      {!agentId && <PageHeader title={t.leads.title} description={t.leads.description} />}
 
       <FilterToolbar
         title={t.leads.title}

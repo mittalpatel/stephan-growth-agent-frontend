@@ -1,8 +1,8 @@
 'use client';
 
+import { MetricCard } from '@/components/common/MetricCard';
 import { PageHeader } from '@/components/common/PageHeader';
 import { PreviewBanner } from '@/components/common/PreviewBanner';
-import { Card, CardContent } from '@/components/ui/card';
 import { t } from '@/locales';
 
 const MOCK_SUMMARY = [
@@ -38,12 +38,7 @@ export function AnalyticsView() {
 
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-5">
         {MOCK_SUMMARY.map(({ label, value }) => (
-          <Card key={label}>
-            <CardContent>
-              <p className="text-muted-foreground text-xs font-medium">{label}</p>
-              <p className="font-display mt-1 text-3xl font-bold tracking-tight">{value}</p>
-            </CardContent>
-          </Card>
+          <MetricCard key={label} label={label} value={value} />
         ))}
       </div>
     </div>

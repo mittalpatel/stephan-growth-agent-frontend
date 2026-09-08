@@ -6,10 +6,10 @@ import { ArrowRight, Bot, Circle, CircleCheck, Sparkles, TrendingUp } from 'luci
 import { useAgentsList } from '@/app/(restricted)/agents/hooks/useAgentsList';
 import { useUser } from '@/app/(restricted)/context/UserContext';
 import { EmptyState } from '@/components/common/EmptyState';
+import { MetricCard } from '@/components/common/MetricCard';
 import { StatusBadge } from '@/components/common/StatusBadge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { Skeleton } from '@/components/ui/skeleton';
 import { format, formatDate } from '@/lib/i18n';
 import { t } from '@/locales';
 import { LEADS_LIST_KEY, buildLeadListParams, leadsListUrl } from '@/services/leads';
@@ -164,16 +164,7 @@ export function DashboardView() {
 
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-5">
         {metrics.map(({ label, value }) => (
-          <Card key={label}>
-            <CardContent className="flex flex-col gap-3">
-              <span className="text-muted-foreground text-sm font-medium">{label}</span>
-              {analyticsLoading ? (
-                <Skeleton className="h-9 w-16" />
-              ) : (
-                <span className="font-display text-3xl font-bold tracking-tight">{value}</span>
-              )}
-            </CardContent>
-          </Card>
+          <MetricCard key={label} label={label} value={value} isLoading={analyticsLoading} />
         ))}
       </div>
 
@@ -227,7 +218,7 @@ export function DashboardView() {
 
                   <div className="flex items-center justify-end pt-1">
                     <Link
-                      href={`/agents/${agent.id}`}
+                      href={`/agents/${agent.agent_type.slug}`}
                       className="text-primary inline-flex items-center gap-1 text-sm font-semibold hover:gap-1.5"
                     >
                       {t.dashboard.agentPerformance.viewAgent} <ArrowRight className="size-3.5" />

@@ -68,7 +68,16 @@ viewport, and wrapping them would push the panel below the fold on mobile.
   `verify` flips a flag without performing a DNS lookup. The tab says so
   rather than implying a working custom-domain feature. Verification tokens
   are shown only while a domain is unverified, since republishing the record
-  after the fact changes nothing.
+  after the fact changes nothing. Client-side shape validation
+  (`organizationDomainSchema` in `src/lib/schemas/settings.ts`) goes through
+  the shared `isValidHostname()` in `src/lib/hostname.ts` (backend
+  2026-09-07 extracted the equivalent `common/net/hostname.py` from what had
+  been two independently-drifted regexes) — it now requires an
+  alphabetic-only TLD, tighter than before, so e.g. `example.123` is
+  rejected client-side, not just server-side. The same helper backs
+  `agentDomainCreateSchema` (see
+  `context/app/(restricted)/agents/[agentTypeSlug]/settings/page.md`), with
+  `localhost` allowed there only, for local widget testing.
 - **AI preferences** (`AiPreferencesTab`/`useAiPreferencesForm.ts`): three
   switches — require approval before outreach/publishing, allow
   auto-CRM-updates.

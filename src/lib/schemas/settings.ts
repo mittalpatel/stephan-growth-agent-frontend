@@ -1,5 +1,6 @@
 import { z } from 'zod';
 
+import { isValidHostname } from '@/lib/hostname';
 import { t } from '@/locales';
 
 /** `#` + 6 hex digits, mirroring `_HEX_COLOR_RE` in the backend serializer. */
@@ -87,45 +88,20 @@ export const featureFlagsSchema = z.object({
 
 export type FeatureFlagsFormValues = z.infer<typeof featureFlagsSchema>;
 
-/** The characters a hostname label may contain. Length and the leading and
- * trailing `-` rules are checked separately in `isDomainLabel` rather than
- * folded into this pattern: expressing them as nested optional groups is what
- * makes a hostname regex backtrack, and the lint rule that flags it is right
- * to. */
-const DOMAIN_LABEL_CHARS = /^[a-z0-9-]+$/;
-
-function isDomainLabel(label: string): boolean {
-  return (
-    label.length >= 1 &&
-    label.length <= 63 &&
-    !label.startsWith('-') &&
-    !label.endsWith('-') &&
-    DOMAIN_LABEL_CHARS.test(label)
-  );
-}
-
 /**
- * Accepts what `_DOMAIN_RE` in the backend serializer accepts: a bare
- * lowercase hostname with at least one dot, no scheme and no path.
- *
- * Checked label by label rather than with the backend's single regex. That
- * pattern nests a quantifier inside a repeated group, which backtracks
- * catastrophically on a long near-match — fine server-side against a
- * `max_length=255` field, but here it would run in the browser on every
- * keystroke against input of any length. Splitting on `.` is linear and
- * accepts exactly the same set of hostnames.
+ * `is_valid_hostname()` now backs both the agent allowed-domains and org
+ * custom-domains serializers (extracted 2026-09-07, requiring an
+ * alphabetic-only TLD) — see `src/lib/hostname.ts`. `localhost` is never
+ * accepted here: that one-off is specific to agent widget testing.
  */
-function isDomain(value: string): boolean {
-  const labels = value.split('.');
-  return labels.length >= 2 && labels.every(isDomainLabel);
-}
-
 export const organizationDomainSchema = z.object({
   domain: z
     .string()
     .trim()
     .toLowerCase()
-    .refine(isDomain, { message: t.organizations.settingsTabs.domains.invalid }),
+    .refine((value) => isValidHostname(value), {
+      message: t.organizations.settingsTabs.domains.invalid,
+    }),
 });
 
 export type OrganizationDomainFormValues = z.infer<typeof organizationDomainSchema>;

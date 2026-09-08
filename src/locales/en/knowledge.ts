@@ -1,7 +1,6 @@
 export const knowledge = {
   title: 'Knowledge sources',
   description: "The content this agent's answers are grounded in.",
-  backToAgent: 'Back to agent',
   columns: {
     displayName: 'Name',
     sourceType: 'Type',

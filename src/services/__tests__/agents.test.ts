@@ -5,16 +5,20 @@ import {
   agentDetailKey,
   agentDomainDeleteEndpoint,
   agentDomainsEndpoint,
+  agentDomainsKey,
   agentDraftEndpoint,
   agentDraftKey,
   agentKeyRevokeEndpoint,
   agentKeysEndpoint,
+  agentKeysKey,
   agentListUrl,
   agentPublishEndpoint,
   agentRollbackEndpoint,
   agentTestAskEndpoint,
-  agentTypesEndpoint,
+  AGENT_TYPES_ENDPOINT,
   AGENTS_ENDPOINT,
+  agentByTypeEndpoint,
+  agentByTypeKey,
 } from '../agents';
 
 const AGENT_ID = '0c2f6a1e-1111-4a2b-8c3d-4e5f60718293';
@@ -28,14 +32,24 @@ describe('agent endpoints', () => {
     expect(agentRollbackEndpoint(AGENT_ID)).toBe(`${AGENTS_ENDPOINT}${AGENT_ID}/rollback/`);
   });
 
-  it('builds the agent-type catalog endpoint', () => {
-    expect(agentTypesEndpoint()).toBe(`${AGENTS_ENDPOINT}types/`);
-    expect(agentTypesEndpoint(true)).toBe(`${AGENTS_ENDPOINT}types/?include_unavailable=true`);
+  it('points the agent-type catalog at the bare list endpoint', () => {
+    // No query string: `AgentTypeListView` takes no parameters, so anything
+    // appended here would be silently ignored by the backend.
+    expect(AGENT_TYPES_ENDPOINT).toBe(`${AGENTS_ENDPOINT}types/`);
+  });
+
+  it('addresses an agent by its type slug, not its id', () => {
+    // The detail route resolves through this: agents are auto-provisioned, so
+    // the frontend never learns a UUID from anything the user did.
+    expect(agentByTypeEndpoint('sevo')).toBe(`${AGENTS_ENDPOINT}by-type/sevo/`);
+    expect(agentByTypeKey('sevo')).toEqual(['agent-by-type', 'sevo']);
   });
 
   it('builds distinct query keys per agent', () => {
     expect(agentDetailKey(AGENT_ID)).toEqual(['agent-detail', AGENT_ID]);
     expect(agentDraftKey(AGENT_ID)).toEqual(['agent-draft', AGENT_ID]);
+    expect(agentDomainsKey(AGENT_ID)).toEqual(['agent-domains', AGENT_ID]);
+    expect(agentKeysKey(AGENT_ID)).toEqual(['agent-keys', AGENT_ID]);
   });
 
   it('nests the domain and deployment key endpoints under the agent id', () => {

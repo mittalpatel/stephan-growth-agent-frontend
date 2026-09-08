@@ -89,4 +89,10 @@ describe('organizationDomainSchema', () => {
       expect(organizationDomainSchema.safeParse({ domain }).success).toBe(false);
     }
   });
+
+  // 2026-09-07: the backend's shared `is_valid_hostname()` requires an
+  // alphabetic-only TLD, tighter than the previous alnum-labels check.
+  it('rejects a numeric-only TLD, matching the backend', () => {
+    expect(organizationDomainSchema.safeParse({ domain: 'example.123' }).success).toBe(false);
+  });
 });

@@ -101,15 +101,6 @@ export type AgentVersionDetail = {
   updated_at: string;
 };
 
-/** Body for `POST /api/v1/agents/` — mirrors `AgentCreateSerializer`. */
-export type AgentCreateInput = {
-  name: string;
-  agent_type?: string;
-  default_language: string;
-  enabled_languages: string[];
-  human_inbox_email: string;
-};
-
 /** Body for `PATCH /api/v1/agents/{id}/` — mirrors `AgentWriteSerializer`. */
 export type AgentUpdateInput = Partial<{
   name: string;
@@ -152,10 +143,10 @@ export type AgentTestAskResult = {
 };
 
 /**
- * A hostname permitted to load an agent's public widget. There is no
- * `GET /agents/{id}/domains/` endpoint, only create/delete, so the frontend
- * can never list domains configured before the current session started
- * (see `context/app/(restricted)/agents/[agentId]/settings/page.md`).
+ * A hostname permitted to load an agent's public widget. Listed via
+ * `GET /agents/{id}/domains/` (gated `agent:view`; writes need
+ * `agent:manage`), which landed 2026-09-07 — see
+ * `context/app/(restricted)/agents/[agentId]/settings/page.md`.
  */
 export type AllowedDomain = {
   id: string;

@@ -1,32 +1,14 @@
 import { z } from 'zod';
 
+import { isValidHostname } from '@/lib/hostname';
 import { t } from '@/locales';
 
 /**
- * Create validation for an agent — field names match `AgentCreateSerializer`
- * exactly (see `src/lib/schemas/project.ts` for why that's load-bearing).
- * `agent_type` is optional (a slug from `GET /agent-types/`); omitting it
- * lets the backend default to Website Sales & Support.
+ * Update validation — mirrors `AgentWriteSerializer`'s editable fields.
+ * There is no create schema: an organization's agents are a fixed,
+ * auto-provisioned roster (backend 2026-09-07 removed `POST /agents/`
+ * entirely, along with `AgentCreateSerializer`).
  */
-export const agentCreateSchema = z.object({
-  name: z
-    .string()
-    .trim()
-    .min(1, t.agents.validation.nameRequired)
-    .max(200, t.agents.validation.nameTooLong),
-  agent_type: z.string().trim().optional(),
-  human_inbox_email: z.string().trim().email(t.agents.validation.emailInvalid),
-  default_language: z
-    .string()
-    .trim()
-    .min(2, t.agents.validation.languageRequired)
-    .max(10, t.agents.validation.languageRequired),
-  enabled_languages_input: z.string().trim().min(1, t.agents.validation.languagesRequired),
-});
-
-export type AgentCreateFormValues = z.infer<typeof agentCreateSchema>;
-
-/** Update validation — mirrors `AgentWriteSerializer`'s editable fields. */
 export const agentUpdateSchema = z.object({
   name: z
     .string()
@@ -39,14 +21,21 @@ export const agentUpdateSchema = z.object({
 
 export type AgentUpdateFormValues = z.infer<typeof agentUpdateSchema>;
 
-/** Mirrors `AllowedDomainWriteSerializer`'s only field. */
+/**
+ * Mirrors `AllowedDomainWriteSerializer`'s only field. `allowLocalhost` is
+ * the one-off `is_valid_hostname()` grants this call site for local widget
+ * testing (`src/lib/hostname.ts`) — org custom domains don't get it.
+ */
 export const agentDomainCreateSchema = z.object({
   hostname: z
     .string()
     .trim()
     .toLowerCase()
     .min(1, t.agents.settings.domains.validation.hostnameRequired)
-    .max(255, t.agents.settings.domains.validation.hostnameTooLong),
+    .max(255, t.agents.settings.domains.validation.hostnameTooLong)
+    .refine((value) => isValidHostname(value, { allowLocalhost: true }), {
+      message: t.agents.settings.domains.validation.hostnameInvalid,
+    }),
 });
 
 export type AgentDomainCreateFormValues = z.infer<typeof agentDomainCreateSchema>;

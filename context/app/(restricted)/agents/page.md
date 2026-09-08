@@ -2,147 +2,263 @@
 
 **Source:** `src/app/(restricted)/agents/page.tsx`, view in
 `components/AgentsListView.tsx`. Detail route:
-`src/app/(restricted)/agents/[agentId]/page.tsx`, view in
-`[agentId]/components/AgentDetailView.tsx`.
+`src/app/(restricted)/agents/[agentTypeSlug]/page.tsx`, view in
+`[agentTypeSlug]/components/AgentDetailView.tsx`.
 
-Real, backend-wired CRUD against `apps/agents` (YB Inspire Sprint 1 Phase 2,
-`origin/sprint-1-phase2-6-snapshot` on the backend). Replaces the Sprint 1
-static preview that rendered the fixed `AGENT_CATALOG` marketplace card grid.
+Real, backend-wired against `apps/agents`, laid out to match the
+`ai-agents-platform` reference platform's own agent flow (`#/agents` and
+`#/agents/website-sales`): one marketplace page listing every agent kind, and
+a tabbed workspace per agent.
 
-## List page
+## Routing by type slug, not agent id
 
-`AgentsListView` follows the `ProjectsList` pattern exactly: `useAgentsList()`
-(`hooks/useAgentsList.ts`) owns `useQueryParams('agents')`, the `?type=parameters`
-query, and the paginated `GET /api/v1/agents/` query; the component is a pure
-presenter with the four designed states (loading skeleton, error+retry, two
-empty variants, populated grid). `AgentsGrid`/`AgentsTableSkeleton` render the
-list as `ai-agents-platform`-style cards (icon tile, status pill, footer CTA)
-rather than a plain data table — a `md:grid-cols-2` grid of `Card`s, each
-showing an `agent_type.name` eyebrow (`AgentType`, the backend's
-platform-wide agent-kind catalog — `apps/agents`' `4f22fd5` commit; today
-always "Website Sales & Support", the only `is_available` type), name,
-status, `human_inbox_email` (as "Routes to …", the closest real field to the
-reference's free-text description), and an "Open agent" button.
+The detail route is `/agents/website_sales_support`, not
+`/agents/<uuid>`. It resolves through `GET /agents/by-type/<slug>/`
+(`AgentDetailByTypeView`, `agentByTypeEndpoint`/`agentByTypeKey` in
+`src/services/agents.ts`, consumed by `useAgentDetail`).
 
-**Agent creation is back**, via `CreateAgentDialog` (`hooks/
-useCreateAgentForm.ts`, Zod schema `agentCreateSchema` in
-`src/lib/schemas/agent.ts`) — rendered in `PageHeader`'s `actions` and in
-the empty state, gated `agent:create`. This reverses an explicit mid-session
-decision to remove it entirely; a later, more explicit spec (the backend
-team's "Agent + Knowledge Base API — Frontend Reference" doc) put it back,
-now correctly wired to the `AgentType` catalog the earlier, deleted version
-predated. The dialog's `agent_type` field is an `RHFSelectField` sourced
-from `useAgentTypes()` (the same cached `ALL_AGENT_TYPES_KEY` query
-`/agents/types` uses) **filtered to `is_available`** — it never offers one
-of the 3 unavailable types as a choice, and preselects the one available
-type when there's only one, so the common case needs no extra click.
-`enabled_languages` is still a comma-separated text field, not a
-language-picker, kept simple per the original Sprint 1 scope.
+This is what that endpoint was added for. Agents are a fixed,
+auto-provisioned roster with no create flow, so the frontend never learns an
+agent's UUID from anything the user did, and a per-kind URL is the only
+stable thing to address. The slugs are the backend's own
+(`AgentTypeSlug` in `apps/agents/constants.py`), underscores included, so
+they round-trip through the route without a mapping table.
 
-No `FilterToolbar` (search/sort/status-filter bar) on this list either —
-removed as unnecessary clutter against the reference's clean card-grid look:
-agents are few per organization (unlike conversations/leads, which stay on
-`FilterToolbar`), and the reference itself has no search bar on its
-marketplace page.
+A 404 from that endpoint means this organization has no agent of that kind,
+which is the normal state for the three types the backend hasn't shipped. It
+renders as the "not found" empty state rather than an error.
 
-## Agent types (`/agents/types`)
+## Marketplace (`/agents`)
 
-The reference's marketplace has a fixed category tab-filter (Sales/
-Marketing/Growth/Automation) and a per-agent capability checklist. The
-backend added a real, platform-wide `AgentType` catalog (`apps/agents`'
-`4f22fd5` commit) that's the genuine equivalent of that category concept —
-4 seeded types (Website Sales & Support, SEvO, Content Strategy, Lead
-Outreach), only the first `is_available`. `agent_type.name` is shown
-per-card on the list above and on the Overview tab's read-only "Agent type"
-row.
+`AgentsListView` is a pure presenter over `useAgentCatalog()`, which merges
+three sources because no single one has the whole picture:
 
-Even with creation back, the full 4-type catalog (including the 3
-unavailable ones) still isn't visible from the create dialog — a dedicated,
-purely informational page covers that:
-`src/app/(restricted)/agents/types/page.tsx` → `AgentTypesView`. It calls
-`GET /api/v1/agents/types/?include_unavailable=true` (`useAgentTypes()`
-hook, `AGENT_TYPES_KEY`/`agentTypesEndpoint(true)` in
-`src/services/agents.ts`) — a query param added specifically for this page
-on `AgentTypeListView`, opt-in rather than a change to the endpoint's
-default (creatable-only) response, so nothing else that might come to rely
-on "only creatable types" from the default call breaks. Cards show
-`is_available` as an "Available"/"Coming soon" `StatusBadge` (a local tone
-map, distinct from `AgentsGrid`'s `AgentStatus`-keyed one) and no CTA at
-all — informational only. Linked from `/agents`'s `PageHeader` actions
-("Browse agent types").
+- `useAgentTypes()` for the four kinds and which are available (itself
+  merging the live catalog with the local roadmap, see below).
+- `useAgentOptions()` for this organization's provisioned agents, matched to
+  their kind by `agent_type.slug`. One live agent per available type
+  (`AgentService.provision_defaults`), so this is a lookup, not a grouping.
+- `AGENT_TYPE_ROADMAP` for category and capabilities, which no API exposes.
 
-Per-type `AgentTypeCapability` rows (the reference's capability-checklist
-equivalent) are still not exposed via any API, so that part of the
-reference card remains unmatched on both pages — no data to render. The
-reference's static "Level 1 · Basic" / "Free during trial" footer line on
-`AgentsGrid` is per-card there too (not data-driven) — kept verbatim
-(`t.agents.levelBasic`/`freeDuringTrial`, leftover strings from the old
-marketplace mock). The mock's `AGENT_CATALOG` (`../agentCatalog.ts`)
-is deleted as of Phase 3 — the dashboard's "Agent performance" section reuses
-`useAgentsList()` directly (see `context/app/(restricted)/dashboard/page.md`).
+Cards carry an icon tile, a `StatusBadge`, the description, a capability
+checklist, and a footer pairing the commercial level with the open CTA.
+**Only a card whose type is provisioned is linked** — the other three render
+a disabled-look span of the same size/position instead of the `Link`, since
+`by-type/` would 404. Always rendering something in that slot (not omitting
+it) keeps every card's footer row the same height and alignment as the
+reference, even though the state underneath stays honest.
 
-## Detail page (`/agents/[agentId]`)
+The page closes with `AgentTierBanner`, the inverted Level 4 panel from the
+reference. It is deliberately not a `Card`: the grid above is what the
+organization already has, and this is the one thing on the page that has to be
+bought, so it reads as a different surface. `bg-foreground`/`text-background`
+inverts with the theme rather than pinning a dark slab into dark mode. Its CTA
+goes to `/organization/billing`.
 
-Header carries a "Knowledge sources" link to `/agents/[agentId]/knowledge`
-(gated `knowledge:view`) and, as of Phase 4, a "Settings" link to
-`/agents/[agentId]/settings` (gated `agent:manage`) for allowed domains and
-deployment keys; see each route's own context doc.
+Each kind gets its own icon-tile colour from `AGENT_TYPE_ACCENTS`, mapped onto
+the four chart tokens rather than the reference's raw hexes — the same four
+hues, already tuned for both themes and for colour-blind separation. They are
+stored as whole utility pairs (`'bg-chart-1/10 text-chart-1'`) because a
+template-built `bg-chart-${n}/10` compiles to nothing. Purely decorative: the
+name and the badge carry every meaning the colour hints at.
 
-Four tabs, each backed by its own hook under `[agentId]/hooks/`:
+The badge has **three** states, deliberately not two:
 
-- **Overview** (`AgentOverviewTab`) — edit `name`/`human_inbox_email`/`status`
-  (`PATCH /agents/{id}/`, gated `agent:manage`), a read-only "Agent type" row
-  (`agent.agent_type.name` — no `PATCH` support for changing it after
-  creation, `AgentWriteSerializer` has no such field), and delete (`DELETE`,
-  gated `agent:delete`, soft-deletes and redirects to the list).
-- **Draft** (`AgentDraftTab`) — edits the full draft config per the backend
-  spec doc: `instructions`, `disclosure_enabled`, a required-localized-text
-  section (`greeting`/`fallback_message`/`disclosure_text`, the three
+| Condition                 | Badge                                     | Linked |
+| ------------------------- | ----------------------------------------- | ------ |
+| `agent` present           | its own `status` (Active/Paused/Archived) | yes    |
+| `isAvailable`, no `agent` | "Not set up" (warning)                    | no     |
+| not `isAvailable`         | "Coming soon" (neutral)                   | no     |
+
+The status tone map is shared with `AgentDetailView`'s header so one agent
+reads the same in both places. Two earlier passes got this wrong: the badge
+first hardcoded "Active" for anything provisioned (a paused or archived agent
+would have read as running), then collapsed the middle row into "Coming
+soon", which reads as "not built yet" and hides a provisioning gap an admin
+can actually fix.
+
+**A provisioned agent is what makes a card live, and provisioning is
+asynchronous.** `AgentService.provision_defaults` is called from exactly
+three places: `OrganizationService.create()`, which enqueues
+`organizations.provision_default_agents` via `transaction.on_commit` (moved
+off the synchronous path in the 2026-09-07 audit fix); the `provision_tenant`
+management command; and that Celery task. Migration 0005 backfills
+`agent_type` onto existing `Agent` rows but creates none. So an organization
+created with no Celery worker running, or one predating the feature, has zero
+agents and every card correctly reads "Coming soon" until the task runs. That
+is a deployment state, not a frontend or contract problem.
+
+A category tab bar (All / Sales / Growth / Marketing / Automation) filters
+client-side, with the selection in the URL as `agents_category` via
+`useQueryParams`' `getParam`/`setParam`. An unknown value falls back to
+"all" rather than showing an empty grid.
+
+This replaces the split this page used to have, where `/agents` listed only
+provisioned agents (one card) and a separate `/agents/types` page listed the
+roadmap. That route and its `AgentTypesView`/`AgentTypesSkeleton` are
+deleted. There is no create action and no `FilterToolbar`: the roster is
+fixed and four cards need neither search nor pagination.
+
+## Three of the four kinds come from a local constant
+
+`GET /api/v1/agents/types/` (`AgentTypeListView`) calls
+`AgentTypeSelector.get_available()`, which filters `is_available=True`
+unconditionally, and the view reads **no query parameters at all** — there is
+no way to ask the backend for the unavailable types, and none of the three
+has any other API surface. An earlier version called
+`?include_unavailable=true`, a parameter that has never existed in the
+backend on any branch (`git log -S` finds no match in its history); it was
+silently ignored, so the page rendered a single card.
+
+`useAgentTypes()` merges the live response against `AGENT_TYPE_ROADMAP`
+(`src/constants/agentTypes.ts`, copy in `t.agents.types.roadmap`) by slug:
+the backend's own name/description/availability win wherever it returns a
+row, the roadmap fills in the rest as not-yet-available, and a served type
+the roadmap has never heard of is appended rather than dropped so the API can
+outgrow the constant.
+
+The roadmap also carries `category`, `capabilities`, `workflow` and the Level 2
+`upgrade` copy, none of
+which any API exposes: `AgentTypeSerializer`'s fields are
+`("id", "slug", "name", "description", "is_available")`, and
+`minimum_plan_tier` isn't serialized either, so no plan/tier gating of agent
+access is expressible on the frontend yet.
+
+### Capabilities are the backend's, even though they arrive locally
+
+`AgentTypeCapability` rows are real and seeded, but nothing returns them over
+HTTP: the model appears in `models.py`, `constants.py`, `seed_data.py`, the
+`seed_agent_types` command, two migrations, `admin.py` and its tests, and in
+no serializer, view or URL. Django admin is the only place they can be read.
+
+So the frontend mirrors them instead of inventing copy.
+`AGENT_TYPE_CAPABILITY_KEYS` lists the `capability_key` values
+`AGENT_TYPE_SEED_DATA` seeds, row for row: four for Website Sales & Support
+(`supports_website_knowledge`, `supports_pdf_knowledge`,
+`supports_lead_capture`, `supports_human_handoff`) and none for the other
+three, which seed `"capabilities": []`. Labels live in
+`t.agents.capabilities`, keyed by those exact values, because
+`capability_key` is an identifier and never display copy: even once the API
+serves capabilities, the endpoint settles _which_ ones, never what they are
+called.
+
+`AGENT_TYPE_ROADMAP.capabilities` is therefore derived, never authored, and
+the two sources never mix. A kind the backend declares capabilities for
+renders those; a kind it declares none for falls back to
+`plannedCapabilities`, which reads as roadmap copy for something unbuilt.
+This corrected an earlier pass that copied the reference's six display
+strings onto the Website Sales & Support card, two of which
+(`Grounded sales conversations`, `Conversation history`) the backend never
+declares: the card was advertising capabilities absent from the product's own
+data model. A test pins the rendered set to the seeded four.
+
+When `AgentTypeSerializer` starts nesting `capabilities`, read them from the
+response and delete `AGENT_TYPE_CAPABILITY_KEYS`. The keys already match, so
+the labels keep working untouched.
+
+This duplicates backend seed data, which is normally the wrong call. It is
+scoped to exactly the gap the API leaves, and each entry should be deleted
+the moment the backend starts serving that type. The `ai-agents-platform`
+reference carries the same four-agent catalog locally, in its own
+`data/agents` module, for the same reason.
+
+## Detail page (`/agents/[agentTypeSlug]`)
+
+A header (icon, name, `agent_type.description`, status badge and commercial
+level) over eight tabs, with Configure and Upgrade actions on the right as the
+reference draws them. Configure switches to the Settings tab, which is why
+`Tabs` is controlled here rather than `defaultValue`; Upgrade links to
+`/organization/billing` instead of the reference's modal, because there is no
+self-serve upgrade to run and a dialog saying "contact us" is a longer route to
+the same page.
+
+The tab row uses `TabsList variant="line"` — the full-width underlined row the
+reference uses, not the segmented pill. Its triggers need `flex-none`: the
+stock `line` variant still inherits `flex-1`, which stretches eight tabs across
+the page. The first five mirror the reference's; the last three
+have no counterpart there, because the reference mocks its configuration
+screen and this app's is real.
+
+- **Overview** (`AgentOverviewTab`) — real headline numbers from
+  `GET /agents/{id}/analytics/summary/` via `useAgentPerformance`, with a
+  7D/30D/90D range toggle held in component state (a reading preference on
+  one tab, not part of what a link points at), rendered through the shared
+  `MetricCard`. Then the capability grid, a "how it works" `WorkflowDiagram`,
+  and `AgentUpgradeCard` — all three from `AGENT_TYPE_ROADMAP`.
+
+  There is no "conversations over time" area chart, which the reference shows
+  here. The app has no charting dependency and, more to the point, no endpoint
+  returning a time series: `analytics/summary/` returns four totals. Adding one
+  would mean inventing the trend, which is the one thing this tab must not do.
+
+- **Conversations** — `ConversationsListView` with `agentId` pinned, gated
+  `conversation:view`.
+- **Prospects** — `LeadsListView` with `agentId` pinned, gated `lead:view`.
+- **Knowledge** — `KnowledgeSourcesView`, gated `knowledge:view`.
+- **Settings** — `AgentSettingsView`, gated `agent:view` internally.
+- **Draft** (`AgentDraftTab`), **Publish** (`AgentPublishTab`), **Test**
+  (`AgentTestTab`) — unchanged; see the sections below.
+
+Conversations, Prospects, Knowledge and Settings were four separate places
+before this: two nested routes (`/agents/[id]/knowledge`, `.../settings`) and
+two org-wide pages. They are **the same components**, reused with the agent
+pinned, so there is still exactly one implementation of each screen.
+`ConversationsListView` and `LeadsListView` take an optional `agentId` that
+pins the list and drops the page header; `/conversations` and `/leads` keep
+working org-wide with it omitted. `useLeadsList(agentId)` appends to the
+user's own filters rather than replacing them, keeping `filter`/`filter_by`
+positionally aligned, and maps to `LeadSelector._FILTER_FIELDS`' `agent` key.
+
+The agent's own editable fields (`name`/`human_inbox_email`/`status`,
+`PATCH /agents/{id}/`, gated `agent:manage`) moved from Overview to the
+Settings tab as `AgentIdentitySection`, matching the reference's split where
+Overview carries performance and Settings carries configuration. There is no
+delete: the backend removed `DELETE /agents/{id}/` in the 2026-09-07 push
+that removed creation, and `agent:delete` is no longer granted by any default
+role.
+
+### Draft, Publish, Test
+
+- **Draft** — edits the full draft config per the backend spec doc:
+  `instructions`, `disclosure_enabled`, a required-localized-text section
+  (`greeting`/`fallback_message`/`disclosure_text`, the three
   `AgentService.publish()` checks) repeated **per `enabled_languages`
-  entry** (not just the default language), `theme_config`'s three named
-  keys (`primary_color`/`logo_url`/`launcher_position` as plain text
-  inputs — the backend defines no enum for `launcher_position`, so this
-  isn't a `<Select>`), `notes`, and `behavior_config`/`qualification_config`
-  as raw JSON textareas (both are genuinely freeform on the backend — only
-  validated as "must be an object" — so there's no fixed field set to build
-  real inputs for; a client-side parse failure blocks submit with an inline
-  error before ever reaching the network). `useAgentDraft` reads the draft
-  via an empty-body `PATCH /agents/{id}/draft/`, since the backend exposes
-  no `GET` for it — `AgentService.update_draft()` is documented as a no-op
-  when called with no fields, so this doubles as a read. `useAgentDraftForm`
-  uses `applyApiError` (not the older `getAxiosError`+toast pattern it used
-  before this pass) since `behavior_config`/`qualification_config`/`notes`
-  can receive real field-keyed backend errors worth binding inline. The
-  three optional `LocalizedTextKey`s beyond the required trio
-  (`unsupported_language_message`, `human_requested_confirmation`,
-  `information_email_sent_confirmation`) still have no form UI — bounded
-  scope, not an oversight; the type already supports adding them later.
-- **Publish** (`AgentPublishTab`) — shows draft/published version numbers,
-  `POST .../publish/` (gated `agent:execute`, confirmed via `AlertDialog`),
-  and a one-entry "version history" limited to rolling back to the currently
-  published version (`POST .../rollback/`) — the backend has no version-list
-  endpoint, so a full history browser isn't possible yet.
-- **Test** (`AgentTestTab`) — `useAgentTestAsk` posts to
-  `POST .../draft/test/`, gated `agent:execute`, rendering the answer,
-  confidence decision, and citations from `ChatRuntimeService`.
+  entry**, `theme_config`'s three named keys, `notes`, and
+  `behavior_config`/`qualification_config` as raw JSON textareas (both are
+  genuinely freeform on the backend, only validated as "must be an object",
+  so there's no fixed field set to build real inputs for; a client-side parse
+  failure blocks submit with an inline error before ever reaching the
+  network). `useAgentDraft` reads the draft via an empty-body
+  `PATCH /agents/{id}/draft/`, since the backend exposes no `GET` for it —
+  `AgentService.update_draft()` is documented as a no-op when called with no
+  fields, so this doubles as a read. `useAgentDraftForm` uses `applyApiError`
+  since `behavior_config`/`qualification_config`/`notes` can receive real
+  field-keyed backend errors worth binding inline. The three optional
+  `LocalizedTextKey`s beyond the required trio still have no form UI: bounded
+  scope, not an oversight.
+- **Publish** — draft/published version numbers, `POST .../publish/` (gated
+  `agent:execute`, confirmed via `AlertDialog`), and a one-entry "version
+  history" limited to rolling back to the currently published version
+  (`POST .../rollback/`). The backend has no version-list endpoint, so a full
+  history browser isn't possible yet.
+- **Test** — `useAgentTestAsk` posts to `POST .../draft/test/`, gated
+  `agent:execute`, rendering the answer, confidence decision, and citations
+  from `ChatRuntimeService`.
 
 ## Nav and route registration
 
-`src/constants/navItems.ts`'s Agents entry now carries `requiredFunction:
+`src/constants/navItems.ts`'s Agents entry carries `requiredFunction:
 'agent'`. `src/constants/roles.ts`'s `ROUTE_PERMISSIONS` has a `{ prefix:
-'/agents', resources: ['agent'] }` entry, and `/agents` was removed from
-`PermissionGuard.tsx`'s `GLOBAL_PATHS` in the same change —
-`contracts/permissions.json` was re-vendored from the backend snapshot first
-(`agent:{view,manage,create,delete,execute}`). `/conversations` and `/leads`
-got the same treatment in Phase 3, once `conversation`/`lead` permission
-codes were wired in — see those pages' own context docs. `/analytics`
-remains in `GLOBAL_PATHS` — no permission code exists for it yet.
+'/agents', resources: ['agent'] }` entry, and `/agents` is not in
+`PermissionGuard.tsx`'s `GLOBAL_PATHS`. `contracts/permissions.json` still
+lists `agent:create`/`agent:delete` as valid codes; the backend's 2026-09-07
+RBAC migration revoked them from every default role alongside removing the
+endpoints they gated, and nothing in this app references them.
 
 `src/proxy.ts`'s `ENABLED_PREFIXES`/`config.matcher` already listed `/agents`
 from the Sprint 1 preview; unchanged here.
 
-## Related pages
+## Related docs
 
-Knowledge sources: `context/app/(restricted)/agents/[agentId]/knowledge/page.md`.
-Allowed domains, deployment keys, and the embed snippet (Phase 4):
-`context/app/(restricted)/agents/[agentId]/settings/page.md`.
+Knowledge tab: `context/app/(restricted)/agents/[agentTypeSlug]/knowledge/page.md`.
+Settings tab: `context/app/(restricted)/agents/[agentTypeSlug]/settings/page.md`.

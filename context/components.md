@@ -110,14 +110,48 @@ on screen mean.
 
 ## PageHeader
 
-`src/components/common/PageHeader.tsx`. `{ title, description?, actions? }` — the
-title/description/actions row every list and settings page renders at its top.
-Extracted from Dashboard's original inline markup (`font-display text-2xl font-bold
-tracking-tight` + `text-muted-foreground mt-1 text-sm`) once other pages drifted
-toward stock shadcn `font-semibold` headings instead of reusing it. A page whose
+`src/components/common/PageHeader.tsx`. `{ eyebrow?, title, description?, actions? }`
+— the title/description/actions row every list and settings page renders at its top.
+Extracted from Dashboard's original inline markup once other pages drifted
+toward stock shadcn `font-semibold` headings instead of reusing it.
+
+The scale matches the `ai-agents-platform` reference: a 28px `font-display` title,
+a 15px description, and the left column capped at `max-w-2xl` so a description on a
+wide screen keeps a readable measure. `eyebrow` is the small uppercase kicker in
+`--brand-accent` — that token was declared in `globals.css` for exactly this and had
+no caller until the agents marketplace needed one.
+
+A page whose
 title sits beside a badge or an inline back-link needs its own markup instead (see
 `AgentDetailView`/`RoleEditorForm`) — `PageHeader` covers the plain title+description
 case, not every header shape.
+
+## MetricCard
+
+`src/components/common/MetricCard.tsx`. `{ label, value, delta?, deltaDirection?,
+sublabel?, isLoading? }` — the headline-number card on the dashboard, analytics, and
+an agent's Overview tab.
+
+`value` arrives already formatted, because only the caller knows whether the number
+is a count, a percentage or a currency. `isLoading` renders a skeleton the size of
+the value rather than of the whole card, so nothing jumps when the number lands.
+
+The delta always ships an arrow alongside its colour. Colour on its own would make
+up-versus-down invisible to a colour-blind reader.
+
+Before this existed the same card was inlined three times and had already drifted:
+the dashboard used a sentence-case `text-sm` label, analytics a `text-xs` one, and
+the agent Overview tab an uppercase tracked one.
+
+## WorkflowDiagram
+
+`src/components/common/WorkflowDiagram.tsx`. `{ steps, label }` — a numbered
+left-to-right pipeline, used for an agent's "How it works".
+
+Renders as an `<ol>` with the dashed connectors as `aria-hidden` spans between
+items, so a screen reader hears an ordered list of steps and nothing else. It
+scrolls inside its own box: nine steps never fit on a phone, and letting the page
+scroll sideways instead breaks every other screen.
 
 ## EmptyState
 
