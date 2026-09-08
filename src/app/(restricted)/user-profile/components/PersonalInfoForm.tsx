@@ -24,7 +24,7 @@ export function PersonalInfoForm({ profile }: Readonly<{ profile: UserProfile }>
       <SectionHeader icon={<User className="h-4 w-4" />} title={copy.personalInfoTitle} />
 
       {isExternalIdp && (
-        <div className="mb-4 rounded-lg border border-warning/30 bg-warning/10 px-4 py-3 text-sm text-warning">
+        <div className="mb-4 rounded-lg border border-warning/30 bg-warning/10 px-4 py-3 text-sm text-warning-foreground">
           {copy.externalProfileNote}
         </div>
       )}

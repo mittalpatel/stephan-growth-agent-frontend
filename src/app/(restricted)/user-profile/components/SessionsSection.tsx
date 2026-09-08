@@ -50,7 +50,7 @@ export function SessionsSection() {
                     {session.user_agent || copy.unknownDevice}
                   </span>
                   {session.is_current && (
-                    <span className="inline-flex shrink-0 items-center rounded-full bg-success/10 px-2 py-0.5 text-xs font-semibold uppercase text-success">
+                    <span className="inline-flex shrink-0 items-center rounded-full bg-success/10 px-2 py-0.5 text-xs font-semibold uppercase text-success-foreground">
                       {copy.currentBadge}
                     </span>
                   )}

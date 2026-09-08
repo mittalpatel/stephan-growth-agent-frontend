@@ -23,8 +23,8 @@ export function AgentUpgradeCard({ title, bullets, cta }: Props) {
     <section className="border-brand-accent/25 bg-brand-accent/5 flex flex-col items-start justify-between gap-5 rounded-xl border p-6 sm:flex-row sm:items-center">
       <div>
         <div className="mb-2 flex items-center gap-2">
-          <Sparkles className="text-brand-accent size-4" aria-hidden />
-          <p className="text-brand-accent text-xs font-semibold tracking-wider uppercase">
+          <Sparkles className="text-brand-accent-strong size-4" aria-hidden />
+          <p className="text-brand-accent-strong text-xs font-semibold tracking-wider uppercase">
             {t.agents.tiers.level2Eyebrow}
           </p>
         </div>
@@ -32,7 +32,7 @@ export function AgentUpgradeCard({ title, bullets, cta }: Props) {
         <ul className="grid gap-x-6 gap-y-1.5 sm:grid-cols-2">
           {bullets.map((bullet) => (
             <li key={bullet} className="text-muted-foreground flex items-center gap-2 text-sm">
-              <Check className="text-brand-accent size-3.5 shrink-0" aria-hidden />
+              <Check className="text-brand-accent-strong size-3.5 shrink-0" aria-hidden />
               {bullet}
             </li>
           ))}

@@ -88,7 +88,7 @@ export function BillingView() {
           </p>
         ) : null}
         {detail?.status === 'past_due' && detail.grace_period_ends_at ? (
-          <p className="text-warning text-sm">
+          <p className="text-warning-foreground text-sm">
             {format(t.billing.subscription.graceEnds, {
               date: formatDate(detail.grace_period_ends_at),
             })}

@@ -51,7 +51,7 @@ export default function LandingPage() {
             className="text-primary/[0.07] pointer-events-none absolute inset-0 bg-[radial-gradient(currentColor_1px,transparent_1px)] bg-size-[24px_24px]"
           />
           <div className="relative mx-auto max-w-3xl px-4 py-20 text-center sm:px-6 sm:py-28">
-            <span className="border-brand-accent/40 bg-brand-accent/10 text-brand-accent inline-flex items-center rounded-full border px-3 py-1 text-xs font-medium">
+            <span className="border-brand-accent-strong/40 bg-brand-accent/10 text-brand-accent-strong inline-flex items-center rounded-full border px-3 py-1 text-xs font-medium">
               {t.marketing.hero.badge}
             </span>
             <h1 className="font-display mt-6 text-4xl font-bold tracking-tight text-balance sm:text-5xl">
@@ -106,7 +106,7 @@ export default function LandingPage() {
                 return (
                   <Card key={feature.title}>
                     <CardContent>
-                      <span className="bg-brand-accent/15 text-brand-accent flex size-10 items-center justify-center rounded-lg">
+                      <span className="bg-brand-accent/15 text-brand-accent-strong flex size-10 items-center justify-center rounded-lg">
                         <Icon className="size-5" />
                       </span>
                       <h3 className="font-display mt-4 text-base font-bold">{feature.title}</h3>

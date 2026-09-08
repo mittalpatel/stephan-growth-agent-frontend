@@ -30,7 +30,7 @@ export function PageHeader({ eyebrow, title, description, actions }: Readonly<Pa
     <div className="flex flex-wrap items-start justify-between gap-6">
       <div className="max-w-2xl">
         {eyebrow && (
-          <span className="text-brand-accent mb-2 block text-xs font-semibold tracking-wider uppercase">
+          <span className="text-brand-accent-strong mb-2 block text-xs font-semibold tracking-wider uppercase">
             {eyebrow}
           </span>
         )}

@@ -295,7 +295,7 @@ export function ConversationsListView({ agentId: pinnedAgentId }: Props = {}) {
                           )}
                         >
                           {m.role === 'agent' && (
-                            <div className="text-primary mb-1 flex items-center gap-1.5 text-[11px] font-semibold">
+                            <div className="text-primary-strong mb-1 flex items-center gap-1.5 text-[11px] font-semibold">
                               <Sparkles className="size-[11px]" />{' '}
                               {t.conversations.detail.transcriptHeading}
                             </div>

@@ -13,7 +13,10 @@ import { t } from '@/locales';
 export function PreviewBanner({ note }: Readonly<{ note: string }>) {
   return (
     <div className="border-border bg-muted/40 flex items-center gap-2 rounded-lg border border-dashed px-3 py-2 text-sm">
-      <Badge variant="outline" className="border-brand-accent/40 text-brand-accent shrink-0">
+      <Badge
+        variant="outline"
+        className="border-brand-accent-strong/40 text-brand-accent-strong shrink-0"
+      >
         {t.common.previewBadge}
       </Badge>
       <p className="text-muted-foreground">{note}</p>

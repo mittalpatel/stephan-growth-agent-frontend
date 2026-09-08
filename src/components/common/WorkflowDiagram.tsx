@@ -27,7 +27,7 @@ export function WorkflowDiagram({ steps, label }: WorkflowDiagramProps) {
       {steps.map((step, index) => (
         <li key={step} className="flex shrink-0 items-start">
           <div className="flex w-[132px] flex-col items-center gap-2.5 px-1">
-            <span className="border-primary text-primary bg-primary/10 flex size-9 items-center justify-center rounded-full border-2 font-mono text-xs font-semibold">
+            <span className="border-primary text-primary-strong bg-primary/10 flex size-9 items-center justify-center rounded-full border-2 font-mono text-xs font-semibold">
               {formatNumber(index + 1)}
             </span>
             <span className="text-center text-xs leading-snug font-medium">{step}</span>

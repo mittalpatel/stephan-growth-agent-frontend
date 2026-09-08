@@ -85,7 +85,7 @@ export function ChangePasswordForm({ profile }: Readonly<{ profile: UserProfile 
         </>
       ) : (
         <div className="space-y-4">
-          <div className="rounded-lg border border-warning/30 bg-warning/10 px-4 py-3 text-sm text-warning">
+          <div className="rounded-lg border border-warning/30 bg-warning/10 px-4 py-3 text-sm text-warning-foreground">
             {copy.externalPasswordNote}
           </div>
           <p className="text-sm text-muted-foreground">{copy.contactAdminNote}</p>

@@ -96,7 +96,7 @@ export function AgentsGrid({ entries }: Props) {
                       key={capability}
                       className="text-muted-foreground flex items-center gap-1.5 text-xs"
                     >
-                      <Check className="text-success size-3 shrink-0" aria-hidden />
+                      <Check className="text-success-foreground size-3 shrink-0" aria-hidden />
                       <span className="truncate">{capability}</span>
                     </li>
                   ))}

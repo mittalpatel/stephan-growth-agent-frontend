@@ -28,7 +28,7 @@ function navRowClass(active: boolean) {
   return cn(
     'flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-left text-sm font-medium transition-colors',
     active
-      ? 'bg-primary/10 text-primary'
+      ? 'bg-primary/10 text-primary-strong'
       : 'text-muted-foreground hover:bg-accent hover:text-foreground'
   );
 }
@@ -84,7 +84,7 @@ function NavGroup({ item, pathname }: Readonly<{ item: NavItem; pathname: string
                   className={cn(
                     'block rounded-lg px-3 py-1.5 text-[13px] transition-colors',
                     active
-                      ? 'text-primary font-medium'
+                      ? 'text-primary-strong font-medium'
                       : 'text-muted-foreground hover:text-foreground'
                   )}
                 >

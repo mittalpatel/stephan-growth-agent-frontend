@@ -86,7 +86,7 @@ export function UserProfileClient() {
                   {profile.full_name || profile.email.split('@')[0]}
                 </h2>
                 {profile.role?.name && (
-                  <span className="mt-1 inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold uppercase text-primary">
+                  <span className="mt-1 inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold uppercase text-primary-strong">
                     <ShieldCheck className="h-3.5 w-3.5" />
                     {profile.role.name}
                   </span>

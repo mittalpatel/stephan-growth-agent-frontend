@@ -134,7 +134,7 @@ export function AgentOverviewTab({ agent }: Props) {
                 key={capability}
                 className="bg-card flex items-center gap-2.5 rounded-xl border px-4 py-3"
               >
-                <span className="bg-success/15 text-success flex size-7 shrink-0 items-center justify-center rounded-full">
+                <span className="bg-success/15 text-success-foreground flex size-7 shrink-0 items-center justify-center rounded-full">
                   <Check className="size-3.5" aria-hidden />
                 </span>
                 <span className="text-sm font-medium">{capability}</span>

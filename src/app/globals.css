@@ -54,7 +54,7 @@
   --secondary: oklch(0.963 0.004 106.5);
   --secondary-foreground: oklch(0.205 0.01 268.2);
   --muted: oklch(0.963 0.004 106.5);
-  --muted-foreground: oklch(0.551 0.013 264.5);
+  --muted-foreground: oklch(0.53 0.013 264.5);
   /* The hover/active surface, deliberately neutral rather than tinted — this
      appears everywhere (menus, list rows, dropdowns) and a saturated accent
      there is exactly the "washed everywhere" look client review rejected. */
@@ -77,6 +77,20 @@
   --brand-accent: oklch(0.911 0.187 104.9);
   --brand-accent-foreground: oklch(0.375 0.059 201.7);
 
+  /* Text-safe variants of the two brand colours.
+     Teal and jaune are *light* colours (L 0.74 and 0.91). That is exactly what
+     makes them good fills behind dark text, and exactly what makes them
+     unreadable AS text on a light surface: teal on a teal-10% tint measures
+     2.0:1 and jaune on white 1.23:1, both far below the 4.5:1 floor. The
+     previous navy/gold palette was dark enough to double as text, so the
+     call sites that use `text-primary` / `text-brand-accent` inherited a
+     contrast bug the moment the values were swapped for the brand's own.
+     These are the same hues darkened until they clear 4.5:1 on both the plain
+     background and the 10% tint those labels sit on. In dark mode they are
+     identical to the base tokens, which already read fine there. */
+  --primary-strong: oklch(0.5 0.09 191.7);
+  --brand-accent-strong: oklch(0.52 0.13 95);
+
   /* A large brand-coloured surface (the auth hero panel, the landing page's
      closing CTA band) — the one full-bleed panel this theme has, so unlike
      every other token it was left on its original placeholder navy through
@@ -89,15 +103,19 @@
   --brand-surface: oklch(0.227 0.038 233.4);
   --brand-surface-foreground: oklch(1 0 0);
 
-  /* Status tones. Each pair is a surface plus text guaranteed to hit 4.5:1 on
-     it. `destructive` above already covers "danger", so these three complete
-     the set. */
+  /* Status tones: a surface plus text that actually clears 4.5:1 on it.
+     The foregrounds were previously too light to deliver what the comment
+     here claimed — success measured 4.38:1, info sat exactly on the 4.50
+     line with no margin, and warning was 3.26:1, well into failing. Measured
+     with a canvas-resolved contrast pass over every rendered text node
+     rather than by eye. `destructive` above already covers "danger", so
+     these three complete the set. */
   --success: oklch(0.956 0.015 171.1);
-  --success-foreground: oklch(0.533 0.104 163.8);
+  --success-foreground: oklch(0.51 0.104 163.8);
   --warning: oklch(0.959 0.028 81.5);
-  --warning-foreground: oklch(0.624 0.132 70.1);
+  --warning-foreground: oklch(0.51 0.132 70.1);
   --info: oklch(0.955 0.016 253.9);
-  --info-foreground: oklch(0.538 0.135 254.2);
+  --info-foreground: oklch(0.52 0.135 254.2);
 
   /* Ordered brand -> gold -> green -> blue -> violet: adjacent pairs differ in
      lightness as well as hue, so the series stays readable in greyscale and to
@@ -151,6 +169,12 @@
   --brand-accent: oklch(0.78 0.115 78);
   --brand-accent-foreground: oklch(0.24 0.03 80);
 
+  /* Identical to the base tokens: on a dark ground the bright brand colours
+     already clear 4.5:1 as text, so there is nothing to darken. Declared
+     anyway so the utility resolves in both themes. */
+  --primary-strong: oklch(0.72 0.088 191.7);
+  --brand-accent-strong: oklch(0.78 0.115 78);
+
   /* Intentionally identical to the light-mode values. See the note there. */
   --brand-surface: oklch(0.227 0.038 233.4);
   --brand-surface-foreground: oklch(1 0 0);
@@ -192,6 +216,7 @@
   --color-popover-foreground: var(--popover-foreground);
   --color-primary: var(--primary);
   --color-primary-foreground: var(--primary-foreground);
+  --color-primary-strong: var(--primary-strong);
   --color-secondary: var(--secondary);
   --color-secondary-foreground: var(--secondary-foreground);
   --color-muted: var(--muted);
@@ -211,6 +236,7 @@
   --color-info-foreground: var(--info-foreground);
   --color-brand-accent: var(--brand-accent);
   --color-brand-accent-foreground: var(--brand-accent-foreground);
+  --color-brand-accent-strong: var(--brand-accent-strong);
   --color-brand-surface: var(--brand-surface);
   --color-brand-surface-foreground: var(--brand-surface-foreground);
 

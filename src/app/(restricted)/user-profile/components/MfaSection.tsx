@@ -55,7 +55,7 @@ export function MfaSection() {
           <span
             className={
               enabled
-                ? 'inline-flex items-center gap-1.5 rounded-full bg-success/10 px-3 py-1 text-xs font-semibold uppercase text-success'
+                ? 'inline-flex items-center gap-1.5 rounded-full bg-success/10 px-3 py-1 text-xs font-semibold uppercase text-success-foreground'
                 : 'inline-flex items-center gap-1.5 rounded-full bg-muted px-3 py-1 text-xs font-semibold uppercase text-muted-foreground'
             }
           >

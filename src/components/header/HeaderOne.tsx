@@ -56,7 +56,7 @@ export default function HeaderOne({ onMenuClick }: Readonly<{ onMenuClick?: () =
       <QuickNavSearch />
 
       <div className="ml-auto flex shrink-0 items-center gap-2">
-        <span className="border-brand-accent/30 bg-brand-accent/10 text-brand-accent hidden items-center rounded-full border px-3 py-1.5 text-xs font-semibold sm:inline-flex">
+        <span className="border-brand-accent-strong/30 bg-brand-accent/10 text-brand-accent-strong hidden items-center rounded-full border px-3 py-1.5 text-xs font-semibold sm:inline-flex">
           {format(t.header.trialBadge, { days: String(TRIAL_DAYS_REMAINING) })}
         </span>
 

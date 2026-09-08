@@ -139,7 +139,10 @@ export function DashboardView() {
                 return (
                   <div key={item.key} className="flex items-center gap-3 py-2.5">
                     {item.done ? (
-                      <CircleCheck className="text-success size-4 shrink-0" aria-hidden />
+                      <CircleCheck
+                        className="text-success-foreground size-4 shrink-0"
+                        aria-hidden
+                      />
                     ) : (
                       <Circle className="text-muted-foreground size-4 shrink-0" aria-hidden />
                     )}
@@ -171,7 +174,10 @@ export function DashboardView() {
       <div>
         <div className="mb-4 flex items-center justify-between">
           <h2 className="font-display text-lg font-bold">{t.dashboard.agentPerformance.title}</h2>
-          <Link href="/agents" className="text-primary text-sm font-semibold hover:underline">
+          <Link
+            href="/agents"
+            className="text-primary-strong text-sm font-semibold hover:underline"
+          >
             {t.dashboard.agentPerformance.viewAll}
           </Link>
         </div>
@@ -184,7 +190,7 @@ export function DashboardView() {
                 <CardContent className="flex flex-col gap-4">
                   <div className="flex items-start justify-between">
                     <div className="flex items-center gap-3">
-                      <span className="bg-brand-accent/15 text-brand-accent flex size-10 shrink-0 items-center justify-center rounded-xl">
+                      <span className="bg-brand-accent/15 text-brand-accent-strong flex size-10 shrink-0 items-center justify-center rounded-xl">
                         <Bot className="size-[19px]" />
                       </span>
                       <div>
@@ -219,7 +225,7 @@ export function DashboardView() {
                   <div className="flex items-center justify-end pt-1">
                     <Link
                       href={`/agents/${agent.agent_type.slug}`}
-                      className="text-primary inline-flex items-center gap-1 text-sm font-semibold hover:gap-1.5"
+                      className="text-primary-strong inline-flex items-center gap-1 text-sm font-semibold hover:gap-1.5"
                     >
                       {t.dashboard.agentPerformance.viewAgent} <ArrowRight className="size-3.5" />
                     </Link>
