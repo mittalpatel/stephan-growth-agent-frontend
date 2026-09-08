@@ -338,6 +338,11 @@ export const agents = {
       resetToOrgDefaultConfirmDescription:
         'This replaces every theme field above with your organization’s current branding. It only applies once you save the draft.',
       resetToOrgDefaultFailed: 'Could not load the organization default theme.',
+      livePreviewHeading: 'Live preview',
+      livePreviewNote: 'Approximate render, using the {language} localized text. Save to publish.',
+      previewDesktop: 'Preview on desktop',
+      previewMobile: 'Preview on mobile',
+      previewInputPlaceholder: 'Type a message…',
       behaviorVoiceHeading: 'Voice',
       voiceAnswerLengthLabel: 'Answer length',
       voiceAnswerLengthOptions: {

@@ -287,6 +287,19 @@ role.
   bonus "check contrast" affordance considered for that tab was scoped out
   rather than built against an artificial pair.
 
+  **Live preview** (`WidgetPreview.tsx`, sticky beside the form on `lg+`):
+  a mocked render of the embeddable widget kept in sync via `useWatch` on
+  the whole form, so every theme/behavior field (including ones edited
+  outside the theme section, like the greeting, disclosure text, and
+  suggested questions) reflects immediately with no save. There is no real
+  widget bundle in this repo — the embed script itself is a separate
+  deliverable — so this approximates the runtime from the same values
+  rather than rendering it; a desktop/mobile toggle demonstrates
+  `widget_mobile_layout`'s `fullscreen` vs `overlay` distinction, which
+  only differs on the mobile frame. Unset colors fall back to the backend's
+  own seeded starter palette (`apps/agents/seed_data.py`) so a fresh
+  agent's preview matches what it will actually publish with.
+
 - **Publish** — draft/published version numbers, `POST .../publish/` (gated
   `agent:execute`, confirmed via `AlertDialog`), and a one-entry "version
   history" limited to rolling back to the currently published version

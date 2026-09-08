@@ -24,6 +24,7 @@ import type { Agent, AgentVersionDetail } from '@/types/agent';
 
 import { useAgentDraft } from '../hooks/useAgentDraft';
 import { useAgentDraftForm } from '../hooks/useAgentDraftForm';
+import { WidgetPreview } from './WidgetPreview';
 import type { AgentDraftFormValues } from '@/lib/schemas/agent';
 
 type Props = Readonly<{ agent: Agent }>;
@@ -144,265 +145,274 @@ function DraftForm({
 
   return (
     <FormProvider {...form}>
-      <form onSubmit={submit} className="space-y-4">
-        <div>
-          <label className={fieldLabelCls} htmlFor="instructions">
-            {t.agents.detail.draft.instructionsLabel}
-          </label>
-          <textarea
-            id="instructions"
-            rows={6}
-            placeholder={t.agents.detail.draft.instructionsPlaceholder}
+      <form
+        onSubmit={submit}
+        className="lg:grid lg:grid-cols-[minmax(0,1fr)_320px] lg:items-start lg:gap-8"
+      >
+        <div className="space-y-4">
+          <div>
+            <label className={fieldLabelCls} htmlFor="instructions">
+              {t.agents.detail.draft.instructionsLabel}
+            </label>
+            <textarea
+              id="instructions"
+              rows={6}
+              placeholder={t.agents.detail.draft.instructionsPlaceholder}
+              disabled={!canManage}
+              {...register('instructions')}
+              className={fieldInputCls}
+            />
+          </div>
+
+          <RHFSwitchField<AgentDraftFormValues>
+            name="disclosure_enabled"
+            label={t.agents.detail.draft.disclosureEnabledLabel}
             disabled={!canManage}
-            {...register('instructions')}
-            className={fieldInputCls}
           />
-        </div>
 
-        <RHFSwitchField<AgentDraftFormValues>
-          name="disclosure_enabled"
-          label={t.agents.detail.draft.disclosureEnabledLabel}
-          disabled={!canManage}
-        />
-
-        {agent.enabled_languages.map((lang) => (
-          <div key={lang} className="border-border space-y-4 border-t pt-4">
-            <h3 className="text-sm font-semibold">
-              {format(t.agents.detail.draft.localizedTextTitle, { language: lang })}
-            </h3>
-            <RHFTextField<AgentDraftFormValues>
-              name={`localized_text.${lang}.greeting`}
-              label={t.agents.detail.draft.greetingLabel}
-              placeholder={t.agents.detail.draft.greetingPlaceholder}
-              disabled={!canManage}
-              required
-            />
-            <div>
-              <label className={fieldLabelCls} htmlFor={`fallback_message-${lang}`}>
-                {t.agents.detail.draft.fallbackMessageLabel}
-              </label>
-              <textarea
-                id={`fallback_message-${lang}`}
-                rows={2}
-                placeholder={t.agents.detail.draft.fallbackMessagePlaceholder}
-                disabled={!canManage}
-                {...register(`localized_text.${lang}.fallback_message`)}
-                className={fieldInputCls}
-              />
-            </div>
-            <div>
-              <label className={fieldLabelCls} htmlFor={`disclosure_text-${lang}`}>
-                {t.agents.detail.draft.disclosureTextLabel}
-              </label>
-              <textarea
-                id={`disclosure_text-${lang}`}
-                rows={2}
-                placeholder={t.agents.detail.draft.disclosureTextPlaceholder}
-                disabled={!canManage}
-                {...register(`localized_text.${lang}.disclosure_text`)}
-                className={fieldInputCls}
-              />
-            </div>
-          </div>
-        ))}
-
-        <div className="border-border space-y-6 border-t pt-4">
-          <div className="flex items-center justify-between">
-            <h3 className="text-sm font-semibold">{t.agents.detail.draft.themeTitle}</h3>
-            {canManage && (
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                disabled={isResettingToOrgDefault}
-                onClick={() => void resetToOrgDefault()}
-              >
-                {t.agents.detail.draft.resetToOrgDefault}
-              </Button>
-            )}
-          </div>
-
-          <ThemeColorsSection disabled={!canManage} />
-
-          <div>
-            <h4 className="text-muted-foreground mb-3 text-xs font-semibold tracking-wider uppercase">
-              {t.agents.detail.draft.themeTypographyHeading}
-            </h4>
-            <RHFSelectField<AgentDraftFormValues>
-              name="typography_font_family"
-              label={t.agents.detail.draft.typographyFontFamilyLabel}
-              options={optionsFromMap(t.agents.detail.draft.typographyFontFamilyOptions)}
-              placeholder="—"
-              disabled={!canManage}
-            />
-          </div>
-
-          <div>
-            <h4 className="text-muted-foreground mb-3 text-xs font-semibold tracking-wider uppercase">
-              {t.agents.detail.draft.themeWidgetHeading}
-            </h4>
-            <div className="grid gap-4 sm:grid-cols-2">
-              <RHFSelectField<AgentDraftFormValues>
-                name="widget_position"
-                label={t.agents.detail.draft.widgetPositionLabel}
-                options={optionsFromMap(t.agents.detail.draft.widgetPositionOptions)}
-                placeholder="—"
-                disabled={!canManage}
-              />
-              <RHFSelectField<AgentDraftFormValues>
-                name="widget_launcher_shape"
-                label={t.agents.detail.draft.widgetLauncherShapeLabel}
-                options={optionsFromMap(t.agents.detail.draft.widgetLauncherShapeOptions)}
-                placeholder="—"
-                disabled={!canManage}
-              />
-              <RHFSelectField<AgentDraftFormValues>
-                name="widget_panel_size"
-                label={t.agents.detail.draft.widgetPanelSizeLabel}
-                options={optionsFromMap(t.agents.detail.draft.widgetPanelSizeOptions)}
-                placeholder="—"
-                disabled={!canManage}
-              />
-              <RHFSelectField<AgentDraftFormValues>
-                name="widget_shadow"
-                label={t.agents.detail.draft.widgetShadowLabel}
-                options={optionsFromMap(t.agents.detail.draft.widgetShadowOptions)}
-                placeholder="—"
-                disabled={!canManage}
-              />
-              <RHFSelectField<AgentDraftFormValues>
-                name="widget_mode"
-                label={t.agents.detail.draft.widgetModeLabel}
-                options={optionsFromMap(t.agents.detail.draft.widgetModeOptions)}
-                placeholder="—"
-                disabled={!canManage}
-              />
-              <RHFSelectField<AgentDraftFormValues>
-                name="widget_mobile_layout"
-                label={t.agents.detail.draft.widgetMobileLayoutLabel}
-                options={optionsFromMap(t.agents.detail.draft.widgetMobileLayoutOptions)}
-                placeholder="—"
-                disabled={!canManage}
-              />
-            </div>
-          </div>
-
-          <div>
-            <h4 className="text-muted-foreground mb-3 text-xs font-semibold tracking-wider uppercase">
-              {t.agents.detail.draft.themeLogoHeading}
-            </h4>
-            <div className="grid gap-4 sm:grid-cols-2">
+          {agent.enabled_languages.map((lang) => (
+            <div key={lang} className="border-border space-y-4 border-t pt-4">
+              <h3 className="text-sm font-semibold">
+                {format(t.agents.detail.draft.localizedTextTitle, { language: lang })}
+              </h3>
               <RHFTextField<AgentDraftFormValues>
-                name="logo_logo_url"
-                label={t.agents.detail.draft.logoLogoUrlLabel}
-                placeholder={t.agents.detail.draft.logoLogoUrlPlaceholder}
+                name={`localized_text.${lang}.greeting`}
+                label={t.agents.detail.draft.greetingLabel}
+                placeholder={t.agents.detail.draft.greetingPlaceholder}
+                disabled={!canManage}
+                required
+              />
+              <div>
+                <label className={fieldLabelCls} htmlFor={`fallback_message-${lang}`}>
+                  {t.agents.detail.draft.fallbackMessageLabel}
+                </label>
+                <textarea
+                  id={`fallback_message-${lang}`}
+                  rows={2}
+                  placeholder={t.agents.detail.draft.fallbackMessagePlaceholder}
+                  disabled={!canManage}
+                  {...register(`localized_text.${lang}.fallback_message`)}
+                  className={fieldInputCls}
+                />
+              </div>
+              <div>
+                <label className={fieldLabelCls} htmlFor={`disclosure_text-${lang}`}>
+                  {t.agents.detail.draft.disclosureTextLabel}
+                </label>
+                <textarea
+                  id={`disclosure_text-${lang}`}
+                  rows={2}
+                  placeholder={t.agents.detail.draft.disclosureTextPlaceholder}
+                  disabled={!canManage}
+                  {...register(`localized_text.${lang}.disclosure_text`)}
+                  className={fieldInputCls}
+                />
+              </div>
+            </div>
+          ))}
+
+          <div className="border-border space-y-6 border-t pt-4">
+            <div className="flex items-center justify-between">
+              <h3 className="text-sm font-semibold">{t.agents.detail.draft.themeTitle}</h3>
+              {canManage && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  disabled={isResettingToOrgDefault}
+                  onClick={() => void resetToOrgDefault()}
+                >
+                  {t.agents.detail.draft.resetToOrgDefault}
+                </Button>
+              )}
+            </div>
+
+            <ThemeColorsSection disabled={!canManage} />
+
+            <div>
+              <h4 className="text-muted-foreground mb-3 text-xs font-semibold tracking-wider uppercase">
+                {t.agents.detail.draft.themeTypographyHeading}
+              </h4>
+              <RHFSelectField<AgentDraftFormValues>
+                name="typography_font_family"
+                label={t.agents.detail.draft.typographyFontFamilyLabel}
+                options={optionsFromMap(t.agents.detail.draft.typographyFontFamilyOptions)}
+                placeholder="—"
                 disabled={!canManage}
               />
-              <RHFTextField<AgentDraftFormValues>
-                name="logo_favicon_url"
-                label={t.agents.detail.draft.logoFaviconUrlLabel}
-                placeholder={t.agents.detail.draft.logoFaviconUrlPlaceholder}
-                disabled={!canManage}
-              />
+            </div>
+
+            <div>
+              <h4 className="text-muted-foreground mb-3 text-xs font-semibold tracking-wider uppercase">
+                {t.agents.detail.draft.themeWidgetHeading}
+              </h4>
+              <div className="grid gap-4 sm:grid-cols-2">
+                <RHFSelectField<AgentDraftFormValues>
+                  name="widget_position"
+                  label={t.agents.detail.draft.widgetPositionLabel}
+                  options={optionsFromMap(t.agents.detail.draft.widgetPositionOptions)}
+                  placeholder="—"
+                  disabled={!canManage}
+                />
+                <RHFSelectField<AgentDraftFormValues>
+                  name="widget_launcher_shape"
+                  label={t.agents.detail.draft.widgetLauncherShapeLabel}
+                  options={optionsFromMap(t.agents.detail.draft.widgetLauncherShapeOptions)}
+                  placeholder="—"
+                  disabled={!canManage}
+                />
+                <RHFSelectField<AgentDraftFormValues>
+                  name="widget_panel_size"
+                  label={t.agents.detail.draft.widgetPanelSizeLabel}
+                  options={optionsFromMap(t.agents.detail.draft.widgetPanelSizeOptions)}
+                  placeholder="—"
+                  disabled={!canManage}
+                />
+                <RHFSelectField<AgentDraftFormValues>
+                  name="widget_shadow"
+                  label={t.agents.detail.draft.widgetShadowLabel}
+                  options={optionsFromMap(t.agents.detail.draft.widgetShadowOptions)}
+                  placeholder="—"
+                  disabled={!canManage}
+                />
+                <RHFSelectField<AgentDraftFormValues>
+                  name="widget_mode"
+                  label={t.agents.detail.draft.widgetModeLabel}
+                  options={optionsFromMap(t.agents.detail.draft.widgetModeOptions)}
+                  placeholder="—"
+                  disabled={!canManage}
+                />
+                <RHFSelectField<AgentDraftFormValues>
+                  name="widget_mobile_layout"
+                  label={t.agents.detail.draft.widgetMobileLayoutLabel}
+                  options={optionsFromMap(t.agents.detail.draft.widgetMobileLayoutOptions)}
+                  placeholder="—"
+                  disabled={!canManage}
+                />
+              </div>
+            </div>
+
+            <div>
+              <h4 className="text-muted-foreground mb-3 text-xs font-semibold tracking-wider uppercase">
+                {t.agents.detail.draft.themeLogoHeading}
+              </h4>
+              <div className="grid gap-4 sm:grid-cols-2">
+                <RHFTextField<AgentDraftFormValues>
+                  name="logo_logo_url"
+                  label={t.agents.detail.draft.logoLogoUrlLabel}
+                  placeholder={t.agents.detail.draft.logoLogoUrlPlaceholder}
+                  disabled={!canManage}
+                />
+                <RHFTextField<AgentDraftFormValues>
+                  name="logo_favicon_url"
+                  label={t.agents.detail.draft.logoFaviconUrlLabel}
+                  placeholder={t.agents.detail.draft.logoFaviconUrlPlaceholder}
+                  disabled={!canManage}
+                />
+              </div>
             </div>
           </div>
-        </div>
 
-        <div className="border-border space-y-6 border-t pt-4">
-          <div>
-            <h4 className="text-muted-foreground mb-3 text-xs font-semibold tracking-wider uppercase">
-              {t.agents.detail.draft.behaviorVoiceHeading}
-            </h4>
-            <div className="grid gap-4 sm:grid-cols-2">
-              <RHFSelectField<AgentDraftFormValues>
-                name="voice_answer_length"
-                label={t.agents.detail.draft.voiceAnswerLengthLabel}
-                options={optionsFromMap(t.agents.detail.draft.voiceAnswerLengthOptions)}
-                placeholder="—"
+          <div className="border-border space-y-6 border-t pt-4">
+            <div>
+              <h4 className="text-muted-foreground mb-3 text-xs font-semibold tracking-wider uppercase">
+                {t.agents.detail.draft.behaviorVoiceHeading}
+              </h4>
+              <div className="grid gap-4 sm:grid-cols-2">
+                <RHFSelectField<AgentDraftFormValues>
+                  name="voice_answer_length"
+                  label={t.agents.detail.draft.voiceAnswerLengthLabel}
+                  options={optionsFromMap(t.agents.detail.draft.voiceAnswerLengthOptions)}
+                  placeholder="—"
+                  disabled={!canManage}
+                />
+                <RHFSelectField<AgentDraftFormValues>
+                  name="voice_formality"
+                  label={t.agents.detail.draft.voiceFormalityLabel}
+                  options={optionsFromMap(t.agents.detail.draft.voiceFormalityOptions)}
+                  placeholder="—"
+                  disabled={!canManage}
+                />
+              </div>
+              <RHFStringListField<AgentDraftFormValues>
+                name="voice_terminology"
+                label={t.agents.detail.draft.voiceTerminologyLabel}
+                itemPlaceholder={t.agents.detail.draft.voiceTerminologyPlaceholder}
+                addLabel={t.agents.detail.draft.addListItem}
+                removeLabel={t.agents.detail.draft.removeListItem}
                 disabled={!canManage}
+                className="mt-4"
               />
-              <RHFSelectField<AgentDraftFormValues>
-                name="voice_formality"
-                label={t.agents.detail.draft.voiceFormalityLabel}
-                options={optionsFromMap(t.agents.detail.draft.voiceFormalityOptions)}
-                placeholder="—"
+              <RHFStringListField<AgentDraftFormValues>
+                name="voice_prohibited_phrases"
+                label={t.agents.detail.draft.voiceProhibitedPhrasesLabel}
+                itemPlaceholder={t.agents.detail.draft.voiceProhibitedPhrasesPlaceholder}
+                addLabel={t.agents.detail.draft.addListItem}
+                removeLabel={t.agents.detail.draft.removeListItem}
                 disabled={!canManage}
+                className="mt-4"
               />
             </div>
+
             <RHFStringListField<AgentDraftFormValues>
-              name="voice_terminology"
-              label={t.agents.detail.draft.voiceTerminologyLabel}
-              itemPlaceholder={t.agents.detail.draft.voiceTerminologyPlaceholder}
+              name="suggested_questions"
+              label={t.agents.detail.draft.suggestedQuestionsLabel}
+              itemPlaceholder={t.agents.detail.draft.suggestedQuestionsPlaceholder}
               addLabel={t.agents.detail.draft.addListItem}
               removeLabel={t.agents.detail.draft.removeListItem}
               disabled={!canManage}
-              className="mt-4"
+              maxItems={6}
             />
             <RHFStringListField<AgentDraftFormValues>
-              name="voice_prohibited_phrases"
-              label={t.agents.detail.draft.voiceProhibitedPhrasesLabel}
-              itemPlaceholder={t.agents.detail.draft.voiceProhibitedPhrasesPlaceholder}
+              name="prohibited_claims"
+              label={t.agents.detail.draft.prohibitedClaimsLabel}
+              itemPlaceholder={t.agents.detail.draft.prohibitedClaimsPlaceholder}
               addLabel={t.agents.detail.draft.addListItem}
               removeLabel={t.agents.detail.draft.removeListItem}
               disabled={!canManage}
-              className="mt-4"
             />
           </div>
 
-          <RHFStringListField<AgentDraftFormValues>
-            name="suggested_questions"
-            label={t.agents.detail.draft.suggestedQuestionsLabel}
-            itemPlaceholder={t.agents.detail.draft.suggestedQuestionsPlaceholder}
-            addLabel={t.agents.detail.draft.addListItem}
-            removeLabel={t.agents.detail.draft.removeListItem}
-            disabled={!canManage}
-            maxItems={6}
-          />
-          <RHFStringListField<AgentDraftFormValues>
-            name="prohibited_claims"
-            label={t.agents.detail.draft.prohibitedClaimsLabel}
-            itemPlaceholder={t.agents.detail.draft.prohibitedClaimsPlaceholder}
-            addLabel={t.agents.detail.draft.addListItem}
-            removeLabel={t.agents.detail.draft.removeListItem}
-            disabled={!canManage}
-          />
-        </div>
-
-        <div className="border-border space-y-4 border-t pt-4">
-          <div>
+          <div className="border-border space-y-4 border-t pt-4">
+            <div>
+              <RHFTextareaField<AgentDraftFormValues>
+                name="behavior_config_advanced"
+                label={t.agents.detail.draft.behaviorConfigAdvancedLabel}
+                placeholder={t.agents.detail.draft.configPlaceholder}
+                disabled={!canManage}
+                rows={4}
+                className="font-mono text-xs"
+              />
+              <p className="text-muted-foreground mt-1.5 text-xs">
+                {t.agents.detail.draft.behaviorConfigAdvancedDescription}
+              </p>
+            </div>
             <RHFTextareaField<AgentDraftFormValues>
-              name="behavior_config_advanced"
-              label={t.agents.detail.draft.behaviorConfigAdvancedLabel}
+              name="qualification_config"
+              label={t.agents.detail.draft.qualificationConfigLabel}
               placeholder={t.agents.detail.draft.configPlaceholder}
               disabled={!canManage}
               rows={4}
               className="font-mono text-xs"
             />
-            <p className="text-muted-foreground mt-1.5 text-xs">
-              {t.agents.detail.draft.behaviorConfigAdvancedDescription}
-            </p>
+            <RHFTextField<AgentDraftFormValues>
+              name="notes"
+              label={t.agents.detail.draft.notesLabel}
+              placeholder={t.agents.detail.draft.notesPlaceholder}
+              disabled={!canManage}
+            />
           </div>
-          <RHFTextareaField<AgentDraftFormValues>
-            name="qualification_config"
-            label={t.agents.detail.draft.qualificationConfigLabel}
-            placeholder={t.agents.detail.draft.configPlaceholder}
-            disabled={!canManage}
-            rows={4}
-            className="font-mono text-xs"
-          />
-          <RHFTextField<AgentDraftFormValues>
-            name="notes"
-            label={t.agents.detail.draft.notesLabel}
-            placeholder={t.agents.detail.draft.notesPlaceholder}
-            disabled={!canManage}
-          />
+
+          {canManage && (
+            <Button type="submit" disabled={isPending}>
+              {t.agents.detail.draft.save}
+            </Button>
+          )}
         </div>
 
-        {canManage && (
-          <Button type="submit" disabled={isPending}>
-            {t.agents.detail.draft.save}
-          </Button>
-        )}
+        <div className="mt-6 lg:sticky lg:top-4 lg:mt-0">
+          <WidgetPreview defaultLanguage={agent.default_language} />
+        </div>
       </form>
     </FormProvider>
   );
