@@ -13,12 +13,12 @@ export const auth = {
   createAccountLink: 'Sign up',
   // {year} is filled in at render time.
   copyright: '© {year} YB Inspire. All rights reserved.',
-  heroTagline: 'Everything your team needs, in one place.',
+  heroTagline: 'Your AI agent, always on.',
   heroBadge: 'AI-powered, built for teams',
   heroFeatures: [
-    'Secure, role-based access for every team',
-    'Real-time visibility across your workspace',
-    'Built to scale with your organization',
+    'Answers grounded in your own content, cited every time',
+    'Escalates to a human the moment it should',
+    'Full version history with one-click rollback',
   ],
   validation: {
     email: 'Enter a valid email',

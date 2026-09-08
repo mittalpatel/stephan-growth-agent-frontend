@@ -77,13 +77,17 @@
   --brand-accent: oklch(0.911 0.187 104.9);
   --brand-accent-foreground: oklch(0.375 0.059 201.7);
 
-  /* A large brand-coloured surface (the auth hero panel). Deliberately NOT
-     `--primary`: `--primary` is a control fill, so dark mode lightens it, which
-     is right for a button and wrong for a full-height panel. This pair keeps
-     the same navy in both themes, because a brand surface is not
-     theme-dependent. */
-  --brand-surface: oklch(0.347 0.073 256.7);
-  --brand-surface-foreground: oklch(0.985 0.003 106.4);
+  /* A large brand-coloured surface (the auth hero panel, the landing page's
+     closing CTA band) — the one full-bleed panel this theme has, so unlike
+     every other token it was left on its original placeholder navy through
+     both prior passes rather than ever being pointed at a YB Inspire colour.
+     Bleu nuit now, the brand's own "section de contraste" tone (brandbook
+     v1.0). Deliberately NOT `--primary`: `--primary` is a control fill, so
+     dark mode lightens it, which is right for a button and wrong for a
+     full-height panel. This pair keeps the same colour in both themes,
+     because a brand surface is not theme-dependent. */
+  --brand-surface: oklch(0.227 0.038 233.4);
+  --brand-surface-foreground: oklch(1 0 0);
 
   /* Status tones. Each pair is a surface plus text guaranteed to hit 4.5:1 on
      it. `destructive` above already covers "danger", so these three complete
@@ -148,8 +152,8 @@
   --brand-accent-foreground: oklch(0.24 0.03 80);
 
   /* Intentionally identical to the light-mode values. See the note there. */
-  --brand-surface: oklch(0.347 0.073 256.7);
-  --brand-surface-foreground: oklch(0.985 0.003 106.4);
+  --brand-surface: oklch(0.227 0.038 233.4);
+  --brand-surface-foreground: oklch(1 0 0);
 
   /* Inverted: a dim tinted surface with a light tinted text, rather than the
      light-mode pair, which glows on a dark background. */
