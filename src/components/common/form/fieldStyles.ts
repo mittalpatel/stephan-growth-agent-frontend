@@ -7,6 +7,14 @@ export const fieldInputCls =
 
 export const fieldLabelCls = 'mb-1.5 block text-sm font-medium';
 
+// A one-line "what this changes" helper under the label, above the input —
+// distinct from the error message (which renders below the input, in
+// text-error). Optional on every RHF field primitive; most fields still
+// don't need one, but a field whose effect isn't obvious from its label
+// alone (most of the agent theme/behavior config) should carry one rather
+// than making the operator guess or trial-and-error it.
+export const fieldDescriptionCls = 'text-muted-foreground mb-1.5 text-xs';
+
 // Reads a flat field's error message off RHF's `formState.errors` without fighting
 // the `Path<T>` index type. Returns undefined when the field is valid.
 export function getRhfError<T extends FieldValues>(

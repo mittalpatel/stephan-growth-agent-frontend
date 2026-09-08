@@ -18,14 +18,22 @@ typography wasn't part of that feedback. One type scale, Tailwind defaults other
 
 ## RHF form primitives — `src/components/common/form/`
 
-`RHFTextField`, `RHFTextareaField`, `RHFSelectField`, `RHFSwitchField`, plus `fieldStyles.ts`
-(`fieldInputCls`, `fieldLabelCls`, `getRhfError`).
+`RHFTextField`, `RHFTextareaField`, `RHFSelectField`, `RHFSwitchField`, `RHFColorField`,
+`RHFStringListField`, plus `fieldStyles.ts` (`fieldInputCls`, `fieldLabelCls`,
+`fieldDescriptionCls`, `getRhfError`).
 
 Use these inside a `<FormProvider>` rather than wiring controlled inputs per form.
 When a field type is missing, add a primitive here instead of inlining a one-off —
 that is how forms drift apart visually.
 
 Centralizing the classes means a design change is one edit, not N.
+
+Every scalar/select/list primitive takes an optional `description` prop — one line
+rendered under the label (`fieldDescriptionCls`), above the input, explaining what
+the field actually changes. Distinct from the error message, which renders below the
+input. Added for the agent theme/behavior config form (`AgentDraftTab.tsx`), where
+most fields' effect isn't obvious from the label alone; use it on any new field where
+the same is true, not reflexively on every field.
 
 ## FilterToolbar
 

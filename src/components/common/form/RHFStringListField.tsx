@@ -5,7 +5,7 @@ import type { FieldValues, Path } from 'react-hook-form';
 import { useFieldArray, useFormContext } from 'react-hook-form';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import { fieldInputCls, fieldLabelCls, getRhfError } from './fieldStyles';
+import { fieldDescriptionCls, fieldInputCls, fieldLabelCls, getRhfError } from './fieldStyles';
 
 // A repeatable list of plain-text rows (e.g. suggested questions, prohibited
 // phrases) bound to a top-level array field via `useFieldArray`. No shared
@@ -21,6 +21,8 @@ import { fieldInputCls, fieldLabelCls, getRhfError } from './fieldStyles';
 type Props<T extends FieldValues> = Readonly<{
   name: Path<T>;
   label: string;
+  /** One line under the label explaining what this list actually changes. */
+  description?: string;
   addLabel: string;
   removeLabel: string;
   itemPlaceholder?: string;
@@ -32,6 +34,7 @@ type Props<T extends FieldValues> = Readonly<{
 export function RHFStringListField<T extends FieldValues>({
   name,
   label,
+  description,
   addLabel,
   removeLabel,
   itemPlaceholder,
@@ -52,6 +55,7 @@ export function RHFStringListField<T extends FieldValues>({
   return (
     <div className={className}>
       <label className={fieldLabelCls}>{label}</label>
+      {description && <p className={fieldDescriptionCls}>{description}</p>}
       <div className="space-y-2">
         {fields.map((field, index) => (
           <div key={field.id} className="flex items-center gap-2">

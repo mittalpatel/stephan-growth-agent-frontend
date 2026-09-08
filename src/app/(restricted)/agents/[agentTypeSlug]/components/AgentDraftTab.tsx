@@ -14,7 +14,11 @@ import {
   RHFTextareaField,
   type SelectFieldOption,
 } from '@/components/common/form';
-import { fieldInputCls, fieldLabelCls } from '@/components/common/form/fieldStyles';
+import {
+  fieldDescriptionCls,
+  fieldInputCls,
+  fieldLabelCls,
+} from '@/components/common/form/fieldStyles';
 import { Skeleton } from '@/components/ui/skeleton';
 import { CONTRAST_CHECKED_PAIRS, type ThemeColorKey } from '@/lib/constants/agentTheme';
 import { checkContrast, isValidHexColor } from '@/lib/contrast';
@@ -116,6 +120,7 @@ function ThemeColorsSection({ disabled }: Readonly<{ disabled: boolean }>) {
             <RHFColorField<AgentDraftFormValues>
               name={`color_${key}`}
               label={t.agents.detail.draft[`color${capitalize(key)}Label`]}
+              description={t.agents.detail.draft[`color${capitalize(key)}Description`]}
               placeholder={t.agents.detail.draft.colorPlaceholder}
               disabled={disabled}
             />
@@ -154,6 +159,7 @@ function DraftForm({
             <label className={fieldLabelCls} htmlFor="instructions">
               {t.agents.detail.draft.instructionsLabel}
             </label>
+            <p className={fieldDescriptionCls}>{t.agents.detail.draft.instructionsDescription}</p>
             <textarea
               id="instructions"
               rows={6}
@@ -167,6 +173,7 @@ function DraftForm({
           <RHFSwitchField<AgentDraftFormValues>
             name="disclosure_enabled"
             label={t.agents.detail.draft.disclosureEnabledLabel}
+            description={t.agents.detail.draft.disclosureEnabledDescription}
             disabled={!canManage}
           />
 
@@ -178,6 +185,7 @@ function DraftForm({
               <RHFTextField<AgentDraftFormValues>
                 name={`localized_text.${lang}.greeting`}
                 label={t.agents.detail.draft.greetingLabel}
+                description={t.agents.detail.draft.greetingDescription}
                 placeholder={t.agents.detail.draft.greetingPlaceholder}
                 disabled={!canManage}
                 required
@@ -186,6 +194,9 @@ function DraftForm({
                 <label className={fieldLabelCls} htmlFor={`fallback_message-${lang}`}>
                   {t.agents.detail.draft.fallbackMessageLabel}
                 </label>
+                <p className={fieldDescriptionCls}>
+                  {t.agents.detail.draft.fallbackMessageDescription}
+                </p>
                 <textarea
                   id={`fallback_message-${lang}`}
                   rows={2}
@@ -199,6 +210,9 @@ function DraftForm({
                 <label className={fieldLabelCls} htmlFor={`disclosure_text-${lang}`}>
                   {t.agents.detail.draft.disclosureTextLabel}
                 </label>
+                <p className={fieldDescriptionCls}>
+                  {t.agents.detail.draft.disclosureTextDescription}
+                </p>
                 <textarea
                   id={`disclosure_text-${lang}`}
                   rows={2}
@@ -212,18 +226,23 @@ function DraftForm({
           ))}
 
           <div className="border-border space-y-6 border-t pt-4">
-            <div className="flex items-center justify-between">
+            <div className="flex items-start justify-between gap-4">
               <h3 className="text-sm font-semibold">{t.agents.detail.draft.themeTitle}</h3>
               {canManage && (
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  disabled={isResettingToOrgDefault}
-                  onClick={() => void resetToOrgDefault()}
-                >
-                  {t.agents.detail.draft.resetToOrgDefault}
-                </Button>
+                <div className="text-right">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    disabled={isResettingToOrgDefault}
+                    onClick={() => void resetToOrgDefault()}
+                  >
+                    {t.agents.detail.draft.resetToOrgDefault}
+                  </Button>
+                  <p className="text-muted-foreground mt-1 max-w-52 text-xs">
+                    {t.agents.detail.draft.resetToOrgDefaultConfirmDescription}
+                  </p>
+                </div>
               )}
             </div>
 
@@ -236,6 +255,7 @@ function DraftForm({
               <RHFSelectField<AgentDraftFormValues>
                 name="typography_font_family"
                 label={t.agents.detail.draft.typographyFontFamilyLabel}
+                description={t.agents.detail.draft.typographyFontFamilyDescription}
                 options={optionsFromMap(t.agents.detail.draft.typographyFontFamilyOptions)}
                 placeholder="—"
                 disabled={!canManage}
@@ -250,6 +270,7 @@ function DraftForm({
                 <RHFSelectField<AgentDraftFormValues>
                   name="widget_position"
                   label={t.agents.detail.draft.widgetPositionLabel}
+                  description={t.agents.detail.draft.widgetPositionDescription}
                   options={optionsFromMap(t.agents.detail.draft.widgetPositionOptions)}
                   placeholder="—"
                   disabled={!canManage}
@@ -257,6 +278,7 @@ function DraftForm({
                 <RHFSelectField<AgentDraftFormValues>
                   name="widget_launcher_shape"
                   label={t.agents.detail.draft.widgetLauncherShapeLabel}
+                  description={t.agents.detail.draft.widgetLauncherShapeDescription}
                   options={optionsFromMap(t.agents.detail.draft.widgetLauncherShapeOptions)}
                   placeholder="—"
                   disabled={!canManage}
@@ -264,6 +286,7 @@ function DraftForm({
                 <RHFSelectField<AgentDraftFormValues>
                   name="widget_panel_size"
                   label={t.agents.detail.draft.widgetPanelSizeLabel}
+                  description={t.agents.detail.draft.widgetPanelSizeDescription}
                   options={optionsFromMap(t.agents.detail.draft.widgetPanelSizeOptions)}
                   placeholder="—"
                   disabled={!canManage}
@@ -271,6 +294,7 @@ function DraftForm({
                 <RHFSelectField<AgentDraftFormValues>
                   name="widget_shadow"
                   label={t.agents.detail.draft.widgetShadowLabel}
+                  description={t.agents.detail.draft.widgetShadowDescription}
                   options={optionsFromMap(t.agents.detail.draft.widgetShadowOptions)}
                   placeholder="—"
                   disabled={!canManage}
@@ -278,6 +302,7 @@ function DraftForm({
                 <RHFSelectField<AgentDraftFormValues>
                   name="widget_mode"
                   label={t.agents.detail.draft.widgetModeLabel}
+                  description={t.agents.detail.draft.widgetModeDescription}
                   options={optionsFromMap(t.agents.detail.draft.widgetModeOptions)}
                   placeholder="—"
                   disabled={!canManage}
@@ -285,6 +310,7 @@ function DraftForm({
                 <RHFSelectField<AgentDraftFormValues>
                   name="widget_mobile_layout"
                   label={t.agents.detail.draft.widgetMobileLayoutLabel}
+                  description={t.agents.detail.draft.widgetMobileLayoutDescription}
                   options={optionsFromMap(t.agents.detail.draft.widgetMobileLayoutOptions)}
                   placeholder="—"
                   disabled={!canManage}
@@ -300,12 +326,14 @@ function DraftForm({
                 <RHFTextField<AgentDraftFormValues>
                   name="logo_logo_url"
                   label={t.agents.detail.draft.logoLogoUrlLabel}
+                  description={t.agents.detail.draft.logoLogoUrlDescription}
                   placeholder={t.agents.detail.draft.logoLogoUrlPlaceholder}
                   disabled={!canManage}
                 />
                 <RHFTextField<AgentDraftFormValues>
                   name="logo_favicon_url"
                   label={t.agents.detail.draft.logoFaviconUrlLabel}
+                  description={t.agents.detail.draft.logoFaviconUrlDescription}
                   placeholder={t.agents.detail.draft.logoFaviconUrlPlaceholder}
                   disabled={!canManage}
                 />
@@ -322,6 +350,7 @@ function DraftForm({
                 <RHFSelectField<AgentDraftFormValues>
                   name="voice_answer_length"
                   label={t.agents.detail.draft.voiceAnswerLengthLabel}
+                  description={t.agents.detail.draft.voiceAnswerLengthDescription}
                   options={optionsFromMap(t.agents.detail.draft.voiceAnswerLengthOptions)}
                   placeholder="—"
                   disabled={!canManage}
@@ -329,6 +358,7 @@ function DraftForm({
                 <RHFSelectField<AgentDraftFormValues>
                   name="voice_formality"
                   label={t.agents.detail.draft.voiceFormalityLabel}
+                  description={t.agents.detail.draft.voiceFormalityDescription}
                   options={optionsFromMap(t.agents.detail.draft.voiceFormalityOptions)}
                   placeholder="—"
                   disabled={!canManage}
@@ -337,6 +367,7 @@ function DraftForm({
               <RHFStringListField<AgentDraftFormValues>
                 name="voice_terminology"
                 label={t.agents.detail.draft.voiceTerminologyLabel}
+                description={t.agents.detail.draft.voiceTerminologyDescription}
                 itemPlaceholder={t.agents.detail.draft.voiceTerminologyPlaceholder}
                 addLabel={t.agents.detail.draft.addListItem}
                 removeLabel={t.agents.detail.draft.removeListItem}
@@ -346,6 +377,7 @@ function DraftForm({
               <RHFStringListField<AgentDraftFormValues>
                 name="voice_prohibited_phrases"
                 label={t.agents.detail.draft.voiceProhibitedPhrasesLabel}
+                description={t.agents.detail.draft.voiceProhibitedPhrasesDescription}
                 itemPlaceholder={t.agents.detail.draft.voiceProhibitedPhrasesPlaceholder}
                 addLabel={t.agents.detail.draft.addListItem}
                 removeLabel={t.agents.detail.draft.removeListItem}
@@ -357,6 +389,7 @@ function DraftForm({
             <RHFStringListField<AgentDraftFormValues>
               name="suggested_questions"
               label={t.agents.detail.draft.suggestedQuestionsLabel}
+              description={t.agents.detail.draft.suggestedQuestionsDescription}
               itemPlaceholder={t.agents.detail.draft.suggestedQuestionsPlaceholder}
               addLabel={t.agents.detail.draft.addListItem}
               removeLabel={t.agents.detail.draft.removeListItem}
@@ -366,6 +399,7 @@ function DraftForm({
             <RHFStringListField<AgentDraftFormValues>
               name="prohibited_claims"
               label={t.agents.detail.draft.prohibitedClaimsLabel}
+              description={t.agents.detail.draft.prohibitedClaimsDescription}
               itemPlaceholder={t.agents.detail.draft.prohibitedClaimsPlaceholder}
               addLabel={t.agents.detail.draft.addListItem}
               removeLabel={t.agents.detail.draft.removeListItem}
@@ -374,22 +408,19 @@ function DraftForm({
           </div>
 
           <div className="border-border space-y-4 border-t pt-4">
-            <div>
-              <RHFTextareaField<AgentDraftFormValues>
-                name="behavior_config_advanced"
-                label={t.agents.detail.draft.behaviorConfigAdvancedLabel}
-                placeholder={t.agents.detail.draft.configPlaceholder}
-                disabled={!canManage}
-                rows={4}
-                className="font-mono text-xs"
-              />
-              <p className="text-muted-foreground mt-1.5 text-xs">
-                {t.agents.detail.draft.behaviorConfigAdvancedDescription}
-              </p>
-            </div>
+            <RHFTextareaField<AgentDraftFormValues>
+              name="behavior_config_advanced"
+              label={t.agents.detail.draft.behaviorConfigAdvancedLabel}
+              description={t.agents.detail.draft.behaviorConfigAdvancedDescription}
+              placeholder={t.agents.detail.draft.configPlaceholder}
+              disabled={!canManage}
+              rows={4}
+              className="font-mono text-xs"
+            />
             <RHFTextareaField<AgentDraftFormValues>
               name="qualification_config"
               label={t.agents.detail.draft.qualificationConfigLabel}
+              description={t.agents.detail.draft.qualificationConfigDescription}
               placeholder={t.agents.detail.draft.configPlaceholder}
               disabled={!canManage}
               rows={4}
@@ -398,6 +429,7 @@ function DraftForm({
             <RHFTextField<AgentDraftFormValues>
               name="notes"
               label={t.agents.detail.draft.notesLabel}
+              description={t.agents.detail.draft.notesDescription}
               placeholder={t.agents.detail.draft.notesPlaceholder}
               disabled={!canManage}
             />

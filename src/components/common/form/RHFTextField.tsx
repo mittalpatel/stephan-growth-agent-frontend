@@ -4,7 +4,7 @@ import type { HTMLInputTypeAttribute } from 'react';
 import type { FieldValues, Path } from 'react-hook-form';
 import { useFormContext } from 'react-hook-form';
 import { cn } from '@/lib/utils';
-import { fieldInputCls, fieldLabelCls, getRhfError } from './fieldStyles';
+import { fieldDescriptionCls, fieldInputCls, fieldLabelCls, getRhfError } from './fieldStyles';
 
 // Generic, form-agnostic text input bound to the surrounding RHF context. Drop it
 // inside any <FormProvider> and it wires value, validation error, and the
@@ -12,6 +12,8 @@ import { fieldInputCls, fieldLabelCls, getRhfError } from './fieldStyles';
 type Props<T extends FieldValues> = Readonly<{
   name: Path<T>;
   label: string;
+  /** One line under the label explaining what this field actually changes. */
+  description?: string;
   type?: HTMLInputTypeAttribute;
   placeholder?: string;
   disabled?: boolean;
@@ -22,6 +24,7 @@ type Props<T extends FieldValues> = Readonly<{
 export function RHFTextField<T extends FieldValues>({
   name,
   label,
+  description,
   type = 'text',
   placeholder,
   disabled,
@@ -40,6 +43,7 @@ export function RHFTextField<T extends FieldValues>({
         {label}
         {required ? ' *' : ''}
       </label>
+      {description && <p className={fieldDescriptionCls}>{description}</p>}
       <input
         id={name}
         type={type}

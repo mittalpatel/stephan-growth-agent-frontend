@@ -298,7 +298,17 @@ role.
   `widget_mobile_layout`'s `fullscreen` vs `overlay` distinction, which
   only differs on the mobile frame. Unset colors fall back to the backend's
   own seeded starter palette (`apps/agents/seed_data.py`) so a fresh
-  agent's preview matches what it will actually publish with.
+  agent's preview matches what it will actually publish with. The desktop
+  frame sits inside a minimal browser-chrome mockup (dots + a fake URL bar)
+  over a page backdrop tinted with the operator's own `color_primary`, so
+  it reads as "the widget on a real page" rather than an abstract box.
+
+  **Field descriptions**: every theme/behavior field (and `instructions`,
+  the disclosure toggle, and the per-language localized-text fields) carries
+  a one-line description under its label via the RHF primitives' new
+  `description` prop (`fieldDescriptionCls` in `fieldStyles.ts`), explaining
+  what the field actually changes rather than leaving the operator to infer
+  it from the label or trial-and-error the widget theme.
 
 - **Publish** — draft/published version numbers, `POST .../publish/` (gated
   `agent:execute`, confirmed via `AlertDialog`), and a one-entry "version

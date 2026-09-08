@@ -3,7 +3,7 @@
 import type { FieldValues, Path } from 'react-hook-form';
 import { useFormContext } from 'react-hook-form';
 import { cn } from '@/lib/utils';
-import { fieldInputCls, fieldLabelCls, getRhfError } from './fieldStyles';
+import { fieldDescriptionCls, fieldInputCls, fieldLabelCls, getRhfError } from './fieldStyles';
 
 export type SelectFieldOption = Readonly<{ value: string; label: string }>;
 
@@ -12,6 +12,8 @@ export type SelectFieldOption = Readonly<{ value: string; label: string }>;
 type Props<T extends FieldValues> = Readonly<{
   name: Path<T>;
   label: string;
+  /** One line under the label explaining what this field actually changes. */
+  description?: string;
   options: readonly SelectFieldOption[];
   placeholder?: string;
   disabled?: boolean;
@@ -22,6 +24,7 @@ type Props<T extends FieldValues> = Readonly<{
 export function RHFSelectField<T extends FieldValues>({
   name,
   label,
+  description,
   options,
   placeholder,
   disabled,
@@ -40,6 +43,7 @@ export function RHFSelectField<T extends FieldValues>({
         {label}
         {required ? ' *' : ''}
       </label>
+      {description && <p className={fieldDescriptionCls}>{description}</p>}
       <select
         id={name}
         disabled={disabled || isSubmitting}

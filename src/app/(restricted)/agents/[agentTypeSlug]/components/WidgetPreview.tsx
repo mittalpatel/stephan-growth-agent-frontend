@@ -163,90 +163,126 @@ export function WidgetPreview({ defaultLanguage }: Readonly<{ defaultLanguage: s
         </div>
       </div>
 
-      <div
-        className={
-          device === 'mobile'
-            ? 'relative mx-auto w-full max-w-55 overflow-hidden rounded-md border bg-white'
-            : 'relative mx-auto w-full overflow-hidden rounded-md border bg-white'
-        }
-        style={{ aspectRatio: frameAspect }}
-      >
-        {/* A stand-in for the host page the widget would sit on top of. */}
-        <div className="absolute inset-0 bg-[repeating-linear-gradient(45deg,#00000005,#00000005_10px,transparent_10px,transparent_20px)]" />
-
-        <div
-          className="absolute flex flex-col overflow-hidden"
-          style={{
-            ...(panelFillsFrame ? { inset: 0 } : { ...position, ...panelSize }),
-            borderRadius: panelFillsFrame ? 0 : 14,
-            boxShadow: shadow,
-            background,
-          }}
-        >
-          <div
-            className="flex items-center gap-2 px-3 py-2.5"
-            style={{ background: primary, color: textOnPrimary }}
-          >
-            <MessageCircle className="size-4 shrink-0" aria-hidden />
-            <span className="truncate text-sm font-semibold">{t.common.appName}</span>
-          </div>
-
-          <div className="flex-1 space-y-2 overflow-y-auto px-3 py-3">
-            <div
-              className="max-w-[85%] rounded-lg px-3 py-2 text-xs"
-              style={{ background: surface, color: textOnSurface }}
-            >
-              {greeting}
+      <div className={device === 'mobile' ? 'mx-auto w-full max-w-55' : 'mx-auto w-full'}>
+        {/* A browser chrome bar, so this reads as "the widget sitting on a
+            real webpage" rather than an abstract box — only for the desktop
+            preview, where a URL bar makes sense. */}
+        {device === 'desktop' && (
+          <div className="flex items-center gap-1.5 rounded-t-md border border-b-0 border-gray-200 bg-gray-50 px-3 py-2">
+            <span className="size-2 rounded-full bg-gray-300" />
+            <span className="size-2 rounded-full bg-gray-300" />
+            <span className="size-2 rounded-full bg-gray-300" />
+            <div className="ml-2 flex-1 truncate rounded-full border border-gray-200 bg-white px-2 py-0.5 text-center text-[9px] text-gray-400">
+              {t.agents.detail.draft.previewUrlBar}
             </div>
-            {questions.slice(0, 3).map((q) => (
-              <button
-                key={q}
-                type="button"
-                className="block w-full max-w-[85%] rounded-full border px-3 py-1.5 text-left text-xs"
-                style={{ borderColor: primary, color: primary }}
-              >
-                {q}
-              </button>
-            ))}
-          </div>
-
-          {disclosureEnabled && (
-            <p
-              className="text-muted-foreground border-t px-3 py-1.5 text-[10px]"
-              style={{ borderColor: surface }}
-            >
-              {disclosureText}
-            </p>
-          )}
-
-          <div
-            className="flex items-center gap-2 border-t px-2 py-2"
-            style={{ borderColor: surface }}
-          >
-            <div
-              className="flex-1 rounded-full border px-3 py-1.5 text-xs"
-              style={{ borderColor: surface, color: text }}
-            >
-              {t.agents.detail.draft.previewInputPlaceholder}
-            </div>
-            <Send className="size-4 shrink-0" style={{ color: primary }} aria-hidden />
-          </div>
-        </div>
-
-        {!panelFillsFrame && (
-          <div
-            className="absolute flex size-11 items-center justify-center"
-            style={{
-              ...position,
-              background: primary,
-              borderRadius: launcherRadius,
-              color: textOnPrimary,
-              boxShadow: shadow,
-            }}
-          >
-            <MessageCircle className="size-5" aria-hidden />
           </div>
         )}
+
+        <div
+          className={
+            device === 'mobile'
+              ? 'relative w-full overflow-hidden rounded-md border border-gray-200 bg-white'
+              : 'relative w-full overflow-hidden rounded-b-md border border-gray-200 bg-white'
+          }
+          style={{ aspectRatio: frameAspect }}
+        >
+          {/* A stand-in for the host page the widget would sit on top of,
+              using the operator's own primary color for the dot grid so it
+              reads as their brand's page, not a generic mockup. */}
+          <div
+            className="pointer-events-none absolute inset-0 bg-[radial-gradient(currentColor_1px,transparent_1px)] bg-size-[16px_16px] opacity-[0.08]"
+            style={{ color: primary }}
+          />
+          <div className="absolute inset-0 flex flex-col gap-2 p-4">
+            <div className="h-3 w-14 rounded-full bg-gray-200" />
+            <div className="mt-3 h-2.5 w-3/4 rounded-full bg-gray-200" />
+            <div className="h-2.5 w-1/2 rounded-full bg-gray-200" />
+          </div>
+
+          <div
+            className="absolute flex flex-col overflow-hidden"
+            style={{
+              ...(panelFillsFrame ? { inset: 0 } : { ...position, ...panelSize }),
+              borderRadius: panelFillsFrame ? 0 : 14,
+              boxShadow: shadow,
+              background,
+            }}
+          >
+            <div
+              className="flex items-center gap-2 px-3 py-2.5"
+              style={{ background: primary, color: textOnPrimary }}
+            >
+              <span
+                className="flex size-6 shrink-0 items-center justify-center rounded-full"
+                style={{ background: 'rgba(255,255,255,0.2)' }}
+              >
+                <MessageCircle className="size-3.5" aria-hidden />
+              </span>
+              <span className="truncate text-sm font-semibold">{t.common.appName}</span>
+              <span
+                className="ml-auto size-1.5 rounded-full"
+                style={{ background: textOnPrimary === '#FFFFFF' ? '#4ADE80' : '#16A34A' }}
+                aria-hidden
+              />
+            </div>
+
+            <div className="flex-1 space-y-2 overflow-y-auto px-3 py-3">
+              <div
+                className="max-w-[85%] rounded-2xl rounded-tl-sm px-3 py-2 text-xs shadow-sm"
+                style={{ background: surface, color: textOnSurface }}
+              >
+                {greeting}
+              </div>
+              {questions.slice(0, 3).map((q) => (
+                <button
+                  key={q}
+                  type="button"
+                  className="block w-full max-w-[85%] rounded-full border px-3 py-1.5 text-left text-xs transition-opacity hover:opacity-80"
+                  style={{ borderColor: primary, color: primary }}
+                >
+                  {q}
+                </button>
+              ))}
+            </div>
+
+            {disclosureEnabled && (
+              <p
+                className="text-muted-foreground border-t px-3 py-1.5 text-[10px]"
+                style={{ borderColor: surface }}
+              >
+                {disclosureText}
+              </p>
+            )}
+
+            <div
+              className="flex items-center gap-2 border-t px-2 py-2"
+              style={{ borderColor: surface }}
+            >
+              <div
+                className="flex-1 rounded-full border px-3 py-1.5 text-xs"
+                style={{ borderColor: surface, color: text }}
+              >
+                {t.agents.detail.draft.previewInputPlaceholder}
+              </div>
+              <Send className="size-4 shrink-0" style={{ color: primary }} aria-hidden />
+            </div>
+          </div>
+
+          {!panelFillsFrame && (
+            <div
+              className="absolute flex size-11 items-center justify-center"
+              style={{
+                ...position,
+                background: primary,
+                borderRadius: launcherRadius,
+                color: textOnPrimary,
+                boxShadow: shadow,
+              }}
+            >
+              <MessageCircle className="size-5" aria-hidden />
+            </div>
+          )}
+        </div>
       </div>
 
       <p className="text-muted-foreground mt-2 text-center text-[11px]">

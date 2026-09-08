@@ -3,13 +3,15 @@
 import type { FieldValues, Path } from 'react-hook-form';
 import { useFormContext } from 'react-hook-form';
 import { cn } from '@/lib/utils';
-import { fieldInputCls, fieldLabelCls, getRhfError } from './fieldStyles';
+import { fieldDescriptionCls, fieldInputCls, fieldLabelCls, getRhfError } from './fieldStyles';
 
 // Textarea counterpart to RHFTextField, for multi-line fields (e.g. a rejection
 // reason). Same wiring: drop inside a <FormProvider>, no prop drilling.
 type Props<T extends FieldValues> = Readonly<{
   name: Path<T>;
   label: string;
+  /** One line under the label explaining what this field actually changes. */
+  description?: string;
   placeholder?: string;
   disabled?: boolean;
   required?: boolean;
@@ -20,6 +22,7 @@ type Props<T extends FieldValues> = Readonly<{
 export function RHFTextareaField<T extends FieldValues>({
   name,
   label,
+  description,
   placeholder,
   disabled,
   required,
@@ -38,6 +41,7 @@ export function RHFTextareaField<T extends FieldValues>({
         {label}
         {required ? ' *' : ''}
       </label>
+      {description && <p className={fieldDescriptionCls}>{description}</p>}
       <textarea
         id={name}
         rows={rows}

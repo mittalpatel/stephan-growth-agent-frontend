@@ -3,7 +3,7 @@
 import type { FieldValues, Path } from 'react-hook-form';
 import { useFormContext } from 'react-hook-form';
 import { cn } from '@/lib/utils';
-import { fieldInputCls, fieldLabelCls, getRhfError } from './fieldStyles';
+import { fieldDescriptionCls, fieldInputCls, fieldLabelCls, getRhfError } from './fieldStyles';
 
 // Hex-color counterpart to RHFTextField: a text input (so an operator can
 // paste/type a hex value, unlike a bare `type="color"` swatch which forces
@@ -14,6 +14,8 @@ import { fieldInputCls, fieldLabelCls, getRhfError } from './fieldStyles';
 type Props<T extends FieldValues> = Readonly<{
   name: Path<T>;
   label: string;
+  /** One line explaining where this color is used on the widget. */
+  description?: string;
   placeholder?: string;
   disabled?: boolean;
   required?: boolean;
@@ -23,6 +25,7 @@ type Props<T extends FieldValues> = Readonly<{
 export function RHFColorField<T extends FieldValues>({
   name,
   label,
+  description,
   placeholder,
   disabled,
   required,
@@ -44,6 +47,7 @@ export function RHFColorField<T extends FieldValues>({
         {label}
         {required ? ' *' : ''}
       </label>
+      {description && <p className={fieldDescriptionCls}>{description}</p>}
       <div className="flex items-center gap-2">
         <input
           type="color"
