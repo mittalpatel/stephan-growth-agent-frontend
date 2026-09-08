@@ -63,7 +63,16 @@
   --destructive: oklch(0.543 0.174 29.7);
   --destructive-foreground: oklch(0.985 0.003 106.4);
   --border: oklch(0.922 0.007 88.6);
-  --input: oklch(0.922 0.007 88.6);
+  /* Darker than --border on purpose: --input is the boundary/fill of an
+     interactive control (text input, textarea, select, checkbox, radio,
+     switch track), where WCAG 1.4.11 asks for 3:1 against the surface it
+     sits on. The stock shadcn value shared with --border measured 1.2:1 here
+     -- invisible on a white card, which is why an unchecked switch or radio
+     rendered as no control at all rather than an off one. --border keeps the
+     original light value: a card or table divider has no such requirement,
+     and darkening every hairline in the app was a bigger change than this
+     bug needs. */
+  --input: oklch(0.62 0.008 88.6);
   /* Kept neutral rather than tied to `--primary`: a focus ring fires on every
      interactive element in the app, so tinting it teal would recreate the same
      "everything is green" impression on a much smaller but far more frequent
@@ -165,9 +174,14 @@
   --destructive: oklch(0.704 0.165 29.7);
   --destructive-foreground: oklch(0.985 0.003 106.4);
   /* Borders and inputs are translucent white rather than a flat grey so they
-     read correctly over both `--background` and the lighter `--card`. */
+     read correctly over both `--background` and the lighter `--card`.
+     `--input` sits at a higher alpha than `--border` for the same reason as
+     the light-mode split above: it is the boundary/fill of an interactive
+     control, and 15% measured 1.5:1 against `--background` here, short of
+     the 3:1 a switch or checkbox needs to read as present rather than
+     absent. */
   --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
+  --input: oklch(1 0 0 / 35%);
   --ring: oklch(0.62 0.08 256.7);
 
   --brand-accent: oklch(0.78 0.115 78);
