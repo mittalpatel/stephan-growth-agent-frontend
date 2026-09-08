@@ -119,7 +119,7 @@ function NavSection({
   if (items.length === 0) return null;
   return (
     <div className="mb-5">
-      <p className="text-muted-foreground/70 mb-1.5 px-3 text-[10px] font-semibold tracking-wider uppercase">
+      <p className="text-muted-foreground mb-1.5 px-3 text-[10px] font-semibold tracking-wider uppercase">
         {title}
       </p>
       <ul className="flex flex-col gap-0.5">

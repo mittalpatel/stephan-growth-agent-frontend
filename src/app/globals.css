@@ -85,11 +85,15 @@
      previous navy/gold palette was dark enough to double as text, so the
      call sites that use `text-primary` / `text-brand-accent` inherited a
      contrast bug the moment the values were swapped for the brand's own.
-     These are the same hues darkened until they clear 4.5:1 on both the plain
-     background and the 10% tint those labels sit on. In dark mode they are
-     identical to the base tokens, which already read fine there. */
+     Teal survives being darkened. Jaune does not: darkening a yellow drags it
+     through olive, and a 4.5:1 mustard still reads as dirty rather than as the
+     brand. So the light-mode text companion to jaune is not jaune at all, it is
+     teal profond -- the brandbook's own answer to "what colour does text go
+     next to yellow", and the same value as `--brand-accent-foreground`. The
+     jaune stays where it belongs: the fill and the tint behind these labels.
+     In dark mode the base tokens already read fine, so `-strong` matches them. */
   --primary-strong: oklch(0.5 0.09 191.7);
-  --brand-accent-strong: oklch(0.52 0.13 95);
+  --brand-accent-strong: oklch(0.375 0.059 201.7);
 
   /* A large brand-coloured surface (the auth hero panel, the landing page's
      closing CTA band) — the one full-bleed panel this theme has, so unlike

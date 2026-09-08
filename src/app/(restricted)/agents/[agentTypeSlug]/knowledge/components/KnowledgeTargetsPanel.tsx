@@ -5,6 +5,8 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Label } from '@/components/ui/label';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Skeleton } from '@/components/ui/skeleton';
 import { format } from '@/lib/i18n';
 import { t } from '@/locales';
@@ -94,30 +96,20 @@ export function KnowledgeTargetsPanel({ agentId }: Props) {
       <CardContent className="space-y-4">
         <p className="text-muted-foreground text-sm">{t.knowledge.targets.description}</p>
 
-        <div className="space-y-2">
-          <label className="flex items-center gap-2 text-sm">
-            <input
-              type="radio"
-              name="knowledge-targets-mode"
-              checked={mode === 'all'}
-              disabled={!canManage}
-              onChange={() => setMode('all')}
-              className="accent-primary"
-            />
+        <RadioGroup
+          value={mode}
+          onValueChange={(value) => setMode(value as 'all' | 'selected')}
+          disabled={!canManage}
+        >
+          <Label className="flex items-center gap-2 text-sm font-normal">
+            <RadioGroupItem value="all" />
             {t.knowledge.targets.modeAll}
-          </label>
-          <label className="flex items-center gap-2 text-sm">
-            <input
-              type="radio"
-              name="knowledge-targets-mode"
-              checked={mode === 'selected'}
-              disabled={!canManage}
-              onChange={() => setMode('selected')}
-              className="accent-primary"
-            />
+          </Label>
+          <Label className="flex items-center gap-2 text-sm font-normal">
+            <RadioGroupItem value="selected" />
             {t.knowledge.targets.modeSelected}
-          </label>
-        </div>
+          </Label>
+        </RadioGroup>
 
         {mode === 'selected' && (
           <div className="max-h-64 space-y-1 overflow-y-auto rounded-md border p-2">

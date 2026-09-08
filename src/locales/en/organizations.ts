@@ -211,7 +211,7 @@ export const organizations = {
     removed: 'Member removed.',
     inviteRevoked: 'Invitation revoked.',
     inviteResent: 'Invitation resent.',
-    explain: 'Why?',
+    explain: 'Explain access',
   },
 
   pendingInvites: {
