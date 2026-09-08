@@ -79,35 +79,39 @@ just as wrong, because they hardcode one theme. This is what makes dark mode fre
 single literal colour renders correctly in one theme and is unreadable in the other,
 and nobody notices until a user screenshots it.
 
-This theme is **no longer** shadcn's stock neutral palette. It carries the client's own
-YB Inspire brand palette (bleu petrole ground, teal `--primary`, jaune `--brand-accent`
-reserved for one rare CTA per screen — see
-[ADR-0017](docs/adr/0017-yb-inspire-brand-theme.md)), applied as token _values_ in
-`globals.css`, **dark-first**: dark is the default theme, light a genuine but secondary
-one. The token _names_ are still stock, which is what keeps every future
-`npx shadcn@latest add …` matching automatically.
+This theme is **no longer** shadcn's stock neutral palette, but only in two places.
+`--primary` (teal) and `--brand-accent` (jaune) carry the client's YB Inspire brand
+colours; every other token — background, card, border, muted, the `--accent` hover
+surface, `--ring` focus colour, sidebar chrome — is the original neutral Nexus palette,
+deliberately left alone. An earlier pass repalleted every token and made dark the
+default theme; client review asked for the opposite — keep the app looking as
+unchanged as possible, with teal/jaune appearing only on the specific elements they
+accent, not washed across the UI. See
+[ADR-0018](docs/adr/0018-yb-inspire-accent-only.md) (which supersedes
+[ADR-0017](docs/adr/0017-yb-inspire-brand-theme.md)) for the full record. The token
+_names_ are still stock, which is what keeps every future `npx shadcn@latest add …`
+matching automatically.
 
-Changing values in `globals.css` (both `:root` and `.dark` blocks) is the way to rebrand
-the palette. Do not hand-edit `src/components/ui/**` to restyle a primitive, even for
-something as small as swapping a ring for a border, because that directory is generated
-and the edit is lost on the next regeneration. If a primitive genuinely cannot be themed
-through tokens, raise it rather than patching it in place — this happened once already:
-`src/components/ui/button.tsx`'s capsule shape and mono label (the brand's own CTA
-grammar) could not be expressed as tokens or a call-site override, so it is a deliberate,
-ADR-recorded exception, not a precedent for hand-editing primitives casually.
+Changing `--primary` and `--brand-accent` in `globals.css` (both `:root` and `.dark`
+blocks), and nothing else, is the way to rebrand further. Do not hand-edit
+`src/components/ui/**` to restyle a primitive, even for something as small as swapping
+a ring for a border, because that directory is generated and the edit is lost on the
+next regeneration. If a primitive genuinely cannot be themed through tokens, raise it
+rather than patching it in place.
 
-Three token pairs exist beyond the stock set: `--brand-accent` / `--brand-accent-foreground`
-(the jaune CTA highlight — separate from shadcn's `--accent`, which is the hover/active
-surface, because routing a saturated brand colour through it would tint every hover in
-the app), `--brand-surface` / `--brand-surface-foreground` (a full-bleed brand panel that
-stays the same colour in both themes, unlike a control fill), and `--surface-raised` /
-`--surface-raised-border` (the brand's translucent in-page card texture). Adding a token
-means adding it in three places: `:root`, `.dark`, and `@theme inline`.
+Two token pairs exist beyond the stock set: `--brand-accent` / `--brand-accent-foreground`
+(the jaune highlight, reachable only through the `cta` Button variant, a small badge, or
+an eyebrow label — never a background or a hover state, and separate from shadcn's
+`--accent`, which is the ordinary hover/active surface and stays neutral) and
+`--brand-surface` / `--brand-surface-foreground` (a full-bleed brand panel that stays the
+same colour in both themes, unlike a control fill). Adding a token means adding it in
+three places: `:root`, `.dark`, and `@theme inline`.
 
-**White never sits on a teal fill.** It is 2.24:1, and the brandbook names this exact
-pairing as the one to avoid. `--primary-foreground` is dark for this reason — if you add
-a control that fills with `--primary` and hardcodes `text-white` instead of
-`text-primary-foreground`, you have reintroduced the bug this rule exists to prevent.
+**White never sits on a teal fill.** It is 2.24:1, below AA. `--primary-foreground` is
+dark for this reason — if you add a control that fills with `--primary` and hardcodes
+`text-white` instead of `text-primary-foreground`, you have reintroduced the bug this
+rule exists to prevent. This holds regardless of how sparingly `--primary` itself is
+used.
 
 The one sanctioned exception is `src/app/global-error.tsx`, which renders when the
 root layout (and therefore the stylesheet) may have failed to load. It says so.

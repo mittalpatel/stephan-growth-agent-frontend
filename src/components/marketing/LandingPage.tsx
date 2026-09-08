@@ -48,10 +48,10 @@ export default function LandingPage() {
         <section className="relative overflow-hidden">
           <span
             aria-hidden
-            className="grid-lines glow-brand pointer-events-none absolute inset-0"
+            className="text-primary/[0.07] pointer-events-none absolute inset-0 bg-[radial-gradient(currentColor_1px,transparent_1px)] bg-size-[24px_24px]"
           />
           <div className="relative mx-auto max-w-3xl px-4 py-20 text-center sm:px-6 sm:py-28">
-            <span className="cta-label border-brand-accent/40 bg-brand-accent/10 text-brand-accent inline-flex items-center rounded-full border px-3 py-1">
+            <span className="border-brand-accent/40 bg-brand-accent/10 text-brand-accent inline-flex items-center rounded-full border px-3 py-1 text-xs font-medium">
               {t.marketing.hero.badge}
             </span>
             <h1 className="font-display mt-6 text-4xl font-bold tracking-tight text-balance sm:text-5xl">
@@ -138,7 +138,7 @@ export default function LandingPage() {
           </div>
         </section>
 
-        <section className="band-deep py-16">
+        <section className="bg-brand-surface text-brand-surface-foreground py-16">
           <div className="mx-auto max-w-2xl px-4 text-center sm:px-6">
             <h2 className="font-display text-3xl font-bold tracking-tight">
               {t.marketing.cta.heading}
@@ -146,11 +146,16 @@ export default function LandingPage() {
             <p className="text-brand-surface-foreground/80 mt-3 text-base">
               {t.marketing.cta.subheading}
             </p>
-            {/* The brandbook's one primary action per screen: `cta` puts the
-                jaune fill on the button rather than hand-rolling it here, so
-                there is exactly one call site to check for "is this rare
-                enough" rather than one per page. */}
-            <Button size="lg" variant="cta" className="mt-7 h-11 px-6" asChild>
+            {/* The one deliberate use of the jaune accent as a fill: `cta`
+                keeps that judgement call to a single variant rather than a
+                one-off className, so there's exactly one place to check
+                "is this still rare enough" rather than one per call site. */}
+            <Button
+              size="lg"
+              variant="cta"
+              className="mt-7 h-11 px-6 text-base font-semibold"
+              asChild
+            >
               <Link href="/signup/create">
                 <Sparkles className="size-4" />
                 {t.marketing.cta.button}

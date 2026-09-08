@@ -30,12 +30,8 @@ export function PageHeader({ eyebrow, title, description, actions }: Readonly<Pa
     <div className="flex flex-wrap items-start justify-between gap-6">
       <div className="max-w-2xl">
         {eyebrow && (
-          <span className="mb-2 block">
-            <span className="cta-label text-brand-accent">{eyebrow}</span>
-            {/* The teal-to-nothing underline the reference site puts beneath
-                every eyebrow label — small, and most of what makes a heading
-                block read as this brand rather than a generic one. */}
-            <span aria-hidden className="accent-rule mt-1.5 block h-0.5 w-10" />
+          <span className="text-brand-accent mb-2 block text-xs font-semibold tracking-wider uppercase">
+            {eyebrow}
           </span>
         )}
         <h1 className="font-display text-[28px] leading-tight font-bold tracking-tight">{title}</h1>

@@ -35,11 +35,12 @@ export default function AuthHeroShell({
   return (
     <main className="bg-muted/40 flex min-h-screen">
       <div className="bg-brand-surface text-brand-surface-foreground relative hidden w-1/2 flex-col justify-between overflow-hidden p-12 md:flex">
-        {/* The reference site's own texture: a fine technical grid plus an
-            ambient glow, both held at single-digit opacity so they read as
-            structure rather than decoration ("les grilles et filets
-            techniques guident l'oeil sans concurrencer le message"). */}
-        <span aria-hidden className="grid-lines glow-brand pointer-events-none absolute inset-0" />
+        {/* A faint dot grid instead of a gradient blob: it reads as texture at
+            any zoom level, so it can't band the way a blurred circle did. */}
+        <span
+          aria-hidden
+          className="pointer-events-none absolute inset-0 [background-image:radial-gradient(currentColor_1px,transparent_1px)] [background-size:24px_24px] text-brand-surface-foreground/10"
+        />
 
         <div className="relative flex items-center gap-2.5">
           <span className="bg-brand-accent text-brand-accent-foreground flex size-9 items-center justify-center rounded-lg">
@@ -49,7 +50,7 @@ export default function AuthHeroShell({
         </div>
 
         <div className="relative space-y-6">
-          <span className="cta-label border-brand-surface-foreground/20 bg-brand-surface-foreground/10 inline-flex items-center rounded-full border px-3 py-1">
+          <span className="border-brand-surface-foreground/20 bg-brand-surface-foreground/10 inline-flex items-center rounded-full border px-3 py-1 text-xs font-medium">
             {t.auth.heroBadge}
           </span>
           <p className="font-display max-w-sm text-4xl leading-tight font-bold tracking-tight text-balance">

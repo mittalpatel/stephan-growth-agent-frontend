@@ -9,11 +9,12 @@ from lint and coverage, added with `npx shadcn@latest add <name>`, never hand-ed
 
 ## Typography
 
-The YB Inspire brand's three families (ADR-0017), all self-hosted via `next/font`: Work
-Sans as `--font-sans` (body, all UI text), Poppins as `--font-display`/`--font-heading`
-(headings, metric values), JetBrains Mono as `--font-mono` (labels, CTAs, data). CTAs and
-eyebrow labels use the `.cta-label` utility (mono, 700, uppercase, `0.08em` tracking) —
-the brand's loudest single signal, and typographic rather than chromatic.
+The YB Inspire brand's three families, all self-hosted via `next/font`: Work Sans as
+`--font-sans` (body, all UI text), Poppins as `--font-display`/`--font-heading`
+(headings, metric values), JetBrains Mono as `--font-mono` (reserved for numerics). This
+part of the brand adoption is unaffected by [ADR-0018](../docs/adr/0018-yb-inspire-accent-only.md):
+that ADR scaled the _colour_ palette back to accents-only after client review, but
+typography wasn't part of that feedback. One type scale, Tailwind defaults otherwise.
 
 ## RHF form primitives — `src/components/common/form/`
 

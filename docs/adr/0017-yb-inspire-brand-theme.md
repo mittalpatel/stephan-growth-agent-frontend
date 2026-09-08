@@ -1,6 +1,9 @@
 # ADR-0017: YB Inspire brand theme, dark-first; supersedes the stock-neutral part of ADR-0014
 
-**Status:** Accepted
+**Status:** Accepted, then superseded by [ADR-0018](0018-yb-inspire-accent-only.md) after
+client review rejected the dark-first, full-repalette approach described below in
+favour of teal/jaune as accent colours only on the pre-existing neutral theme. Kept for
+the record of what was tried and why it changed.
 
 ## Context
 
