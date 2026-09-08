@@ -66,15 +66,20 @@ returns the updated row (`revoked_at` set); the keys query is invalidated
 rather than patched in place, since a revoked key is still worth showing
 and a refetch is cheap on a small, read-through-cached list.
 
-## Embed snippet
+## Embed code (backend 2026-09-07)
 
-`EmbedSnippetSection` is static, informational content: a `fetch()` example
-showing the `X-Widget-Key` header (`WIDGET_KEY_HEADER` in
-`apps/widgetgw/constants.py`) a customer's page would send to
-`GET /widget/config/` (mounted outside `/api/v1/`, unauthenticated,
-publishable-key-gated). It intentionally does not interpolate a real issued
-secret into the snippet — the placeholder `YOUR_DEPLOYMENT_KEY` stays
-generic so nothing beyond the reveal dialog ever displays a real secret.
+`EmbedSnippetSection` used to be static, informational content only (a
+`fetch()` example with a `YOUR_DEPLOYMENT_KEY` placeholder, no API call).
+`POST /agents/{id}/embed-code/` (`AgentEmbedCodeView`) closed that gap: it's
+a distinct, dedicated endpoint from key issuance (not an extension of
+`AgentKeyListCreateView`'s response) that mints a fresh deployment key via
+the same `AgentDeploymentKeyService.issue()` and returns a ready-to-paste
+`<script>` snippet (`{ key_prefix, embed_snippet, created_at }`), gated
+`agent:manage`. `useAgentEmbedCode` (`hooks/`) holds the result in local
+`useState`, not a cached query, same reveal-once rationale as `issuedKey`:
+the snippet embeds a fresh raw secret every call, so there is nothing to
+invalidate against. `EmbedSnippetSection` shows it once with the same
+one-time-secret warning and copy affordance as `RevealDeploymentKeyDialog`.
 
 ## Route protection
 

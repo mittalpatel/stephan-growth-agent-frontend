@@ -47,6 +47,14 @@ export const agentKeyRevokeEndpoint = (id: string, keyId: string) =>
   `${agentKeysEndpoint(id)}${keyId}/revoke/`;
 
 /**
+ * Mints a fresh deployment key and returns a ready-to-paste `<script>` install
+ * snippet (`AgentEmbedCodeView`, backend 2026-09-07). Distinct from
+ * `agentKeysEndpoint`, which manages raw keys; this is the product-facing
+ * "Get embed code" action. One-shot, not cached: each call issues a new key.
+ */
+export const agentEmbedCodeEndpoint = (id: string) => `${agentDetailEndpoint(id)}embed-code/`;
+
+/**
  * `GET` on both endpoints landed 2026-09-07 (previously create/delete only,
  * which is why these query keys didn't exist before). Read-through cached on
  * the backend, keyed here by agent id like every other agent-nested query.

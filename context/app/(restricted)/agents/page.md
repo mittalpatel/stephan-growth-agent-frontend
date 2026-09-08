@@ -228,10 +228,11 @@ role.
   genuinely freeform on the backend, only validated as "must be an object",
   so there's no fixed field set to build real inputs for; a client-side parse
   failure blocks submit with an inline error before ever reaching the
-  network). `useAgentDraft` reads the draft via an empty-body
-  `PATCH /agents/{id}/draft/`, since the backend exposes no `GET` for it —
-  `AgentService.update_draft()` is documented as a no-op when called with no
-  fields, so this doubles as a read. `useAgentDraftForm` uses `applyApiError`
+  network). `useAgentDraft` reads the draft via `GET /agents/{id}/draft/`
+  (backend 2026-09-07; previously this view was `PATCH`-only, and the hook
+  worked around the missing `GET` with an empty-body `PATCH`, since
+  `AgentService.update_draft()` is a no-op write when called with no
+  fields). `useAgentDraftForm` uses `applyApiError`
   since `behavior_config`/`qualification_config`/`notes` can receive real
   field-keyed backend errors worth binding inline. The three optional
   `LocalizedTextKey`s beyond the required trio still have no form UI: bounded

@@ -44,7 +44,7 @@ export function AgentSettingsView({ agent }: Props) {
       <AgentIdentitySection agent={agent} />
       <AllowedDomainsSection agentId={agent.id} />
       <DeploymentKeysSection agentId={agent.id} />
-      <EmbedSnippetSection />
+      <EmbedSnippetSection agentId={agent.id} />
     </div>
   );
 }

@@ -166,3 +166,13 @@ export type AgentDeploymentKey = {
 
 /** Shape of the `POST /agents/{id}/keys/` response only, the one place the raw secret is ever returned. */
 export type AgentDeploymentKeyIssued = AgentDeploymentKey & { secret: string };
+
+/**
+ * Shape of the `POST /agents/{id}/embed-code/` response. The raw secret only
+ * ever appears embedded inside `embed_snippet`, never as its own field.
+ */
+export type AgentEmbedCode = {
+  key_prefix: string;
+  embed_snippet: string;
+  created_at: string;
+};

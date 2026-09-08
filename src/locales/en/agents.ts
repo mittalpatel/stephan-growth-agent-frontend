@@ -366,10 +366,17 @@ export const agents = {
       },
     },
     embed: {
-      title: 'Embed snippet',
-      description: "How a website presents an issued deployment key to load this agent's widget.",
-      queryParamNote:
-        'The config endpoint alone also accepts the key as a "key" query parameter instead of this header.',
+      title: 'Embed code',
+      description: 'Generate a ready-to-paste script tag that installs this agent on a website.',
+      generate: 'Generate embed code',
+      loadError: 'Could not generate embed code.',
+      warning:
+        "This snippet contains a new secret key and is only shown once. Copy it now, it can't be shown again.",
+      snippetLabel: 'Install snippet',
+      copyLabel: 'Copy snippet',
+      copied: 'Snippet copied to clipboard.',
+      copyFailed: 'Could not copy automatically. Select and copy the snippet manually.',
+      done: "I've saved it",
     },
   },
 } as const;
