@@ -223,20 +223,70 @@ role.
   `instructions`, `disclosure_enabled`, a required-localized-text section
   (`greeting`/`fallback_message`/`disclosure_text`, the three
   `AgentService.publish()` checks) repeated **per `enabled_languages`
-  entry**, `theme_config`'s three named keys, `notes`, and
-  `behavior_config`/`qualification_config` as raw JSON textareas (both are
-  genuinely freeform on the backend, only validated as "must be an object",
-  so there's no fixed field set to build real inputs for; a client-side parse
-  failure blocks submit with an inline error before ever reaching the
-  network). `useAgentDraft` reads the draft via `GET /agents/{id}/draft/`
-  (backend 2026-09-07; previously this view was `PATCH`-only, and the hook
-  worked around the missing `GET` with an empty-body `PATCH`, since
-  `AgentService.update_draft()` is a no-op write when called with no
-  fields). `useAgentDraftForm` uses `applyApiError`
-  since `behavior_config`/`qualification_config`/`notes` can receive real
-  field-keyed backend errors worth binding inline. The three optional
-  `LocalizedTextKey`s beyond the required trio still have no form UI: bounded
-  scope, not an oversight.
+  entry**, the full `theme_config`/`behavior_config` shape validated
+  server-side by `ThemeValidationService` (backend
+  `config-theme-validation-2026-09-08`), `notes`, and `qualification_config`
+  as a raw JSON textarea (genuinely freeform on the backend, only validated
+  as "must be an object", so there's no fixed field set to build real inputs
+  for; a client-side parse failure blocks submit with an inline error before
+  ever reaching the network). `useAgentDraft` reads the draft via
+  `GET /agents/{id}/draft/` (backend 2026-09-07; previously this view was
+  `PATCH`-only, and the hook worked around the missing `GET` with an
+  empty-body `PATCH`, since `AgentService.update_draft()` is a no-op write
+  when called with no fields). The three optional `LocalizedTextKey`s beyond
+  the required trio still have no form UI: bounded scope, not an oversight.
+
+  **Theme/behavior config** (`useAgentDraftForm.ts`, `AgentDraftTab.tsx`):
+  `theme_config`'s nested `colors` (9-key palette), `typography.font_family`,
+  `widget.*` (position/launcher_shape/panel_size/shadow/mode/mobile_layout)
+  and `logo.*`, plus `behavior_config`'s `voice.*`, `suggested_questions`,
+  and `prohibited_claims`, are hoisted into flat, typed form fields —
+  `src/lib/constants/agentTheme.ts` mirrors the backend's
+  `theme_schema.py`/`behavior_schema.py` allowlists, and
+  `agentDraftUpdateSchema` (`src/lib/schemas/agent.ts`) validates them with a
+  `zodResolver`. This is the same "hoist named keys into real fields, mirror
+  the field-name break, hand-bind errors" pattern the pre-existing
+  `theme_primary_color`/`theme_logo_url`/`theme_launcher_position` fields
+  already set (backend field errors for these do **not** bind through
+  `applyApiError`'s automatic name matching, since the flat field names
+  don't match the backend's nested serializer field — the submit handler
+  hand-binds them). A draft saved by the old UI still has values under the
+  legacy flat `theme_config.primary_color`/`logo_url`/`launcher_position`
+  keys; `themeFieldsFromConfig()` reads those as a fallback so the new UI
+  doesn't show them as unset.
+
+  Everything else `behavior_config` carries at runtime
+  (`groundedness_threshold`, retrieval/history tuning, moderation
+  categories, `unsupported_language_behavior`) has no fixed shape and stays
+  in the "Advanced behavior config" raw-JSON field, stripped of the keys the
+  structured fields above own so the two representations never fight over
+  the same data.
+
+  **Contrast checking**: `src/lib/contrast.ts` ports
+  `ThemeValidationService.check_contrast`'s WCAG AA math client-side for
+  instant inline feedback as colors are edited (no network call per
+  keystroke — the math is cheap and pure). The backend's
+  `POST /api/v1/settings/brand/contrast-check/` remains the final authority;
+  a failing PATCH returns `errors.theme_config` shaped as
+  `{ [colorKey]: { ratio, passes_aa_normal_text, suggested_fallback } }`,
+  which `bindContrastErrors()` binds onto the matching `color_*` field by
+  hand (this nested shape is exactly what `applyApiError`'s generic binder
+  can't format).
+
+  **Reset to org default**: `GET /agents/{id}/draft/theme-defaults/`
+  (`agentThemeDefaultsKey`/`Endpoint` in `services/agents.ts`, queried with
+  `enabled: false` inside `useAgentDraftForm` and fired on demand via
+  `resetToOrgDefault()`) is fetched only on the button click, not on load,
+  and applied over only the currently-unset fields, matching
+  `ThemeCascadeService.resolve`'s own "fill only what's absent" rule rather
+  than overwriting an operator's in-progress edits.
+
+  Not wired: the org `BrandSettingsTab`'s `color_primary`/`color_secondary`
+  have no natural foreground/background pair to contrast-check against
+  today (unlike the agent theme's `text`/`background`/`surface`), so the
+  bonus "check contrast" affordance considered for that tab was scoped out
+  rather than built against an artificial pair.
+
 - **Publish** — draft/published version numbers, `POST .../publish/` (gated
   `agent:execute`, confirmed via `AlertDialog`), and a one-entry "version
   history" limited to rolling back to the currently published version

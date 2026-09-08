@@ -4,6 +4,8 @@
  * `src/types/project.ts` for why that matters.
  */
 
+import type { ThemeColorKey } from '@/lib/constants/agentTheme';
+
 /** Mirrors `AgentStatus` in `apps/agents/constants.py`. */
 export type AgentStatus = 'active' | 'paused' | 'archived';
 
@@ -29,6 +31,55 @@ export type LocalizedText = {
   unsupported_language_message?: string;
   human_requested_confirmation?: string;
   information_email_sent_confirmation?: string;
+};
+
+/**
+ * Shape of `AgentVersion.theme_config`, validated server-side by
+ * `apps.agents.services.theme_validation_service.ThemeValidationService`
+ * (branch `config-theme-validation-2026-09-08`). Every key at every level is
+ * optional — a legacy or partial draft still validates, and PATCHing one
+ * nested key merges into the stored config rather than replacing it (see
+ * `AgentService.update_draft`). Colors are validated as hex; the enum-typed
+ * fields are validated against `src/lib/constants/agentTheme.ts`'s
+ * mirrored allowlists, which are themselves sourced from
+ * `apps/agents/theme_schema.py`.
+ *
+ * `*_color`-suffixed top-level keys (the pre-existing convention this schema
+ * superseded) are not modeled here — they stay reachable only through the
+ * `Record<string, unknown>` fallback a caller doing something unusual would
+ * need to cast to, since no current UI writes them anymore.
+ */
+export type ThemeConfig = {
+  colors?: Partial<Record<ThemeColorKey, string>>;
+  typography?: { font_family?: string };
+  widget?: {
+    position?: string;
+    launcher_shape?: string;
+    panel_size?: string;
+    shadow?: string;
+    mode?: string;
+    mobile_layout?: string;
+  };
+  logo?: { logo_url?: string; favicon_url?: string };
+};
+
+/**
+ * Shape of `AgentVersion.behavior_config`'s named, validated keys (see
+ * `apps/agents/behavior_schema.py`). Every other key the runtime reads
+ * (`groundedness_threshold`, retrieval/history tuning, moderation
+ * categories, `unsupported_language_behavior`) is unvalidated and untyped
+ * here — this type only covers what `ThemeValidationService
+ * .validate_behavior_config` actually checks.
+ */
+export type BehaviorConfig = {
+  voice?: {
+    answer_length?: string;
+    formality?: string;
+    terminology?: string[];
+    prohibited_phrases?: string[];
+  };
+  suggested_questions?: string[];
+  prohibited_claims?: string[];
 };
 
 /**
@@ -90,9 +141,9 @@ export type AgentVersionDetail = {
   status: AgentVersionStatus;
   disclosure_enabled: boolean;
   instructions: string;
-  behavior_config: Record<string, unknown>;
+  behavior_config: BehaviorConfig & Record<string, unknown>;
   localized_text: Record<string, LocalizedText>;
-  theme_config: Record<string, unknown>;
+  theme_config: ThemeConfig & Record<string, unknown>;
   qualification_config: Record<string, unknown>;
   knowledge_index_version: string | null;
   published_at: string | null;
@@ -115,9 +166,9 @@ export type AgentUpdateInput = Partial<{
 export type AgentDraftUpdateInput = Partial<{
   disclosure_enabled: boolean;
   instructions: string;
-  behavior_config: Record<string, unknown>;
+  behavior_config: BehaviorConfig & Record<string, unknown>;
   localized_text: Record<string, LocalizedText>;
-  theme_config: Record<string, unknown>;
+  theme_config: ThemeConfig & Record<string, unknown>;
   qualification_config: Record<string, unknown>;
   notes: string;
 }>;

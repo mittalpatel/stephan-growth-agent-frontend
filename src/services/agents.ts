@@ -35,6 +35,17 @@ export const agentByTypeKey = (slug: string) => ['agent-by-type', slug];
 export const AGENT_TYPES_ENDPOINT = `${AGENTS_ENDPOINT}types/`;
 export const AGENT_TYPES_KEY = ['agent-types'];
 export const agentDraftEndpoint = (id: string) => `${agentDetailEndpoint(id)}draft/`;
+/**
+ * `GET /agents/{id}/draft/theme-defaults/` (backend
+ * `config-theme-validation-2026-09-08`) — a live preview of what the
+ * organization-branding cascade currently resolves to for this agent's
+ * unset theme/behavior keys. Computed on every call, not cached: it exists
+ * specifically to reflect the organization's *current* branding, unlike the
+ * snapshot already baked into the draft at provisioning time.
+ */
+export const agentThemeDefaultsEndpoint = (id: string) =>
+  `${agentDraftEndpoint(id)}theme-defaults/`;
+export const agentThemeDefaultsKey = (id: string) => ['agent-theme-defaults', id];
 export const agentTestAskEndpoint = (id: string) => `${agentDraftEndpoint(id)}test/`;
 export const agentPublishEndpoint = (id: string) => `${agentDetailEndpoint(id)}publish/`;
 export const agentRollbackEndpoint = (id: string) => `${agentDetailEndpoint(id)}rollback/`;
