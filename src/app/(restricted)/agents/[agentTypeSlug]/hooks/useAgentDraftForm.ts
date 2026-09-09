@@ -35,7 +35,12 @@ import { t } from '@/locales';
 
 type LocalizedTextFormValues = Record<
   string,
-  { greeting: string; fallback_message: string; disclosure_text: string }
+  {
+    greeting: string;
+    fallback_message: string;
+    disclosure_text: string;
+    unsupported_language_message: string;
+  }
 >;
 
 type ThemeDefaultsResponse = { theme_config: ThemeConfig; behavior_config: BehaviorConfig };
@@ -51,6 +56,7 @@ function buildLocalizedTextDefaults(
         greeting: existing[lang]?.greeting ?? '',
         fallback_message: existing[lang]?.fallback_message ?? '',
         disclosure_text: existing[lang]?.disclosure_text ?? '',
+        unsupported_language_message: existing[lang]?.unsupported_language_message ?? '',
       },
     ])
   );
@@ -82,7 +88,6 @@ function colorFieldsFromConfig(theme: ThemeConfig & Record<string, unknown>) {
   return {
     color_primary: colors.primary ?? legacyPrimary,
     color_secondary: colors.secondary ?? '',
-    color_accent: colors.accent ?? '',
     color_background: colors.background ?? '',
     color_surface: colors.surface ?? '',
     color_text: colors.text ?? '',
@@ -99,10 +104,7 @@ function widgetFieldsFromConfig(theme: ThemeConfig & Record<string, unknown>) {
   return {
     widget_position: widget.position ?? legacyPositionToEnum(legacyPosition),
     widget_launcher_shape: widget.launcher_shape ?? '',
-    widget_panel_size: widget.panel_size ?? '',
-    widget_shadow: widget.shadow ?? '',
     widget_mode: widget.mode ?? '',
-    widget_mobile_layout: widget.mobile_layout ?? '',
   };
 }
 
@@ -122,22 +124,28 @@ function themeFieldsFromConfig(theme: ThemeConfig & Record<string, unknown>) {
 }
 
 /** Splits a stored/cascaded `behavior_config` into this form's flat fields.
- * Everything else the runtime reads directly (`groundedness_threshold`,
- * retrieval/history tuning, moderation categories,
- * `unsupported_language_behavior`) stays in the raw-JSON advanced field —
- * stripped of the keys this form now handles as real inputs, so the two
- * representations never fight over the same data. */
+ * As of 2026-09-09 this covers every key `ThemeValidationService
+ * .validate_behavior_config` validates — `groundedness_threshold`,
+ * `retrieval_context_turns`, `max_history_messages`,
+ * `moderation_self_harm_categories`, `unsupported_language_behavior` — all
+ * stripped from the raw-JSON advanced field so the two representations
+ * never fight over the same data. Anything else (e.g. an org-cascaded
+ * `voice.tone`) stays in the advanced field, unvalidated. */
 function behaviorFieldsFromConfig(behavior: BehaviorConfig & Record<string, unknown>) {
-  const voice = behavior.voice ?? {};
   const rest = { ...behavior };
-  delete rest.voice;
+  delete rest.groundedness_threshold;
+  delete rest.retrieval_context_turns;
+  delete rest.max_history_messages;
+  delete rest.moderation_self_harm_categories;
+  delete rest.unsupported_language_behavior;
   delete rest.suggested_questions;
   delete rest.prohibited_claims;
   return {
-    voice_answer_length: voice.answer_length ?? '',
-    voice_formality: voice.formality ?? '',
-    voice_terminology: toRows(voice.terminology),
-    voice_prohibited_phrases: toRows(voice.prohibited_phrases),
+    groundedness_threshold: behavior.groundedness_threshold ?? '',
+    retrieval_context_turns: behavior.retrieval_context_turns ?? '',
+    max_history_messages: behavior.max_history_messages ?? '',
+    moderation_self_harm_categories: toRows(behavior.moderation_self_harm_categories),
+    unsupported_language_behavior: behavior.unsupported_language_behavior ?? '',
     suggested_questions: toRows(behavior.suggested_questions),
     prohibited_claims: toRows(behavior.prohibited_claims),
     behavior_config_advanced: JSON.stringify(rest, null, 2),
@@ -159,7 +167,6 @@ function buildThemeConfigPayload(values: AgentDraftSubmitValues): ThemeConfig {
   const colors = omitEmpty({
     primary: values.color_primary,
     secondary: values.color_secondary,
-    accent: values.color_accent,
     background: values.color_background,
     surface: values.color_surface,
     text: values.color_text,
@@ -170,10 +177,7 @@ function buildThemeConfigPayload(values: AgentDraftSubmitValues): ThemeConfig {
   const widget = omitEmpty({
     position: values.widget_position,
     launcher_shape: values.widget_launcher_shape,
-    panel_size: values.widget_panel_size,
-    shadow: values.widget_shadow,
     mode: values.widget_mode,
-    mobile_layout: values.widget_mobile_layout,
   });
   const logo = omitEmpty({
     logo_url: values.logo_logo_url,
@@ -189,34 +193,43 @@ function buildThemeConfigPayload(values: AgentDraftSubmitValues): ThemeConfig {
   };
 }
 
-function buildVoicePayload(values: AgentDraftSubmitValues): BehaviorConfig['voice'] | undefined {
-  const hasVoice =
-    values.voice_answer_length ||
-    values.voice_formality ||
-    values.voice_terminology.length > 0 ||
-    values.voice_prohibited_phrases.length > 0;
-  if (!hasVoice) return undefined;
-  return {
-    ...(values.voice_answer_length && { answer_length: values.voice_answer_length }),
-    ...(values.voice_formality && { formality: values.voice_formality }),
-    ...(values.voice_terminology.length && { terminology: fromRows(values.voice_terminology) }),
-    ...(values.voice_prohibited_phrases.length && {
-      prohibited_phrases: fromRows(values.voice_prohibited_phrases),
-    }),
-  };
+/** The runtime-consumed behavior keys `ThemeValidationService
+ * .validate_behavior_config` validates as of 2026-09-09, omitting whichever
+ * of the five the operator left unset — same "touch only what's set" rule
+ * `buildThemeConfigPayload`'s `omitEmpty` follows, just written out here
+ * since these span numbers, an enum, and a list rather than one flat string
+ * map `omitEmpty` is typed for. */
+function buildBehaviorRuntimeFieldsPayload(
+  values: AgentDraftSubmitValues
+): Partial<BehaviorConfig> {
+  const fields: Partial<BehaviorConfig> = {};
+  if (values.groundedness_threshold !== '' && values.groundedness_threshold !== undefined) {
+    fields.groundedness_threshold = values.groundedness_threshold;
+  }
+  if (values.retrieval_context_turns !== '' && values.retrieval_context_turns !== undefined) {
+    fields.retrieval_context_turns = values.retrieval_context_turns;
+  }
+  if (values.max_history_messages !== '' && values.max_history_messages !== undefined) {
+    fields.max_history_messages = values.max_history_messages;
+  }
+  const moderationCategories = fromRows(values.moderation_self_harm_categories);
+  if (moderationCategories.length) fields.moderation_self_harm_categories = moderationCategories;
+  if (values.unsupported_language_behavior) {
+    fields.unsupported_language_behavior = values.unsupported_language_behavior;
+  }
+  return fields;
 }
 
 /** Reassembles this form's flat + advanced-JSON behavior fields into the
  * full `behavior_config` object. The advanced JSON (already parsed and
  * shape-checked by the schema's `jsonObjectField`) supplies every
- * runtime-only key; the structured fields layer on top. */
+ * unrecognized/org-cascaded key; the structured fields layer on top. */
 function buildBehaviorConfigPayload(
   values: AgentDraftSubmitValues
 ): BehaviorConfig & Record<string, unknown> {
-  const voice = buildVoicePayload(values);
   return {
     ...values.behavior_config_advanced,
-    ...(voice && { voice }),
+    ...buildBehaviorRuntimeFieldsPayload(values),
     suggested_questions: fromRows(values.suggested_questions),
     prohibited_claims: fromRows(values.prohibited_claims),
   };
@@ -269,13 +282,17 @@ function bindContrastErrors(
 }
 
 /**
- * Editing the full draft config: instructions, disclosure, every
- * `enabled_languages` entry's required localized text, the full nested
- * `theme_config`/`behavior_config` shape validated server-side by
- * `ThemeValidationService` (branch `config-theme-validation-2026-09-08`),
- * `notes`, and `qualification_config` plus the runtime-only behavior keys as
- * raw JSON (see `behaviorFieldsFromConfig`'s docstring on why those stay
- * freeform).
+ * Editing the full draft config: instructions, disclosure, `display_name`
+ * (the widget-facing bot name, added 2026-09-09, replacing the removed
+ * `notes` field), every `enabled_languages` entry's required localized
+ * text, and the full nested `theme_config`/`behavior_config` shape
+ * validated server-side by `ThemeValidationService` — including, as of
+ * 2026-09-09, the runtime-consumed behavior keys (`groundedness_threshold`,
+ * `retrieval_context_turns`, `max_history_messages`,
+ * `moderation_self_harm_categories`, `unsupported_language_behavior`).
+ * `qualification_config` and any unrecognized/org-cascaded behavior key
+ * stay raw JSON (see `behaviorFieldsFromConfig`'s docstring on why those
+ * stay freeform).
  */
 export function useAgentDraftForm(
   agentId: string,
@@ -299,8 +316,8 @@ export function useAgentDraftForm(
     defaultValues: {
       instructions: '',
       disclosure_enabled: true,
+      display_name: '',
       localized_text: buildLocalizedTextDefaults(enabledLanguages, {}),
-      notes: '',
       ...themeFieldsFromConfig({}),
       ...behaviorFieldsFromConfig({}),
       qualification_config: '{}',
@@ -314,8 +331,8 @@ export function useAgentDraftForm(
     form.reset({
       instructions: draft.instructions,
       disclosure_enabled: draft.disclosure_enabled,
+      display_name: draft.display_name,
       localized_text: buildLocalizedTextDefaults(enabledLanguages, draft.localized_text),
-      notes: draft.notes,
       ...themeFieldsFromConfig(draft.theme_config),
       ...behaviorFieldsFromConfig(draft.behavior_config),
       qualification_config: JSON.stringify(draft.qualification_config ?? {}, null, 2),
@@ -358,11 +375,11 @@ export function useAgentDraftForm(
         body: {
           instructions: values.instructions,
           disclosure_enabled: values.disclosure_enabled,
+          display_name: values.display_name,
           localized_text: values.localized_text,
           theme_config,
           behavior_config,
           qualification_config: values.qualification_config,
-          notes: values.notes,
         },
       });
       toast.success(t.agents.toast.draftSaved);
@@ -371,7 +388,12 @@ export function useAgentDraftForm(
       bindContrastErrors(error, values, form.setError);
       applyApiError<AgentDraftFormValues>(error, {
         setError: form.setError,
-        fields: ['instructions', 'behavior_config_advanced', 'qualification_config', 'notes'],
+        fields: [
+          'instructions',
+          'display_name',
+          'behavior_config_advanced',
+          'qualification_config',
+        ],
       });
     }
   });

@@ -29,6 +29,7 @@ import { AgentDetailSkeleton } from './AgentDetailSkeleton';
 import { AgentDraftTab } from './AgentDraftTab';
 import { AgentOverviewTab } from './AgentOverviewTab';
 import { AgentPublishTab } from './AgentPublishTab';
+import { AgentSetupChecklist } from './AgentSetupChecklist';
 import { AgentTestTab } from './AgentTestTab';
 
 const STATUS_TONE: Record<AgentStatus, StatusTone> = {
@@ -64,6 +65,7 @@ export function AgentDetailView({ agentTypeSlug }: Props) {
   const canViewKnowledge = can('knowledge', 'view');
   const canViewConversations = can('conversation', 'view');
   const canViewLeads = can('lead', 'view');
+  const canManage = can('agent', 'manage');
 
   if (isLoading) return <AgentDetailSkeleton />;
 
@@ -162,6 +164,8 @@ export function AgentDetailView({ agentTypeSlug }: Props) {
           </div>
         </div>
       </div>
+
+      {canManage && <AgentSetupChecklist agent={agent} onNavigate={setTab} />}
 
       <Tabs value={tab} onValueChange={setTab}>
         {/* Full-width underlined tab row, as the reference draws it. The

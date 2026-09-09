@@ -55,29 +55,30 @@ export type ThemeConfig = {
   widget?: {
     position?: string;
     launcher_shape?: string;
-    panel_size?: string;
-    shadow?: string;
     mode?: string;
-    mobile_layout?: string;
   };
+  /** `favicon_url` is still an accepted, unvalidated key (the backend never
+   * enforced its shape), but as of 2026-09-09 `ThemeCascadeService` no
+   * longer populates it from `OrganizationBranding.favicon_url` — "Reset to
+   * org default" will no longer fill an unset one. */
   logo?: { logo_url?: string; favicon_url?: string };
 };
 
 /**
  * Shape of `AgentVersion.behavior_config`'s named, validated keys (see
- * `apps/agents/behavior_schema.py`). Every other key the runtime reads
- * (`groundedness_threshold`, retrieval/history tuning, moderation
- * categories, `unsupported_language_behavior`) is unvalidated and untyped
- * here — this type only covers what `ThemeValidationService
- * .validate_behavior_config` actually checks.
+ * `apps/agents/behavior_schema.py` and `ThemeValidationService
+ * .validate_behavior_config`). The dedicated `voice.answer_length`/
+ * `formality`/`terminology`/`prohibited_phrases` controls were removed
+ * 2026-09-09 as unused config surface — nothing in `apps.runtime` ever read
+ * them. Replaced by the keys the runtime actually consumes
+ * (`apps.runtime.constants`), now validated for the first time.
  */
 export type BehaviorConfig = {
-  voice?: {
-    answer_length?: string;
-    formality?: string;
-    terminology?: string[];
-    prohibited_phrases?: string[];
-  };
+  groundedness_threshold?: number;
+  retrieval_context_turns?: number;
+  max_history_messages?: number;
+  moderation_self_harm_categories?: string[];
+  unsupported_language_behavior?: string;
   suggested_questions?: string[];
   prohibited_claims?: string[];
 };
@@ -140,6 +141,10 @@ export type AgentVersionDetail = {
   version_number: number;
   status: AgentVersionStatus;
   disclosure_enabled: boolean;
+  /** Widget-facing bot name shown in the chat header, distinct from
+   * `Agent.name` (the internal record label). Falls back to `Agent.name`
+   * when blank. Added 2026-09-09; `notes` was removed the same commit. */
+  display_name: string;
   instructions: string;
   behavior_config: BehaviorConfig & Record<string, unknown>;
   localized_text: Record<string, LocalizedText>;
@@ -147,7 +152,6 @@ export type AgentVersionDetail = {
   qualification_config: Record<string, unknown>;
   knowledge_index_version: string | null;
   published_at: string | null;
-  notes: string;
   created_at: string;
   updated_at: string;
 };
@@ -165,12 +169,12 @@ export type AgentUpdateInput = Partial<{
 /** Body for `PATCH /agents/{id}/draft/` — mirrors `AgentVersionUpdateSerializer`. */
 export type AgentDraftUpdateInput = Partial<{
   disclosure_enabled: boolean;
+  display_name: string;
   instructions: string;
   behavior_config: BehaviorConfig & Record<string, unknown>;
   localized_text: Record<string, LocalizedText>;
   theme_config: ThemeConfig & Record<string, unknown>;
   qualification_config: Record<string, unknown>;
-  notes: string;
 }>;
 
 /** Body for `POST /agents/{id}/rollback/`. */
@@ -214,9 +218,6 @@ export type AgentDeploymentKey = {
   revoked_at: string | null;
   created_at: string;
 };
-
-/** Shape of the `POST /agents/{id}/keys/` response only, the one place the raw secret is ever returned. */
-export type AgentDeploymentKeyIssued = AgentDeploymentKey & { secret: string };
 
 /**
  * Shape of the `POST /agents/{id}/embed-code/` response. The raw secret only

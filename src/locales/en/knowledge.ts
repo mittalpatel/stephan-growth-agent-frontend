@@ -66,6 +66,26 @@ export const knowledge = {
     description: 'The agent will crawl this site and let you choose which pages to include.',
     rootUrlLabel: 'Website URL',
     rootUrlPlaceholder: 'https://example.com',
+    scope: {
+      toggle: 'Advanced crawl options',
+      maxPagesLabel: 'Max pages',
+      maxPagesDescription:
+        'Limit how many pages this crawl can discover. Leave blank to use your plan’s default limit.',
+      maxPagesPlaceholder: 'e.g. 100',
+      maxDepthLabel: 'Max link depth',
+      maxDepthDescription:
+        'How many links deep the crawl follows from the starting page. 0 crawls only the starting page itself.',
+      maxDepthPlaceholder: 'e.g. 3',
+      includePathsLabel: 'Only crawl these paths',
+      includePathsDescription:
+        'Restrict the crawl to URLs under these paths. Matching is by full path segment, so "/blog" covers "/blog/post-1" but not "/blogger-signup". Leave empty to crawl the whole site.',
+      excludePathsLabel: 'Exclude these paths',
+      excludePathsDescription:
+        'Skip URLs under these paths. Matching is by full path segment, so "/blog" excludes "/blog/post-1" but not "/blogger-signup".',
+      addPath: 'Add path',
+      removePath: 'Remove',
+      pathPlaceholder: '/blog',
+    },
     submit: 'Start discovery',
     discovering: {
       title: 'Discovering pages…',
@@ -114,6 +134,9 @@ export const knowledge = {
     rootUrlInvalid: 'Enter a valid URL.',
     nameRequired: 'Name is required.',
     fileRequired: 'Choose a file to upload.',
+    maxPagesRange: 'Enter a number between 1 and 1000.',
+    maxDepthRange: 'Enter a number between 0 and 10.',
+    pathListTooLong: 'You can add up to 20 paths.',
   },
   targets: {
     title: 'Knowledge scope',

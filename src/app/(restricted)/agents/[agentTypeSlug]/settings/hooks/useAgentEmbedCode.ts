@@ -1,22 +1,27 @@
 'use client';
 
+import { useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 
 import { usePermissions } from '@/app/(restricted)/context/PermissionsContext';
 import { useAuthMutation } from '@/hooks/useAuthMutation';
 import { applyApiError } from '@/lib/apiError';
-import { agentEmbedCodeEndpoint } from '@/services/agents';
+import { agentEmbedCodeEndpoint, agentKeysKey } from '@/services/agents';
 import type { ApiResponse } from '@/types/api';
 import type { AgentEmbedCode } from '@/types/agent';
 
 /**
  * `POST /agents/{id}/embed-code/` mints a fresh deployment key each call and
- * returns a ready-to-paste snippet. Kept as local state rather than a cached
- * query, same rationale as `issuedKey` in `useAgentDeploymentKeys`: the
- * snippet embeds a one-time raw secret, so there's nothing to invalidate
- * against and no reason to refetch it.
+ * returns a ready-to-paste snippet — this is the **only** place a key gets
+ * created now (2026-09-09; `useAgentDeploymentKeys`' own `issueKey` was
+ * removed as a redundant second way to mint the same kind of credential).
+ * `embedCode` stays local state rather than a cached query: the snippet
+ * embeds a one-time raw secret, so there's nothing to invalidate against and
+ * no reason to refetch it. The newly-minted key itself, though, needs
+ * `agentKeysKey` invalidated so `DeploymentKeysSection`'s list picks it up.
  */
 export function useAgentEmbedCode(agentId: string) {
+  const queryClient = useQueryClient();
   const { can } = usePermissions();
   const canManage = can('agent', 'manage');
 
@@ -29,6 +34,7 @@ export function useAgentEmbedCode(agentId: string) {
         url: agentEmbedCodeEndpoint(agentId),
       });
       setEmbedCode(result.data);
+      void queryClient.invalidateQueries({ queryKey: agentKeysKey(agentId) });
     } catch (error) {
       applyApiError(error);
     }

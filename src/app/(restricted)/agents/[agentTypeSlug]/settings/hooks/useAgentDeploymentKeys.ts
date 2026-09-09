@@ -11,13 +11,16 @@ import { applyApiError } from '@/lib/apiError';
 import { t } from '@/locales';
 import { agentKeyRevokeEndpoint, agentKeysEndpoint, agentKeysKey } from '@/services/agents';
 import type { ApiResponse } from '@/types/api';
-import type { AgentDeploymentKey, AgentDeploymentKeyIssued } from '@/types/agent';
+import type { AgentDeploymentKey } from '@/types/agent';
 
 /**
  * `GET /agents/{id}/keys/` landed 2026-09-07, same gap-closure as
- * `useAgentDomains`. `issuedKey` stays local state, not part of the query:
- * the raw secret is genuinely one-time and never appears in a GET response,
- * so there's nothing to invalidate it against.
+ * `useAgentDomains`. Read + revoke only: key creation used to live here too
+ * (`issueKey`, minting via `POST /agents/{id}/keys/`), but that was a second,
+ * redundant way to create the same kind of credential `useAgentEmbedCode`
+ * already mints via `POST /agents/{id}/embed-code/` — the only difference
+ * was this one didn't hand back a usable snippet, just a bare secret. Removed
+ * 2026-09-09 so there's exactly one place that creates a key.
  */
 export function useAgentDeploymentKeys(agentId: string) {
   const queryClient = useQueryClient();
@@ -31,20 +34,8 @@ export function useAgentDeploymentKeys(agentId: string) {
     { enabled: Boolean(agentId) && canView }
   );
 
-  const [issuedKey, setIssuedKey] = useState<AgentDeploymentKeyIssued | null>(null);
-  const issueMutation = useAuthMutation<ApiResponse<AgentDeploymentKeyIssued>, undefined>();
   const revokeMutation = useAuthMutation<ApiResponse<AgentDeploymentKey>, undefined>();
   const [revokingId, setRevokingId] = useState<string | null>(null);
-
-  const issueKey = async () => {
-    try {
-      const result = await issueMutation.mutateAsync({ url: agentKeysEndpoint(agentId) });
-      void queryClient.invalidateQueries({ queryKey: agentKeysKey(agentId) });
-      setIssuedKey(result.data);
-    } catch (error) {
-      applyApiError(error);
-    }
-  };
 
   const revokeKey = async (keyId: string) => {
     setRevokingId(keyId);
@@ -67,10 +58,6 @@ export function useAgentDeploymentKeys(agentId: string) {
     isLoading: canView && query.isLoading,
     isError: query.isError,
     refetch: query.refetch,
-    issueKey,
-    isIssuing: issueMutation.isPending,
-    issuedKey,
-    dismissIssuedKey: () => setIssuedKey(null),
     revokeKey,
     revokingId,
   };

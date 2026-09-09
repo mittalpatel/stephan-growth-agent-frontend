@@ -214,6 +214,7 @@ export const agents = {
     published: 'Agent published.',
     rolledBack: 'Rolled back to the selected version.',
     draftSaved: 'Draft saved.',
+    draftCreateFailed: 'Could not start a new draft. Try again.',
   },
   validation: {
     nameRequired: 'Name is required.',
@@ -222,11 +223,22 @@ export const agents = {
     invalidSelection: 'Choose one of the listed options.',
     listItemRequired: 'Enter a value or remove this row.',
     listItemTooLong: 'This is too long.',
+    listTooLong: 'You can add up to 20 items.',
   },
   detail: {
     backToList: 'Back to agents',
     configure: 'Configure',
     upgrade: 'Upgrade',
+    checklist: {
+      title: 'Get your widget live',
+      description: 'Four steps to have this agent answering visitors on your site.',
+      stepDraft: 'Edit your draft',
+      stepPublish: 'Publish it',
+      stepDomain: 'Allow your website domain',
+      stepEmbed: 'Get your embed code',
+      goTo: 'Go',
+      allDone: 'All set — this agent is ready to embed on your site.',
+    },
     tabs: {
       overview: 'Overview',
       conversations: 'Conversations',
@@ -251,7 +263,10 @@ export const agents = {
     },
     draft: {
       title: 'Draft',
-      description: 'Editing the draft never affects what visitors see until you publish it.',
+      description:
+        "Changes here are private until you publish. Visitors won't see anything different until you do that from the Publish tab.",
+      noDraftYet: "You're not editing anything right now. Start editing to make changes.",
+      startEditing: 'Start editing',
       instructionsLabel: 'Instructions',
       instructionsDescription:
         'The system prompt this agent follows in every conversation. Be specific about tone, scope, and what it should never do.',
@@ -259,6 +274,10 @@ export const agents = {
       disclosureEnabledLabel: 'Disclose that this is an AI agent',
       disclosureEnabledDescription:
         'Tells every visitor they are talking to an AI. Required by law in most regions, so this cannot be turned off, only restyled.',
+      displayNameLabel: 'Bot name',
+      displayNameDescription:
+        'The name shown in the widget header, distinct from the agent record name above. Leave blank to use that name.',
+      displayNameBlank: 'Enter a name, or leave this blank to use the agent name.',
       localizedTextTitle: 'Localized text for {language}',
       greetingLabel: 'Greeting',
       greetingDescription: 'The first message visitors see when they open the widget.',
@@ -271,14 +290,17 @@ export const agents = {
       disclosureTextDescription:
         'The exact wording of the AI disclosure notice shown in the widget.',
       disclosureTextPlaceholder: "You're chatting with an AI agent.",
+      unsupportedLanguageMessageLabel: 'Message for unsupported languages (optional)',
+      unsupportedLanguageMessageDescription:
+        'Shown when a visitor writes in a language this agent doesn\'t support and "Politely decline" is selected below. Leave blank to use the default message.',
+      unsupportedLanguageMessagePlaceholder:
+        "Sorry, I can't help in this language yet. Please try English.",
       themeTitle: 'Widget theme',
       themeColorsHeading: 'Colors',
       colorPrimaryLabel: 'Primary',
       colorPrimaryDescription: "The widget's main brand color: header, launcher, and links.",
       colorSecondaryLabel: 'Secondary',
       colorSecondaryDescription: 'A supporting brand color for secondary UI elements.',
-      colorAccentLabel: 'Accent',
-      colorAccentDescription: 'Used sparingly for highlights, like an active state or badge.',
       colorBackgroundLabel: 'Background',
       colorBackgroundDescription: "The widget panel's outer background color.",
       colorSurfaceLabel: 'Surface',
@@ -309,6 +331,8 @@ export const agents = {
         Montserrat: 'Montserrat',
         'Source Sans Pro': 'Source Sans Pro',
         'Nunito Sans': 'Nunito Sans',
+        'Work Sans': 'Work Sans',
+        Poppins: 'Poppins',
       },
       themeWidgetHeading: 'Widget appearance',
       widgetPositionLabel: 'Launcher position',
@@ -326,21 +350,6 @@ export const agents = {
         rounded_square: 'Rounded square',
         pill: 'Pill',
       },
-      widgetPanelSizeLabel: 'Panel size',
-      widgetPanelSizeDescription: 'How large the chat panel is once a visitor opens it.',
-      widgetPanelSizeOptions: {
-        compact: 'Compact',
-        standard: 'Standard',
-        large: 'Large',
-      },
-      widgetShadowLabel: 'Shadow',
-      widgetShadowDescription: 'How much the widget appears to float above the page.',
-      widgetShadowOptions: {
-        none: 'None',
-        sm: 'Small',
-        md: 'Medium',
-        lg: 'Large',
-      },
       widgetModeLabel: 'Color mode',
       widgetModeDescription:
         "Whether the widget always uses light or dark chrome, or follows the visitor's system setting.",
@@ -349,54 +358,54 @@ export const agents = {
         dark: 'Dark',
         auto: 'Match visitor’s system',
       },
-      widgetMobileLayoutLabel: 'Mobile layout',
-      widgetMobileLayoutDescription:
-        'Whether the widget takes over the whole screen or floats as a smaller overlay on phones.',
-      widgetMobileLayoutOptions: {
-        fullscreen: 'Fullscreen',
-        overlay: 'Overlay',
-      },
       themeLogoHeading: 'Logo',
       logoLogoUrlLabel: 'Logo URL',
       logoLogoUrlDescription: 'Shown in the widget header in place of the default icon.',
       logoLogoUrlPlaceholder: 'https://yourcompany.com/logo.png',
       logoFaviconUrlLabel: 'Favicon URL',
       logoFaviconUrlDescription:
-        'Used where a small square mark is needed, such as browser tab previews of the widget.',
+        'Used where a small square mark is needed, such as browser tab previews of the widget. Not filled in automatically by "Reset to org default".',
       logoFaviconUrlPlaceholder: 'https://yourcompany.com/favicon.png',
       resetToOrgDefault: 'Reset to org default',
       resetToOrgDefaultConfirmTitle: 'Reset theme to the organization default?',
       resetToOrgDefaultConfirmDescription:
         'This replaces every theme field above with your organization’s current branding. It only applies once you save the draft.',
       resetToOrgDefaultFailed: 'Could not load the organization default theme.',
-      livePreviewHeading: 'Live preview',
-      livePreviewNote: 'Approximate render, using the {language} localized text. Save to publish.',
-      previewDesktop: 'Preview on desktop',
-      previewMobile: 'Preview on mobile',
+      livePreviewNote:
+        'The chat bubble in the corner of this screen is a live preview of your widget, exactly as visitors will see it on your site. Every change here applies to it straight away, before you save.',
+      previewOpen: 'Open the widget preview',
+      previewClose: 'Close the widget preview',
       previewInputPlaceholder: 'Type a message…',
-      previewUrlBar: 'yourcompany.com',
-      behaviorVoiceHeading: 'Voice',
-      voiceAnswerLengthLabel: 'Answer length',
-      voiceAnswerLengthDescription: "How long the agent's answers tend to be.",
-      voiceAnswerLengthOptions: {
-        concise: 'Concise',
-        standard: 'Standard',
-        detailed: 'Detailed',
+      behaviorRuntimeHeading: 'Answer tuning',
+      behaviorRuntimeDescription:
+        'Optional. The defaults work well for most agents — only change these if you know what you need.',
+      groundednessThresholdLabel: 'Groundedness threshold',
+      groundednessThresholdDescription:
+        'How closely an answer must match the knowledge base before the agent will give it, from 0 (answer even with weak matches) to 1 (only answer with a near-exact match).',
+      groundednessThresholdPlaceholder: 'e.g. 0.7',
+      groundednessThresholdRange: 'Enter a number between 0 and 1.',
+      unsupportedLanguageBehaviorLabel: 'Unsupported language behavior',
+      unsupportedLanguageBehaviorDescription:
+        'What the agent does when a visitor writes in a language this agent does not support.',
+      unsupportedLanguageBehaviorOptions: {
+        answer_in_default_language: 'Answer in the default language',
+        polite_decline: 'Politely decline',
+        escalate_to_human: 'Escalate to a human',
       },
-      voiceFormalityLabel: 'Formality',
-      voiceFormalityDescription: 'The tone the agent uses when responding.',
-      voiceFormalityOptions: {
-        casual: 'Casual',
-        neutral: 'Neutral',
-        formal: 'Formal',
-      },
-      voiceTerminologyLabel: 'Preferred terminology',
-      voiceTerminologyDescription:
-        "Words or phrases the agent should prefer, such as your product's own terms.",
-      voiceTerminologyPlaceholder: 'e.g. "sign in" instead of "log in"',
-      voiceProhibitedPhrasesLabel: 'Phrases to avoid',
-      voiceProhibitedPhrasesDescription: 'Words or phrases the agent should never use.',
-      voiceProhibitedPhrasesPlaceholder: 'A phrase this agent should never use',
+      retrievalContextTurnsLabel: 'Retrieval context turns',
+      retrievalContextTurnsDescription:
+        'How many previous conversation turns are considered when searching the knowledge base for an answer.',
+      retrievalContextTurnsPlaceholder: 'e.g. 2',
+      retrievalContextTurnsRange: 'Enter a whole number between 1 and 20.',
+      maxHistoryMessagesLabel: 'Max history messages',
+      maxHistoryMessagesDescription:
+        'How many previous messages the agent keeps in mind for the current reply.',
+      maxHistoryMessagesPlaceholder: 'e.g. 10',
+      maxHistoryMessagesRange: 'Enter a whole number between 1 and 100.',
+      moderationCategoriesLabel: 'Self-harm moderation categories',
+      moderationCategoriesDescription:
+        'Additional moderation categories checked before a response is sent, on top of the platform defaults.',
+      moderationCategoriesPlaceholder: 'A moderation category name',
       suggestedQuestionsLabel: 'Suggested questions',
       suggestedQuestionsDescription:
         'Quick-reply questions shown to visitors so they can tap instead of typing. Up to 6.',
@@ -408,12 +417,12 @@ export const agents = {
       prohibitedClaimsPlaceholder: 'A claim this agent must never make',
       addListItem: 'Add',
       removeListItem: 'Remove',
-      notesLabel: 'Notes',
-      notesDescription: 'Internal notes for your team. Never shown to visitors.',
-      notesPlaceholder: 'Internal notes about this draft (not shown to visitors).',
+      advancedHeading: 'Advanced (developer)',
+      advancedDescription:
+        'For technical configuration only. Most agents never need to touch this section.',
       behaviorConfigAdvancedLabel: 'Advanced behavior config (JSON)',
       behaviorConfigAdvancedDescription:
-        'Any other behavior setting not covered above, such as groundedness_threshold, retrieval tuning, or moderation categories.',
+        'Any other behavior setting not covered above, such as an organization-wide voice tone cascaded from your brand settings.',
       qualificationConfigLabel: 'Lead qualification config (JSON)',
       qualificationConfigDescription:
         'Advanced JSON controlling how this agent detects and qualifies leads, such as trigger_phrases.',
@@ -421,6 +430,8 @@ export const agents = {
       configMustBeObject: 'Enter a valid JSON object, e.g. {}',
       triggerPhraseInvalid: '"trigger_phrases" must be a list of non-empty strings.',
       save: 'Save draft',
+      saveBlockedByContrast:
+        'Fix the failing color contrast above before saving. The server rejects a save with any of these colors as they are.',
       loading: 'Loading draft…',
     },
     publish: {
@@ -469,7 +480,8 @@ export const agents = {
     noPermissionDescription: "You don't have permission to view this agent's settings.",
     domains: {
       title: 'Allowed domains',
-      description: "Hostnames permitted to load this agent's public widget.",
+      description:
+        "Add every website domain the widget should work on. Visitors' browsers will only load the widget from a domain listed here — everywhere else it silently refuses to load, so add your domain before pasting the embed code below.",
       hostnameLabel: 'Hostname',
       hostnamePlaceholder: 'www.example.com',
       add: 'Add domain',
@@ -487,33 +499,24 @@ export const agents = {
       },
     },
     keys: {
-      title: 'Deployment keys',
-      description: "Credentials the public widget presents to load this agent's configuration.",
-      issue: 'Issue key',
+      title: 'Issued keys',
+      description:
+        "Every credential issued so far, including one for each embed code you've generated above. Revoke one to immediately stop any widget using it.",
       revoke: 'Revoke',
       revoked: 'Deployment key revoked.',
       revokeConfirmTitle: 'Revoke this deployment key?',
       revokeConfirmDescription: 'Any widget using this key will stop working immediately.',
-      empty: 'No keys issued yet.',
+      empty: 'No keys issued yet. Generate an embed code above to create one.',
       status: {
         active: 'Active',
         revoked: 'Revoked',
       },
       loadError: 'Could not load deployment keys.',
-      reveal: {
-        title: 'Your new deployment key',
-        warning:
-          "This is the only time this secret will be shown. Copy it now, it can't be shown again.",
-        secretLabel: 'Secret',
-        copyLabel: 'Copy secret',
-        copied: 'Secret copied to clipboard.',
-        copyFailed: 'Could not copy automatically. Select and copy the secret manually.',
-        done: "I've saved it",
-      },
     },
     embed: {
-      title: 'Embed code',
-      description: 'Generate a ready-to-paste script tag that installs this agent on a website.',
+      title: 'Get your embed code',
+      description:
+        'Generates a ready-to-paste script tag with its own credential built in — this is the only step needed to create one. Paste the result just before the closing </body> tag on your site. It only works on a domain you added above.',
       generate: 'Generate embed code',
       loadError: 'Could not generate embed code.',
       warning:

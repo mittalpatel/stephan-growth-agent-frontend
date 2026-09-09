@@ -1,10 +1,14 @@
 'use client';
 
+import { ChevronDown } from 'lucide-react';
+import type { ReactNode } from 'react';
 import { FormProvider, useFormContext, useWatch } from 'react-hook-form';
+import { toast } from 'sonner';
 
 import { usePermissions } from '@/app/(restricted)/context/PermissionsContext';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import {
   RHFColorField,
   RHFSelectField,
@@ -40,7 +44,6 @@ function optionsFromMap(map: Record<string, string>): SelectFieldOption[] {
 const THEME_COLOR_FIELD_KEYS = [
   'primary',
   'secondary',
-  'accent',
   'background',
   'surface',
   'text',
@@ -50,28 +53,43 @@ const THEME_COLOR_FIELD_KEYS = [
 ] as const satisfies readonly ThemeColorKey[];
 
 /**
+ * Every `CONTRAST_CHECKED_PAIRS` pair currently failing AA, given the form's
+ * current colors — the same pairs `ThemeValidationService._assert_colors_pass_contrast`
+ * checks server-side, computed locally so the operator sees it before ever
+ * submitting (see `lib/contrast.ts`'s docstring on why this isn't a network
+ * call per keystroke). Skips a pair where either color isn't a valid hex yet,
+ * same as the server does for an unset key.
+ */
+function getContrastFailures(colors: Partial<Record<ThemeColorKey, string>>) {
+  return CONTRAST_CHECKED_PAIRS.map(([fgKey, bgKey]) => ({
+    fgKey,
+    bgKey,
+    fg: colors[fgKey],
+    bg: colors[bgKey],
+  }))
+    .filter(
+      (p): p is { fgKey: ThemeColorKey; bgKey: ThemeColorKey; fg: string; bg: string } =>
+        isValidHexColor(p.fg) && isValidHexColor(p.bg)
+    )
+    .map(({ fgKey, bgKey, fg, bg }) => ({ fgKey, bgKey, ...checkContrast(fg, bg) }))
+    .filter((r) => !r.passesAaNormalText);
+}
+
+/**
  * Live pass/fail for one foreground color against every background it is
- * checked against server-side (`CONTRAST_CHECKED_PAIRS`) — computed locally
- * via `checkContrast` (see that file's docstring on why this isn't a network
- * call per keystroke). Shows the worst of the applicable pairs, with a
- * one-click fix that writes the suggested fallback straight onto the field;
- * a real submit still runs the same check server-side as the final
- * authority.
+ * checked against server-side. Shows the worst of the applicable pairs, with
+ * a one-click fix that writes the suggested fallback straight onto the
+ * field; the Save button below is disabled while any pair is failing, so a
+ * submit can no longer reach the server just to bounce off the same check
+ * with a generic 400.
  */
 function ColorContrastNotice({
   fgKey,
   colors,
 }: Readonly<{ fgKey: ThemeColorKey; colors: Partial<Record<ThemeColorKey, string>> }>) {
   const { setValue } = useFormContext<AgentDraftFormValues>();
-  const fg = colors[fgKey];
-  if (!isValidHexColor(fg)) return null;
 
-  const failing = CONTRAST_CHECKED_PAIRS.filter(([f]) => f === fgKey)
-    .map(([, bgKey]) => ({ bgKey, bg: colors[bgKey] }))
-    .filter((p): p is { bgKey: ThemeColorKey; bg: string } => isValidHexColor(p.bg))
-    .map(({ bgKey, bg }) => ({ bgKey, ...checkContrast(fg, bg) }))
-    .find((r) => !r.passesAaNormalText);
-
+  const failing = getContrastFailures(colors).find((r) => r.fgKey === fgKey);
   if (!failing) return null;
 
   return (
@@ -103,12 +121,10 @@ function ColorContrastNotice({
   );
 }
 
-function ThemeColorsSection({ disabled }: Readonly<{ disabled: boolean }>) {
-  const values = useWatch<AgentDraftFormValues>();
-  const colorsByKey = Object.fromEntries(
-    THEME_COLOR_FIELD_KEYS.map((key) => [key, (values as Record<string, string>)[`color_${key}`]])
-  ) as Partial<Record<ThemeColorKey, string>>;
-
+function ThemeColorsSection({
+  disabled,
+  colorsByKey,
+}: Readonly<{ disabled: boolean; colorsByKey: Partial<Record<ThemeColorKey, string>> }>) {
   return (
     <div>
       <h4 className="text-muted-foreground mb-3 text-xs font-semibold tracking-wider uppercase">
@@ -136,6 +152,32 @@ function capitalize<S extends string>(value: S): Capitalize<S> {
   return (value.charAt(0).toUpperCase() + value.slice(1)) as Capitalize<S>;
 }
 
+/**
+ * A named, collapsible group of draft fields. Collapsing is presentational
+ * only — React Hook Form keeps every field's value in its internal state
+ * regardless of mount/unmount (no `shouldUnregister` is set anywhere in
+ * `useAgentDraftForm`), so a value entered in a section, then collapsed,
+ * still submits correctly.
+ */
+function DraftSection({
+  title,
+  defaultOpen,
+  children,
+}: Readonly<{ title: string; defaultOpen: boolean; children: ReactNode }>) {
+  return (
+    <Collapsible defaultOpen={defaultOpen} className="border-border space-y-4 border-t pt-4">
+      <CollapsibleTrigger className="group flex w-full items-center justify-between text-left">
+        <h3 className="text-sm font-semibold">{title}</h3>
+        <ChevronDown
+          className="text-muted-foreground size-4 shrink-0 transition-transform group-data-[state=open]:rotate-180"
+          aria-hidden
+        />
+      </CollapsibleTrigger>
+      <CollapsibleContent className="space-y-6">{children}</CollapsibleContent>
+    </Collapsible>
+  );
+}
+
 function DraftForm({
   agent,
   draft,
@@ -147,14 +189,23 @@ function DraftForm({
     agent.enabled_languages
   );
   const { register } = form;
+  const watchedColors = useWatch({ control: form.control });
+  const colorsByKey = Object.fromEntries(
+    THEME_COLOR_FIELD_KEYS.map((key) => [
+      key,
+      (watchedColors as Record<string, string>)[`color_${key}`],
+    ])
+  ) as Partial<Record<ThemeColorKey, string>>;
+  const hasContrastFailure = getContrastFailures(colorsByKey).length > 0;
 
   return (
     <FormProvider {...form}>
-      <form
-        onSubmit={submit}
-        className="lg:grid lg:grid-cols-[minmax(0,1fr)_320px] lg:items-start lg:gap-8"
-      >
+      <form onSubmit={submit}>
         <div className="space-y-4">
+          <p className="border-border text-muted-foreground rounded-md border border-dashed px-3 py-2 text-xs">
+            {t.agents.detail.draft.livePreviewNote}
+          </p>
+
           <div>
             <label className={fieldLabelCls} htmlFor="instructions">
               {t.agents.detail.draft.instructionsLabel}
@@ -169,6 +220,14 @@ function DraftForm({
               className={fieldInputCls}
             />
           </div>
+
+          <RHFTextField<AgentDraftFormValues>
+            name="display_name"
+            label={t.agents.detail.draft.displayNameLabel}
+            description={t.agents.detail.draft.displayNameDescription}
+            placeholder={agent.name}
+            disabled={!canManage}
+          />
 
           <RHFSwitchField<AgentDraftFormValues>
             name="disclosure_enabled"
@@ -222,13 +281,28 @@ function DraftForm({
                   className={fieldInputCls}
                 />
               </div>
+              <div>
+                <label className={fieldLabelCls} htmlFor={`unsupported_language_message-${lang}`}>
+                  {t.agents.detail.draft.unsupportedLanguageMessageLabel}
+                </label>
+                <p className={fieldDescriptionCls}>
+                  {t.agents.detail.draft.unsupportedLanguageMessageDescription}
+                </p>
+                <textarea
+                  id={`unsupported_language_message-${lang}`}
+                  rows={2}
+                  placeholder={t.agents.detail.draft.unsupportedLanguageMessagePlaceholder}
+                  disabled={!canManage}
+                  {...register(`localized_text.${lang}.unsupported_language_message`)}
+                  className={fieldInputCls}
+                />
+              </div>
             </div>
           ))}
 
-          <div className="border-border space-y-6 border-t pt-4">
-            <div className="flex items-start justify-between gap-4">
-              <h3 className="text-sm font-semibold">{t.agents.detail.draft.themeTitle}</h3>
-              {canManage && (
+          <DraftSection title={t.agents.detail.draft.themeTitle} defaultOpen>
+            {canManage && (
+              <div className="flex items-start justify-end gap-4">
                 <div className="text-right">
                   <Button
                     type="button"
@@ -243,10 +317,10 @@ function DraftForm({
                     {t.agents.detail.draft.resetToOrgDefaultConfirmDescription}
                   </p>
                 </div>
-              )}
-            </div>
+              </div>
+            )}
 
-            <ThemeColorsSection disabled={!canManage} />
+            <ThemeColorsSection disabled={!canManage} colorsByKey={colorsByKey} />
 
             <div>
               <h4 className="text-muted-foreground mb-3 text-xs font-semibold tracking-wider uppercase">
@@ -284,34 +358,10 @@ function DraftForm({
                   disabled={!canManage}
                 />
                 <RHFSelectField<AgentDraftFormValues>
-                  name="widget_panel_size"
-                  label={t.agents.detail.draft.widgetPanelSizeLabel}
-                  description={t.agents.detail.draft.widgetPanelSizeDescription}
-                  options={optionsFromMap(t.agents.detail.draft.widgetPanelSizeOptions)}
-                  placeholder="—"
-                  disabled={!canManage}
-                />
-                <RHFSelectField<AgentDraftFormValues>
-                  name="widget_shadow"
-                  label={t.agents.detail.draft.widgetShadowLabel}
-                  description={t.agents.detail.draft.widgetShadowDescription}
-                  options={optionsFromMap(t.agents.detail.draft.widgetShadowOptions)}
-                  placeholder="—"
-                  disabled={!canManage}
-                />
-                <RHFSelectField<AgentDraftFormValues>
                   name="widget_mode"
                   label={t.agents.detail.draft.widgetModeLabel}
                   description={t.agents.detail.draft.widgetModeDescription}
                   options={optionsFromMap(t.agents.detail.draft.widgetModeOptions)}
-                  placeholder="—"
-                  disabled={!canManage}
-                />
-                <RHFSelectField<AgentDraftFormValues>
-                  name="widget_mobile_layout"
-                  label={t.agents.detail.draft.widgetMobileLayoutLabel}
-                  description={t.agents.detail.draft.widgetMobileLayoutDescription}
-                  options={optionsFromMap(t.agents.detail.draft.widgetMobileLayoutOptions)}
                   placeholder="—"
                   disabled={!canManage}
                 />
@@ -339,53 +389,65 @@ function DraftForm({
                 />
               </div>
             </div>
-          </div>
+          </DraftSection>
 
-          <div className="border-border space-y-6 border-t pt-4">
+          <DraftSection title={t.agents.detail.draft.behaviorRuntimeHeading} defaultOpen={false}>
             <div>
-              <h4 className="text-muted-foreground mb-3 text-xs font-semibold tracking-wider uppercase">
-                {t.agents.detail.draft.behaviorVoiceHeading}
-              </h4>
-              <div className="grid gap-4 sm:grid-cols-2">
-                <RHFSelectField<AgentDraftFormValues>
-                  name="voice_answer_length"
-                  label={t.agents.detail.draft.voiceAnswerLengthLabel}
-                  description={t.agents.detail.draft.voiceAnswerLengthDescription}
-                  options={optionsFromMap(t.agents.detail.draft.voiceAnswerLengthOptions)}
-                  placeholder="—"
+              <p className="text-muted-foreground -mt-2 text-xs">
+                {t.agents.detail.draft.behaviorRuntimeDescription}
+              </p>
+              <div className="mt-4 grid gap-4 sm:grid-cols-2">
+                <RHFTextField<AgentDraftFormValues>
+                  name="groundedness_threshold"
+                  type="number"
+                  label={t.agents.detail.draft.groundednessThresholdLabel}
+                  description={t.agents.detail.draft.groundednessThresholdDescription}
+                  placeholder={t.agents.detail.draft.groundednessThresholdPlaceholder}
                   disabled={!canManage}
                 />
                 <RHFSelectField<AgentDraftFormValues>
-                  name="voice_formality"
-                  label={t.agents.detail.draft.voiceFormalityLabel}
-                  description={t.agents.detail.draft.voiceFormalityDescription}
-                  options={optionsFromMap(t.agents.detail.draft.voiceFormalityOptions)}
+                  name="unsupported_language_behavior"
+                  label={t.agents.detail.draft.unsupportedLanguageBehaviorLabel}
+                  description={t.agents.detail.draft.unsupportedLanguageBehaviorDescription}
+                  options={optionsFromMap(t.agents.detail.draft.unsupportedLanguageBehaviorOptions)}
                   placeholder="—"
+                  disabled={!canManage}
+                />
+                <RHFTextField<AgentDraftFormValues>
+                  name="retrieval_context_turns"
+                  type="number"
+                  label={t.agents.detail.draft.retrievalContextTurnsLabel}
+                  description={t.agents.detail.draft.retrievalContextTurnsDescription}
+                  placeholder={t.agents.detail.draft.retrievalContextTurnsPlaceholder}
+                  disabled={!canManage}
+                />
+                <RHFTextField<AgentDraftFormValues>
+                  name="max_history_messages"
+                  type="number"
+                  label={t.agents.detail.draft.maxHistoryMessagesLabel}
+                  description={t.agents.detail.draft.maxHistoryMessagesDescription}
+                  placeholder={t.agents.detail.draft.maxHistoryMessagesPlaceholder}
                   disabled={!canManage}
                 />
               </div>
               <RHFStringListField<AgentDraftFormValues>
-                name="voice_terminology"
-                label={t.agents.detail.draft.voiceTerminologyLabel}
-                description={t.agents.detail.draft.voiceTerminologyDescription}
-                itemPlaceholder={t.agents.detail.draft.voiceTerminologyPlaceholder}
+                name="moderation_self_harm_categories"
+                label={t.agents.detail.draft.moderationCategoriesLabel}
+                description={t.agents.detail.draft.moderationCategoriesDescription}
+                itemPlaceholder={t.agents.detail.draft.moderationCategoriesPlaceholder}
                 addLabel={t.agents.detail.draft.addListItem}
                 removeLabel={t.agents.detail.draft.removeListItem}
                 disabled={!canManage}
-                className="mt-4"
-              />
-              <RHFStringListField<AgentDraftFormValues>
-                name="voice_prohibited_phrases"
-                label={t.agents.detail.draft.voiceProhibitedPhrasesLabel}
-                description={t.agents.detail.draft.voiceProhibitedPhrasesDescription}
-                itemPlaceholder={t.agents.detail.draft.voiceProhibitedPhrasesPlaceholder}
-                addLabel={t.agents.detail.draft.addListItem}
-                removeLabel={t.agents.detail.draft.removeListItem}
-                disabled={!canManage}
+                maxItems={20}
                 className="mt-4"
               />
             </div>
+          </DraftSection>
 
+          <DraftSection title={t.agents.detail.draft.advancedHeading} defaultOpen={false}>
+            <p className="text-muted-foreground -mt-2 text-xs">
+              {t.agents.detail.draft.advancedDescription}
+            </p>
             <RHFStringListField<AgentDraftFormValues>
               name="suggested_questions"
               label={t.agents.detail.draft.suggestedQuestionsLabel}
@@ -405,9 +467,6 @@ function DraftForm({
               removeLabel={t.agents.detail.draft.removeListItem}
               disabled={!canManage}
             />
-          </div>
-
-          <div className="border-border space-y-4 border-t pt-4">
             <RHFTextareaField<AgentDraftFormValues>
               name="behavior_config_advanced"
               label={t.agents.detail.draft.behaviorConfigAdvancedLabel}
@@ -426,34 +485,40 @@ function DraftForm({
               rows={4}
               className="font-mono text-xs"
             />
-            <RHFTextField<AgentDraftFormValues>
-              name="notes"
-              label={t.agents.detail.draft.notesLabel}
-              description={t.agents.detail.draft.notesDescription}
-              placeholder={t.agents.detail.draft.notesPlaceholder}
-              disabled={!canManage}
-            />
-          </div>
+          </DraftSection>
 
           {canManage && (
-            <Button type="submit" disabled={isPending}>
-              {t.agents.detail.draft.save}
-            </Button>
+            <div>
+              <Button type="submit" disabled={isPending || hasContrastFailure}>
+                {t.agents.detail.draft.save}
+              </Button>
+              {hasContrastFailure && (
+                <p className="text-error mt-2 text-xs">
+                  {t.agents.detail.draft.saveBlockedByContrast}
+                </p>
+              )}
+            </div>
           )}
         </div>
 
-        <div className="mt-6 lg:sticky lg:top-4 lg:mt-0">
-          <WidgetPreview defaultLanguage={agent.default_language} />
-        </div>
+        <WidgetPreview defaultLanguage={agent.default_language} agentName={agent.name} />
       </form>
     </FormProvider>
   );
 }
 
 export function AgentDraftTab({ agent }: Props) {
-  const { draft, isLoading } = useAgentDraft(agent.id);
+  const { draft, isLoading, isNotFound, createDraft, isCreatingDraft } = useAgentDraft(agent.id);
   const { can } = usePermissions();
   const canManage = can('agent', 'manage');
+
+  const handleStartEditing = async () => {
+    try {
+      await createDraft();
+    } catch {
+      toast.error(t.agents.toast.draftCreateFailed);
+    }
+  };
 
   return (
     <Card>
@@ -462,10 +527,19 @@ export function AgentDraftTab({ agent }: Props) {
         <p className="text-muted-foreground text-sm">{t.agents.detail.draft.description}</p>
       </CardHeader>
       <CardContent>
-        {isLoading || !draft ? (
+        {isLoading ? (
           <div className="space-y-3">
             <Skeleton className="h-24 w-full" />
             <Skeleton className="h-9 w-40" />
+          </div>
+        ) : isNotFound || !draft ? (
+          <div className="space-y-3">
+            <p className="text-muted-foreground text-sm">{t.agents.detail.draft.noDraftYet}</p>
+            {canManage && (
+              <Button onClick={handleStartEditing} disabled={isCreatingDraft}>
+                {t.agents.detail.draft.startEditing}
+              </Button>
+            )}
           </div>
         ) : (
           <DraftForm agent={agent} draft={draft} canManage={canManage} />

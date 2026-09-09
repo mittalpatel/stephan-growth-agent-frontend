@@ -13,26 +13,20 @@ import { t } from '@/locales';
 import type { AgentDeploymentKey } from '@/types/agent';
 
 import { useAgentDeploymentKeys } from '../hooks/useAgentDeploymentKeys';
-import { RevealDeploymentKeyDialog } from './RevealDeploymentKeyDialog';
 
 const copy = t.agents.settings.keys;
 
 type Props = Readonly<{ agentId: string }>;
 
+/**
+ * Read-only list + revoke. Key creation happens only via
+ * `EmbedSnippetSection`'s "Generate embed code" now (2026-09-09) — this used
+ * to have its own "Issue key" button minting an unrelated, unlabeled key
+ * with no snippet, a confusing second way to create the same credential.
+ */
 export function DeploymentKeysSection({ agentId }: Props) {
-  const {
-    keys,
-    canManage,
-    isLoading,
-    isError,
-    refetch,
-    issueKey,
-    isIssuing,
-    issuedKey,
-    dismissIssuedKey,
-    revokeKey,
-    revokingId,
-  } = useAgentDeploymentKeys(agentId);
+  const { keys, canManage, isLoading, isError, refetch, revokeKey, revokingId } =
+    useAgentDeploymentKeys(agentId);
   const [confirming, setConfirming] = useState<AgentDeploymentKey | null>(null);
 
   function renderList() {
@@ -83,16 +77,9 @@ export function DeploymentKeysSection({ agentId }: Props) {
   return (
     <Card>
       <CardContent className="space-y-4">
-        <div className="flex items-start justify-between gap-3">
-          <div>
-            <h2 className="font-display text-lg font-bold">{copy.title}</h2>
-            <p className="text-muted-foreground mt-1 text-sm">{copy.description}</p>
-          </div>
-          {canManage && (
-            <Button onClick={() => void issueKey()} disabled={isIssuing}>
-              {copy.issue}
-            </Button>
-          )}
+        <div>
+          <h2 className="font-display text-lg font-bold">{copy.title}</h2>
+          <p className="text-muted-foreground mt-1 text-sm">{copy.description}</p>
         </div>
 
         {renderList()}
@@ -112,8 +99,6 @@ export function DeploymentKeysSection({ agentId }: Props) {
           if (!open) setConfirming(null);
         }}
       />
-
-      <RevealDeploymentKeyDialog secret={issuedKey?.secret ?? null} onDismiss={dismissIssuedKey} />
     </Card>
   );
 }

@@ -1,17 +1,16 @@
 import { z } from 'zod';
 
 import {
-  ANSWER_LENGTHS,
   APPROVED_FONT_FAMILIES,
-  FORMALITY_LEVELS,
+  MAX_HISTORY_MESSAGES_CEILING,
+  MAX_MODERATION_CATEGORIES,
+  MAX_RETRIEVAL_CONTEXT_TURNS,
   MAX_SUGGESTED_QUESTION_LENGTH,
   MAX_SUGGESTED_QUESTIONS,
+  UNSUPPORTED_LANGUAGE_BEHAVIORS,
   WIDGET_LAUNCHER_SHAPES,
-  WIDGET_MOBILE_LAYOUTS,
   WIDGET_MODES,
-  WIDGET_PANEL_SIZES,
   WIDGET_POSITIONS,
-  WIDGET_SHADOWS,
 } from '@/lib/constants/agentTheme';
 import { HEX_COLOR_RE } from '@/lib/contrast';
 import { isValidHostname } from '@/lib/hostname';
@@ -30,6 +29,15 @@ const optionalEnum = <T extends readonly [string, ...string[]]>(values: T) =>
   z.string().refine((value) => value === '' || (values as readonly string[]).includes(value), {
     message: t.agents.validation.invalidSelection,
   });
+
+/** `''` (untouched `RHFTextField` `type="number"` input) or a coerced number
+ * in `[min, max]`. Kept distinct from a bare `z.coerce.number().optional()`
+ * for the same reason `websiteDiscoverSchema` is (`src/lib/schemas/knowledge.ts`):
+ * `z.coerce.number()` alone turns `''` into `0`, which would silently submit
+ * a value for a field nobody touched — and `0` is a real, in-range value for
+ * `groundedness_threshold` that must survive as `0`, not "unset". */
+const optionalNumber = (min: number, max: number, message: string) =>
+  z.union([z.literal(''), z.coerce.number().min(min, message).max(max, message)]).optional();
 
 /** Shared shape for the four repeatable-string-list fields (suggested
  * questions, prohibited claims, voice terminology/prohibited phrases) — see
@@ -88,6 +96,14 @@ const localizedTextEntrySchema = z.object({
   greeting: z.string(),
   fallback_message: z.string(),
   disclosure_text: z.string(),
+  /** Optional (2026-09-09): `AgentService._assert_localization_complete`
+   * never requires this, even when `unsupported_language_behavior` is
+   * `polite_decline` — an empty value falls back to
+   * `DEFAULT_UNSUPPORTED_LANGUAGE_MESSAGE` server-side, both at publish-check
+   * time and in the live chat reply (`ChatRuntimeService
+   * ._handle_unsupported_language`). This field just lets an operator
+   * override that default per language. */
+  unsupported_language_message: z.string(),
 });
 
 /** Parses to a plain object, or fails with a single message on the field —
@@ -123,22 +139,30 @@ const jsonObjectField = (invalidMessage: string) =>
  * for these are bound by hand in the submit handler, not through
  * `applyApiError`'s automatic name matching).
  *
- * `behavior_config_advanced`/`qualification_config` stay raw JSON: the
- * runtime-only behavior keys (`groundedness_threshold`, retrieval/history
- * tuning, moderation categories, `unsupported_language_behavior`) and
- * `qualification_config` respectively have no fixed shape worth building
+ * `behavior_config_advanced`/`qualification_config` stay raw JSON: as of
+ * 2026-09-09 the runtime-consumed behavior keys (`groundedness_threshold`,
+ * `retrieval_context_turns`, `max_history_messages`,
+ * `moderation_self_harm_categories`, `unsupported_language_behavior`) are
+ * real, validated fields below, not part of this JSON blob any more — only
+ * `qualification_config` and any org-cascaded/unrecognized key (e.g.
+ * `voice.tone`) still have no fixed shape worth building
  * real inputs for.
  */
 export const agentDraftUpdateSchema = z.object({
   instructions: z.string(),
   disclosure_enabled: z.boolean(),
   localized_text: z.record(z.string(), localizedTextEntrySchema),
-  notes: z.string(),
+  /** Blank means "fall back to Agent.name" server-side — distinct from a
+   * whitespace-only string, which `AgentVersionUpdateSerializer
+   * .validate_display_name` rejects rather than silently storing a name
+   * nobody would recognize. */
+  display_name: z.string().refine((value) => value === '' || value.trim().length > 0, {
+    message: t.agents.detail.draft.displayNameBlank,
+  }),
 
   // theme_config.colors.*
   color_primary: optionalHexColor(),
   color_secondary: optionalHexColor(),
-  color_accent: optionalHexColor(),
   color_background: optionalHexColor(),
   color_surface: optionalHexColor(),
   color_text: optionalHexColor(),
@@ -150,19 +174,32 @@ export const agentDraftUpdateSchema = z.object({
   // theme_config.widget.*
   widget_position: optionalEnum(WIDGET_POSITIONS),
   widget_launcher_shape: optionalEnum(WIDGET_LAUNCHER_SHAPES),
-  widget_panel_size: optionalEnum(WIDGET_PANEL_SIZES),
-  widget_shadow: optionalEnum(WIDGET_SHADOWS),
   widget_mode: optionalEnum(WIDGET_MODES),
-  widget_mobile_layout: optionalEnum(WIDGET_MOBILE_LAYOUTS),
   // theme_config.logo.*
   logo_logo_url: z.string(),
   logo_favicon_url: z.string(),
 
-  // behavior_config.voice.*
-  voice_answer_length: optionalEnum(ANSWER_LENGTHS),
-  voice_formality: optionalEnum(FORMALITY_LEVELS),
-  voice_terminology: stringListField(),
-  voice_prohibited_phrases: stringListField(),
+  // behavior_config.* — the runtime-consumed keys ThemeValidationService
+  // validates as of 2026-09-09 (`apps.runtime.services.chat_runtime_service`).
+  // Sanity ceilings on the two integer fields and the category list are
+  // client-only guards; the backend enforces no upper bound, only a `>= 1`
+  // floor on the integers.
+  groundedness_threshold: optionalNumber(0, 1, t.agents.detail.draft.groundednessThresholdRange),
+  retrieval_context_turns: optionalNumber(
+    1,
+    MAX_RETRIEVAL_CONTEXT_TURNS,
+    t.agents.detail.draft.retrievalContextTurnsRange
+  ),
+  max_history_messages: optionalNumber(
+    1,
+    MAX_HISTORY_MESSAGES_CEILING,
+    t.agents.detail.draft.maxHistoryMessagesRange
+  ),
+  moderation_self_harm_categories: stringListField().max(
+    MAX_MODERATION_CATEGORIES,
+    t.agents.validation.listTooLong
+  ),
+  unsupported_language_behavior: optionalEnum(UNSUPPORTED_LANGUAGE_BEHAVIORS),
   // behavior_config.suggested_questions / .prohibited_claims
   suggested_questions: stringListField(MAX_SUGGESTED_QUESTION_LENGTH).max(
     MAX_SUGGESTED_QUESTIONS,

@@ -15,11 +15,10 @@ const copy = t.agents.settings.embed;
 type Props = Readonly<{ agentId: string }>;
 
 /**
- * Mints a fresh deployment key via `POST /agents/{id}/embed-code/` (backend
- * 2026-09-07) and shows the real install snippet it returns. Each generation
- * issues a new key, so the snippet is treated the same as a key reveal: shown
- * once, never cached, with a copy affordance and a one-time warning, matching
- * `RevealDeploymentKeyDialog`.
+ * The single place a deployment key gets created (2026-09-09). Mints a fresh
+ * key via `POST /agents/{id}/embed-code/` (backend 2026-09-07) and shows the
+ * real install snippet it returns, with a copy affordance and a one-time
+ * warning since the secret embedded in it is never shown again.
  */
 export function EmbedSnippetSection({ agentId }: Props) {
   const { canManage, embedCode, generate, isGenerating } = useAgentEmbedCode(agentId);

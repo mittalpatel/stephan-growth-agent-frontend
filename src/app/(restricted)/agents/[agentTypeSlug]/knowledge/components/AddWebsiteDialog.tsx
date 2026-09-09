@@ -7,6 +7,7 @@ import { Globe, Loader2, X } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Input } from '@/components/ui/input';
 import {
   Dialog,
@@ -15,10 +16,14 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
-import { RHFTextField } from '@/components/common/form';
+import { RHFStringListField, RHFTextField } from '@/components/common/form';
 import { EmptyState } from '@/components/common/EmptyState';
 import { format } from '@/lib/i18n';
-import { websiteDiscoverSchema, type WebsiteDiscoverFormValues } from '@/lib/schemas/knowledge';
+import {
+  websiteDiscoverSchema,
+  type WebsiteDiscoverFormValues,
+  type WebsiteDiscoverSubmitValues,
+} from '@/lib/schemas/knowledge';
 import { t } from '@/locales';
 
 import { useAddWebsiteFlow } from '../hooks/useAddWebsiteFlow';
@@ -174,9 +179,15 @@ export function AddWebsiteDialog({ agentId, onCreated }: Props) {
   const [open, setOpen] = useState(false);
   const flow = useAddWebsiteFlow(agentId, onCreated);
 
-  const form = useForm<WebsiteDiscoverFormValues>({
+  const form = useForm<WebsiteDiscoverFormValues, unknown, WebsiteDiscoverSubmitValues>({
     resolver: zodResolver(websiteDiscoverSchema),
-    defaultValues: { root_url: '' },
+    defaultValues: {
+      root_url: '',
+      max_pages: '',
+      max_depth: '',
+      include_paths: [],
+      exclude_paths: [],
+    },
   });
 
   const submit = form.handleSubmit(async (values) => {
@@ -215,6 +226,49 @@ export function AddWebsiteDialog({ agentId, onCreated }: Props) {
                   placeholder={t.knowledge.addWebsite.rootUrlPlaceholder}
                   required
                 />
+
+                <Collapsible>
+                  <CollapsibleTrigger asChild>
+                    <Button type="button" variant="ghost" size="sm" className="-ml-2">
+                      {t.knowledge.addWebsite.scope.toggle}
+                    </Button>
+                  </CollapsibleTrigger>
+                  <CollapsibleContent className="space-y-4 pt-2">
+                    <RHFTextField<WebsiteDiscoverFormValues>
+                      name="max_pages"
+                      type="number"
+                      label={t.knowledge.addWebsite.scope.maxPagesLabel}
+                      description={t.knowledge.addWebsite.scope.maxPagesDescription}
+                      placeholder={t.knowledge.addWebsite.scope.maxPagesPlaceholder}
+                    />
+                    <RHFTextField<WebsiteDiscoverFormValues>
+                      name="max_depth"
+                      type="number"
+                      label={t.knowledge.addWebsite.scope.maxDepthLabel}
+                      description={t.knowledge.addWebsite.scope.maxDepthDescription}
+                      placeholder={t.knowledge.addWebsite.scope.maxDepthPlaceholder}
+                    />
+                    <RHFStringListField<WebsiteDiscoverFormValues>
+                      name="include_paths"
+                      label={t.knowledge.addWebsite.scope.includePathsLabel}
+                      description={t.knowledge.addWebsite.scope.includePathsDescription}
+                      addLabel={t.knowledge.addWebsite.scope.addPath}
+                      removeLabel={t.knowledge.addWebsite.scope.removePath}
+                      itemPlaceholder={t.knowledge.addWebsite.scope.pathPlaceholder}
+                      maxItems={20}
+                    />
+                    <RHFStringListField<WebsiteDiscoverFormValues>
+                      name="exclude_paths"
+                      label={t.knowledge.addWebsite.scope.excludePathsLabel}
+                      description={t.knowledge.addWebsite.scope.excludePathsDescription}
+                      addLabel={t.knowledge.addWebsite.scope.addPath}
+                      removeLabel={t.knowledge.addWebsite.scope.removePath}
+                      itemPlaceholder={t.knowledge.addWebsite.scope.pathPlaceholder}
+                      maxItems={20}
+                    />
+                  </CollapsibleContent>
+                </Collapsible>
+
                 <Button type="submit" className="w-full" disabled={flow.isDiscovering}>
                   {t.knowledge.addWebsite.submit}
                 </Button>

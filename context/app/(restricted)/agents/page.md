@@ -217,15 +217,97 @@ delete: the backend removed `DELETE /agents/{id}/` in the 2026-09-07 push
 that removed creation, and `agent:delete` is no longer granted by any default
 role.
 
+### Setup checklist (2026-09-09)
+
+`AgentSetupChecklist`, rendered above the `Tabs` block (`canManage` only),
+exists because nothing previously told an operator what order to do things
+in to get a widget live: publish never mentioned domains or keys, and a
+brand-new unconfigured agent looked identical to a fully live one across all
+eight tabs. It shows four steps computed from data already available —
+`agent.draft_version !== null`, `agent.published_version !== null`, and
+`useAgentReadiness`'s domain/key presence checks (a small read-only hook,
+deliberately not the Settings tab's own `useAgentDomains`/
+`useAgentDeploymentKeys`, which carry mutations this checklist has no
+business triggering) — and each unfinished step's "Go" button calls the same
+`setTab` the header's Configure button already used. Collapses to a
+one-line "ready" banner once all four are done. `useAgentReadiness` shares
+query keys (`agentDomainsKey`/`agentKeysKey`) with the Settings-tab hooks, so
+visiting either place primes the other's cache for free.
+
+### Draft form progressive disclosure (2026-09-09)
+
+`AgentDraftTab`'s `DraftForm` used to render ~20+ fields flat, including two
+raw JSON textareas, in one scroll. Non-essential groups are now wrapped in a
+local `DraftSection` (built on `src/components/ui/collapsible.tsx`'s
+`Collapsible`, previously unused anywhere in the app): "Widget theme" stays
+**open** by default (what most edits are for), "Answer tuning" (groundedness
+threshold, unsupported-language behavior, retrieval/history tuning,
+moderation categories) and "Advanced (developer)" (suggested
+questions/prohibited claims plus both raw JSON fields) default **closed**.
+Collapsing is presentational only — no field is removed, and React Hook Form
+keeps every field's value in its internal state regardless of mount state
+(`useAgentDraftForm` sets no `shouldUnregister`), so a value entered then
+hidden by collapsing a section still submits correctly.
+
+### One place to create a deployment key (2026-09-09)
+
+`DeploymentKeysSection` and `EmbedSnippetSection` used to be two independent
+entry points that **each minted its own separate live key**
+(`POST /agents/{id}/keys/` vs `POST /agents/{id}/embed-code/`) with no
+relationship to each other — a user clicking both ended up with two live
+keys and no signal which one was "the" one. `EmbedSnippetSection` (now
+labeled "Get your embed code") is the only place a key gets created;
+`DeploymentKeysSection` (now "Issued keys") is read-only-plus-revoke, and its
+own `issueKey`/`RevealDeploymentKeyDialog` reveal flow was deleted rather
+than kept as a second working path. `useAgentEmbedCode`'s `generate()` now
+invalidates `agentKeysKey` on success so the issued-keys list picks up the
+new key immediately. Settings tab order changed to match the sequence a user
+needs: Identity → Allowed Domains → Get your embed code → Issued keys —
+domains before the embed code, since the widget silently refuses to load
+without one, and copy on both cards now says so explicitly instead of
+assuming the reader already knows why an allowlist/credential exists.
+
+No backend changes were needed for any of this — `POST /agents/{id}/keys/`
+still exists (it's simply no longer called from the UI), and every value the
+checklist/copy needs came from endpoints that already existed.
+
+### Unsupported-language message field (2026-09-09, revised same day)
+
+`AgentService._assert_localization_complete` originally required
+`localized_text[<lang>].unsupported_language_message` for every enabled
+language whenever `unsupported_language_behavior` was (or defaulted to)
+`polite_decline`, but `useAgentDraftForm`'s `buildLocalizedTextDefaults`
+never built that field — it was never rendered, editable, or sent in the
+`PATCH /agents/{id}/draft/` body, so every agent hit a 400 on first publish
+(`missing_language_localization`) with no way to fix it from the UI. Added
+`unsupported_language_message` alongside greeting/fallback/disclosure in the
+per-language block in `AgentDraftTab`, and initially added a client-side
+`superRefine` on `agentDraftUpdateSchema` requiring it per language when
+`polite_decline` applied, mirroring the backend guard.
+
+The backend then dropped the requirement entirely (same day,
+`apps/agents/services/agent_service.py`): `_assert_localization_complete` no
+longer requires this key at all, and both the publish check and
+`ChatRuntimeService._handle_unsupported_language` fall back to a new
+`DEFAULT_UNSUPPORTED_LANGUAGE_MESSAGE` platform default when an operator
+hasn't set one, so a live `polite_decline` reply is never blank. The
+frontend's `superRefine` was removed to match — the field stays in the form
+(and in `LocalizedText`) as an optional per-language override, labeled
+"(optional)" with copy noting a default is used when left blank. No backend
+changes needed on the frontend side for this revision; it's a pure relaxation
+of validation already tracked here.
+
 ### Draft, Publish, Test
 
 - **Draft** — edits the full draft config per the backend spec doc:
-  `instructions`, `disclosure_enabled`, a required-localized-text section
+  `instructions`, `disclosure_enabled`, `display_name` (added 2026-09-09,
+  replacing the removed `notes` field — the widget-facing bot name shown in
+  the chat header, distinct from `Agent.name`; falls back to it server-side
+  when blank), a required-localized-text section
   (`greeting`/`fallback_message`/`disclosure_text`, the three
   `AgentService.publish()` checks) repeated **per `enabled_languages`
   entry**, the full `theme_config`/`behavior_config` shape validated
-  server-side by `ThemeValidationService` (backend
-  `config-theme-validation-2026-09-08`), `notes`, and `qualification_config`
+  server-side by `ThemeValidationService`, and `qualification_config`
   as a raw JSON textarea (genuinely freeform on the backend, only validated
   as "must be an object", so there's no fixed field set to build real inputs
   for; a client-side parse failure blocks submit with an inline error before
@@ -236,11 +318,28 @@ role.
   when called with no fields). The three optional `LocalizedTextKey`s beyond
   the required trio still have no form UI: bounded scope, not an oversight.
 
+  **No-draft state (2026-09-09)**: `publish()` clears `Agent.draft_version`
+  (`AgentService.publish()`), so `GET /agents/{id}/draft/` 404s with
+  `agent_no_draft` right after every publish — an expected, settled state,
+  not a stuck load. `AgentDraftTab.tsx` used to render the loading skeleton
+  forever in this case (`isLoading || !draft`, and `!draft` never clears once
+  the query settles into a 404). It now checks `useAgentDraft`'s `isNotFound`
+  and shows a real empty state instead, with a "Start editing" button that
+  calls `createDraft()` — an empty-body `PATCH /agents/{id}/draft/`, which
+  clones the published version into a fresh draft server-side
+  (`AgentService.update_draft`) without changing any field. The draft form
+  itself is never rendered pre-filled with its own blank defaults for this
+  state, since the first save would then overwrite the freshly-cloned
+  published content with blanks.
+
   **Theme/behavior config** (`useAgentDraftForm.ts`, `AgentDraftTab.tsx`):
-  `theme_config`'s nested `colors` (9-key palette), `typography.font_family`,
-  `widget.*` (position/launcher_shape/panel_size/shadow/mode/mobile_layout)
-  and `logo.*`, plus `behavior_config`'s `voice.*`, `suggested_questions`,
-  and `prohibited_claims`, are hoisted into flat, typed form fields —
+  `theme_config`'s nested `colors` (now an 8-key palette; `accent` was
+  dropped 2026-09-09 as low-value form complexity), `typography.font_family`,
+  `widget.*` (`position`/`launcher_shape`/`mode` — `panel_size`/`shadow`/
+  `mobile_layout` were removed the same commit, since the real embeddable
+  bundle renders one fixed size/shadow and doesn't yet vary by mobile
+  layout) and `logo.*`, plus `behavior_config`'s `suggested_questions` and
+  `prohibited_claims`, are hoisted into flat, typed form fields —
   `src/lib/constants/agentTheme.ts` mirrors the backend's
   `theme_schema.py`/`behavior_schema.py` allowlists, and
   `agentDraftUpdateSchema` (`src/lib/schemas/agent.ts`) validates them with a
@@ -253,14 +352,32 @@ role.
   hand-binds them). A draft saved by the old UI still has values under the
   legacy flat `theme_config.primary_color`/`logo_url`/`launcher_position`
   keys; `themeFieldsFromConfig()` reads those as a fallback so the new UI
-  doesn't show them as unset.
+  doesn't show them as unset. `logo.favicon_url` remains a settable,
+  unvalidated key, but `ThemeCascadeService` stopped populating it from
+  `OrganizationBranding.favicon_url` 2026-09-09 — "Reset to org default" no
+  longer fills an unset one.
 
-  Everything else `behavior_config` carries at runtime
-  (`groundedness_threshold`, retrieval/history tuning, moderation
-  categories, `unsupported_language_behavior`) has no fixed shape and stays
-  in the "Advanced behavior config" raw-JSON field, stripped of the keys the
-  structured fields above own so the two representations never fight over
-  the same data.
+  **Behavior runtime tuning** (2026-09-09): the keys
+  `apps.runtime.services.chat_runtime_service` actually reads
+  (`groundedness_threshold`, `retrieval_context_turns`,
+  `max_history_messages`, `moderation_self_harm_categories`,
+  `unsupported_language_behavior`) are now validated by
+  `ThemeValidationService.validate_behavior_config` for the first time, and
+  are real structured fields under "Answer tuning" rather than raw JSON —
+  the same promotion the removed `voice.answer_length`/`formality`/
+  `terminology`/`prohibited_phrases` controls never got before being deleted
+  entirely as unused config surface (nothing in `apps.runtime` ever read
+  them). `groundedness_threshold`/`retrieval_context_turns`/
+  `max_history_messages` use the same `'' | number` schema shape
+  `websiteDiscoverSchema` established for `max_pages`/`max_depth`
+  (`src/lib/schemas/knowledge.ts`): a native number input reports "untouched"
+  as `''`, and a bare `z.coerce.number()` would turn that into `0` and
+  silently submit it — `groundedness_threshold: 0` is a real, in-range value
+  that must survive as `0`, not "unset". Any other key `behavior_config`
+  carries at runtime (e.g. an org-cascaded `voice.tone`) has no fixed shape
+  and stays in the "Advanced behavior config" raw-JSON field, stripped of
+  the keys the structured fields above own so the two representations never
+  fight over the same data.
 
   **Contrast checking**: `src/lib/contrast.ts` ports
   `ThemeValidationService.check_contrast`'s WCAG AA math client-side for
@@ -272,6 +389,21 @@ role.
   which `bindContrastErrors()` binds onto the matching `color_*` field by
   hand (this nested shape is exactly what `applyApiError`'s generic binder
   can't format).
+
+  **Save is blocked client-side while any pair is failing**, not just
+  flagged: `AgentDraftTab.tsx`'s `getContrastFailures()` (the same function
+  `ColorContrastNotice` uses per field) is also checked at the form level,
+  and the Save button is `disabled` whenever it returns anything, with
+  `t.agents.detail.draft.saveBlockedByContrast` explaining why next to it.
+  Before this, the button stayed enabled through a visible failing-contrast
+  warning and the PATCH would fire anyway, only to bounce off the exact
+  same check server-side with a generic 400, since
+  `ThemeValidationService._assert_colors_pass_contrast` rejects unconditionally
+  on any `CONTRAST_CHECKED_PAIRS` failure. The server check remains the
+  actual authority (`bindContrastErrors()` above still exists for whatever
+  a client-side check misses or gets stale), but a submit should not be
+  reachable at all while the same page is already showing the reason it
+  will fail.
 
   **Reset to org default**: `GET /agents/{id}/draft/theme-defaults/`
   (`agentThemeDefaultsKey`/`Endpoint` in `services/agents.ts`, queried with
@@ -287,21 +419,50 @@ role.
   bonus "check contrast" affordance considered for that tab was scoped out
   rather than built against an artificial pair.
 
-  **Live preview** (`WidgetPreview.tsx`, sticky beside the form on `lg+`):
-  a mocked render of the embeddable widget kept in sync via `useWatch` on
-  the whole form, so every theme/behavior field (including ones edited
-  outside the theme section, like the greeting, disclosure text, and
-  suggested questions) reflects immediately with no save. There is no real
-  widget bundle in this repo — the embed script itself is a separate
-  deliverable — so this approximates the runtime from the same values
-  rather than rendering it; a desktop/mobile toggle demonstrates
-  `widget_mobile_layout`'s `fullscreen` vs `overlay` distinction, which
-  only differs on the mobile frame. Unset colors fall back to the backend's
-  own seeded starter palette (`apps/agents/seed_data.py`) so a fresh
-  agent's preview matches what it will actually publish with. The desktop
-  frame sits inside a minimal browser-chrome mockup (dots + a fake URL bar)
-  over a page backdrop tinted with the operator's own `color_primary`, so
-  it reads as "the widget on a real page" rather than an abstract box.
+  **Live preview** (`WidgetPreview.tsx`): the widget renders as a real
+  floating launcher, portalled to `document.body` and pinned to the viewport
+  corner named by `widget_position`, at the launcher's real 56px size.
+  Clicking it opens the panel, exactly as a visitor to the operator's own
+  site would meet it. It replaced an earlier scaled-down mock-in-a-sidebar
+  (browser-chrome frame, desktop/mobile toggle), which answered "what does
+  it roughly look like" but not "does this size and corner feel right on a
+  page" — the question the preview exists for. The form is full width again
+  as a result, and a dashed note at the top of the tab says where the
+  preview lives.
+
+  As of 2026-09-09 the real embeddable bundle exists
+  (`apps/widgetgw/assets/widget.js`, served by `WidgetJsView` at
+  `${WIDGET_SCRIPT_BASE_URL}/widget.js` — the embed script referenced no
+  actual JS anywhere before this, so an embedded bot never rendered on a
+  customer site). The panel's 340x480 size and its shadow are no longer a
+  config choice at all (`widget_panel_size`/`widget_shadow` were removed from
+  `theme_config` the same commit) — `PANEL_WIDTH`/`PANEL_HEIGHT`/
+  `PANEL_SHADOW`/`LAUNCHER_SHADOW` mirror the bundle's own literal CSS values
+  exactly, not an approximation. The header shows `display_name` (falling
+  back to `Agent.name`), matching `WidgetConfigView`'s own fallback.
+
+  It stays in sync via `useWatch` on the whole form, so every theme/behavior
+  field (including ones edited outside the theme section, like the greeting,
+  disclosure text, and suggested questions) reflects immediately with no
+  save. The portal matters: the draft card's own overflow and sticky context
+  would otherwise clip a `fixed` child.
+
+  This is still a reconstruction from the same theme/behavior values, not
+  the actual bundle rendered in an iframe — `position`/`launcher_shape`/
+  `mode` remain real config the preview reflects, though note the Sprint-1
+  bundle itself currently only implements `bottom_right`/`bottom_left`
+  (any other position falls back to `bottom_right` in the real widget) and
+  doesn't yet vary its launcher shape or color mode — a real, current gap in
+  `widget.js`, not something this preview should paper over by silently
+  degrading too. Unset colors fall back to the backend's own seeded starter
+  palette (`apps/agents/seed_data.py`) so a fresh agent's preview matches
+  what it will actually publish with. As of 2026-09-09 that seed is YB
+  Inspire's official brandbook v1.0 (Teal Inspire/Bleu pétrole/Bleu nuit on
+  white text, Work Sans, pill launcher, dark mode), replacing the earlier
+  placeholder palette; `WidgetPreview.tsx`'s `FALLBACK_COLORS`/font/launcher
+  fallbacks were updated to match. The brandbook's CTA yellow (`#F5E723`) has
+  no home in this schema since `colors.accent` was already dropped, a known
+  gap flagged in the backend's own seed comment, not reintroduced here.
 
   **Field descriptions**: every theme/behavior field (and `instructions`,
   the disclosure toggle, and the per-language localized-text fields) carries

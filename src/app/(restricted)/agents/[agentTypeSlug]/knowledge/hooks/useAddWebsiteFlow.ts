@@ -5,6 +5,7 @@ import { useQueryClient } from '@tanstack/react-query';
 
 import { useAuthMutation } from '@/hooks/useAuthMutation';
 import { applyApiError } from '@/lib/apiError';
+import type { WebsiteDiscoverSubmitValues } from '@/lib/schemas/knowledge';
 import {
   KNOWLEDGE_WEBSITE_DISCOVER_ENDPOINT,
   knowledgeSourcesListKey,
@@ -12,6 +13,31 @@ import {
 } from '@/services/knowledge';
 import type { ApiResponse } from '@/types/api';
 import type { CrawlJob, WebsiteDiscoverInput, WebsiteDiscoverResult } from '@/types/knowledge';
+
+/** `RHFStringListField`'s row shape back to the plain `string[]` the API wants. */
+function fromRows(rows: { value: string }[] | undefined): string[] {
+  return (rows ?? []).map((row) => row.value.trim()).filter(Boolean);
+}
+
+/**
+ * Assembles the form's flat scope fields into `scope_config`, omitting any
+ * key the operator left untouched so a default submission still posts
+ * `{ root_url }` alone with no behavior change from before this field
+ * existed. Returns `undefined` (not `{}`) when nothing was set, so the
+ * caller can spread it away entirely rather than posting an empty object.
+ */
+function buildScopeConfig(
+  values: WebsiteDiscoverSubmitValues
+): Record<string, unknown> | undefined {
+  const scope: Record<string, unknown> = {};
+  if (values.max_pages !== '' && values.max_pages !== undefined) scope.max_pages = values.max_pages;
+  if (values.max_depth !== '' && values.max_depth !== undefined) scope.max_depth = values.max_depth;
+  const includePaths = fromRows(values.include_paths);
+  const excludePaths = fromRows(values.exclude_paths);
+  if (includePaths.length) scope.include_paths = includePaths;
+  if (excludePaths.length) scope.exclude_paths = excludePaths;
+  return Object.keys(scope).length > 0 ? scope : undefined;
+}
 
 export type AddWebsiteStep =
   | 'form'
@@ -56,7 +82,12 @@ export function useAddWebsiteFlow(agentId: string, onCreated?: (sourceId: string
   }, []);
 
   const discover = useCallback(
-    async (input: WebsiteDiscoverInput) => {
+    async (values: WebsiteDiscoverSubmitValues) => {
+      const scope_config = buildScopeConfig(values);
+      const input: WebsiteDiscoverInput = {
+        root_url: values.root_url,
+        ...(scope_config && { scope_config }),
+      };
       try {
         const response = await discoverMutation.mutateAsync({
           url: KNOWLEDGE_WEBSITE_DISCOVER_ENDPOINT,

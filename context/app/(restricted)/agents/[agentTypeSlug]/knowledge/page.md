@@ -78,10 +78,44 @@ mutations, each invalidating the source list on success.
 state machine (`form → discovering → review → extracting → done`, plus a
 failure state per polling step):
 
-1. **form** — `root_url` only (`WebsiteDiscoverSerializer`'s one required
-   field), `POST /knowledge/website/discover/` (org-level). `onCreated` fires
-   here, not at the end of the flow, so a narrowed agent can see the source
-   before its own crawl-job read has to resolve it.
+1. **form** — `root_url` (`WebsiteDiscoverSerializer`'s only required field)
+   plus an "Advanced crawl options" `Collapsible`, default closed, for
+   `scope_config`: `max_pages`, `max_depth`, `include_paths`, `exclude_paths`.
+   These sit on the same `WebsiteDiscoverFormValues` as `root_url` but are
+   assembled into the nested `scope_config` object only at submit time, by
+   `useAddWebsiteFlow.ts`'s `buildScopeConfig` — an untouched advanced
+   section still posts exactly `{ root_url }`, unchanged from before this
+   field existed. `POST /knowledge/website/discover/` (org-level). `onCreated`
+   fires here, not at the end of the flow, so a narrowed agent can see the
+   source before its own crawl-job read has to resolve it.
+
+   `scope_config` was already accepted by this endpoint (a raw, unvalidated
+   `JSONField`) but silently ignored until the backend's `822e91c` (harden
+   website-crawling pipeline) made it real. Its keys, mirrored from
+   `apps/knowledge/services/crawl_scope.py`:
+   - `max_pages` (positive int): narrows, never exceeds, a plan-tier ceiling.
+   - `max_depth` (non-negative int, default 3 server-side): `0` is a real,
+     meaningful value (seed page only, follow no links), not something to
+     fall back away from. `websiteDiscoverSchema` accepts `max_pages`/
+     `max_depth` as `'' | number` rather than a bare coerced number, because
+     a native number input reports "untouched" as `''`, and
+     `z.coerce.number()` alone would turn that into `0` and silently submit
+     it — reintroducing at the form layer the exact bug class this backend
+     commit fixed server-side.
+   - `include_paths`/`exclude_paths` (`string[]`, via `RHFStringListField`,
+     `{value:string}[]` at the form layer): matching is by path-segment
+     boundary (`/blog` covers `/blog/post-1`, not `/blogger-signup`), stated
+     explicitly in the field description so an operator doesn't assume
+     substring matching.
+   - `render_js` is documented on the backend but deliberately inert (no
+     headless-browser support yet) — no UI field for it, since a control
+     that does nothing is worse than no control.
+
+   The API performs no per-key validation on `scope_config` itself (it's
+   parsed only at crawl time), so `websiteDiscoverSchema` adds its own
+   sanity caps (`max_pages` ≤ 1000, `max_depth` ≤ 10, path lists ≤ 20 items)
+   purely to stop obviously broken input the server won't reject on its own.
+
 2. **discovering** — `useCrawlJob.ts` polls
    `GET .../knowledge/crawl-jobs/{id}/` every 3s until the job leaves
    `pending`/`running`. The website source id needed for every later step
