@@ -87,13 +87,25 @@ viewport, and wrapping them would push the panel below the fold on mobile.
   history + request (`GET`/`POST /api/v1/settings/data/export/`) and delete
   (`POST .../data/delete/` emails a confirmation link).
 
-### The bootstrap endpoint is deliberately unused
+### The bootstrap endpoint prefetches, but never replaces, the per-tab reads (2026-09-09)
 
-`GET /api/v1/settings/bootstrap/` returns every tab in one response, and the
-frontend does not use it. Each tab owns its own cache entry and refetches only
-itself after its own `PATCH`; collapsing the reads would mean invalidating all
-six whenever any one is saved. Worth revisiting if this page ever paints every
-tab at once instead of one at a time.
+`GET /api/v1/settings/bootstrap/` returns every tab except Domains in one
+response. `useOrganizationSettingsBootstrap(organizationId)` (called once from
+`OrganizationSettingsView`, regardless of which tab is active) fetches it and
+seeds each tab's own query cache — `SETTINGS_BRAND_KEY`, `SETTINGS_PROFILE_KEY`,
+`SETTINGS_FEATURES_KEY`, `SETTINGS_AI_PREFERENCES_KEY`, `SETTINGS_SECURITY_KEY`,
+plus `organizationDetailKey` (the same cache `useOrganizationPlan` reads for
+plan tier/seat limit) — via `queryClient.setQueryData`, only when that key has
+no entry yet (`existing ?? …`), so it never clobbers a fresher value a tab's
+own `PATCH`/refetch already wrote.
+
+Each tab's own hook is otherwise untouched: it still reads and writes through
+its own endpoint and key, and still invalidates only that one key on save.
+Radix `Tabs.Content` unmounts inactive panels by default, so before this
+change opening Settings fired one request per tab as each was clicked; now
+the bootstrap call fires once on mount and every tab after the first renders
+from cache with no additional round trip. Domains stays a separate,
+un-prefetched fetch — the bootstrap response deliberately excludes it.
 
 All of these gate their editable controls on `organization:manage`, matching
 the General tab's existing convention; Data's export/delete actions gate on the

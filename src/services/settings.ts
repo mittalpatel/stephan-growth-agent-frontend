@@ -9,6 +9,14 @@ export const SETTINGS_PROFILE_ENDPOINT = '/api/v1/settings/profile/';
 export const SETTINGS_FEATURES_ENDPOINT = '/api/v1/settings/features/';
 export const SETTINGS_AI_PREFERENCES_ENDPOINT = '/api/v1/settings/ai-preferences/';
 export const SETTINGS_SECURITY_ENDPOINT = '/api/v1/settings/security/';
+/**
+ * Every settings tab except domains, in one response (backend 2026-09-06's
+ * `OrganizationSettingsBootstrapView`). Used only to prefetch and seed the
+ * individual tabs' own query caches on mount — each tab still reads/writes
+ * through its own endpoint and key above, so a save only invalidates the one
+ * tab it touched rather than this combined shape.
+ */
+export const SETTINGS_BOOTSTRAP_ENDPOINT = '/api/v1/settings/bootstrap/';
 
 export const SETTINGS_DOMAINS_ENDPOINT = '/api/v1/settings/domains/';
 export const settingsDomainDetailEndpoint = (id: string) => `${SETTINGS_DOMAINS_ENDPOINT}${id}/`;
@@ -30,3 +38,4 @@ export const SETTINGS_DOMAINS_KEY = 'settings-domains';
 export const SETTINGS_AI_PREFERENCES_KEY = 'settings-ai-preferences';
 export const SETTINGS_SECURITY_KEY = 'settings-security';
 export const SETTINGS_DATA_EXPORT_KEY = 'settings-data-export';
+export const SETTINGS_BOOTSTRAP_KEY = 'settings-bootstrap';

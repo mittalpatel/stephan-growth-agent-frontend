@@ -8,6 +8,7 @@ import {
   useOrganizationSettingsForm,
   type OrganizationSettingsFormValues,
 } from '../hooks/useOrganizationSettingsForm';
+import { useOrganizationSettingsBootstrap } from '../hooks/useOrganizationSettingsBootstrap';
 import { useTransferOwnershipForm } from '../hooks/useTransferOwnershipForm';
 import { useOrganizationPlan } from '../hooks/useOrganizationPlan';
 import { RHFSelectField, RHFTextField } from '@/components/common/form';
@@ -31,6 +32,7 @@ export default function OrganizationSettingsView() {
   const [confirmingTransfer, setConfirmingTransfer] = useState(false);
   const { organization, form, isPending, submit, deleteOrganization } =
     useOrganizationSettingsForm();
+  useOrganizationSettingsBootstrap(organization?.id);
   const {
     members,
     form: transferForm,

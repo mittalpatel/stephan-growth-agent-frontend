@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 
 import {
   SETTINGS_AI_PREFERENCES_ENDPOINT,
+  SETTINGS_BOOTSTRAP_ENDPOINT,
   SETTINGS_BRAND_ENDPOINT,
   SETTINGS_DATA_DELETE_CONFIRM_ENDPOINT,
   SETTINGS_DATA_DELETE_ENDPOINT,
@@ -33,6 +34,7 @@ describe('organization settings endpoints', () => {
       SETTINGS_DATA_EXPORT_ENDPOINT,
       SETTINGS_DATA_DELETE_ENDPOINT,
       SETTINGS_DATA_DELETE_CONFIRM_ENDPOINT,
+      SETTINGS_BOOTSTRAP_ENDPOINT,
     ]) {
       expect(url.startsWith('/api/v1/settings/')).toBe(true);
       expect(url.endsWith('/')).toBe(true);
