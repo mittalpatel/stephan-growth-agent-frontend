@@ -29,12 +29,21 @@ export type IndexVersionStatus = 'building' | 'ready' | 'failed';
  * 2026-09-06 change a source belongs to the organization, and an agent
  * narrows to a subset of them via `AgentKnowledgeTarget` instead of owning
  * any.
+ *
+ * `id` is the `KnowledgeSource` id — distinct from `website_source_id`
+ * (backend 2026-09-10), which is `WebsiteSource.id` behind a plain
+ * `OneToOneField`, not a shared primary key. Every website-scoped route
+ * (`discovered-urls/`, `extract/`, `recrawl/`, `recrawl-pages/`) is keyed on
+ * the latter, so any action on an already-listed row must use
+ * `website_source_id`, never `id`. `null` for a `pdf` source, which has no
+ * `WebsiteSource` row at all.
  */
 export type KnowledgeSourceListItem = {
   id: string;
   source_type: KnowledgeSourceType;
   status: KnowledgeSourceStatus;
   display_name: string;
+  website_source_id: string | null;
   created_at: string;
   updated_at: string;
 };

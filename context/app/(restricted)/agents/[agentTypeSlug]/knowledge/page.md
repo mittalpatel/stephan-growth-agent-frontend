@@ -107,6 +107,23 @@ the whole-site recrawl button. `removed_count`/`requeued_count` are on
 `CrawlJob` count is rendered anywhere in this feature today, so this follows
 the existing pattern of tracking the job by polling status only.
 
+### `id` vs `website_source_id` (backend 2026-09-10 fix)
+
+`KnowledgeSourceListItem.id` is the `KnowledgeSource` id, but every
+website-scoped route (`discovered-urls/`, `extract/`, `recrawl/`,
+`recrawl-pages/`) is keyed on `WebsiteSource.id` instead — a distinct UUID
+behind a plain `OneToOneField`, not a shared primary key. Until 2026-09-10
+`GET /knowledge/` never returned that second id at all, so the "Recrawl" and
+"Manage pages" row actions were calling those routes with the wrong id
+(404). Fixed by consuming the backend's new `website_source_id` field
+(`null` for `pdf` sources): `KnowledgeSourcesTable` now derives a local
+`websiteSourceId` per row and gates both actions' visibility on it being
+non-null, passing it (not `source.id`) to `useKnowledgeSourceActions.recrawl`
+and into `KnowledgeSourcePagesPanel`, which in turn passes it (not
+`source.id`) to `useKnowledgeSourcePages`. The add-website wizard was never
+affected by this bug — it gets the correct id from `CrawlJob.website_source`
+in the discovery-job response, never from the list endpoint.
+
 ## Add website flow
 
 `AddWebsiteDialog` is a five-step dialog driven by `useAddWebsiteFlow.ts`'s

@@ -72,62 +72,65 @@ export function KnowledgeSourcesTable({ sources }: Props) {
           </tr>
         </thead>
         <DataTableBody>
-          {sources.map((source) => (
-            <DataTableRow key={source.id}>
-              <td className={`${dataTableTd} font-medium`}>{source.display_name}</td>
-              <td className={dataTableTd}>{t.knowledge.sourceType[source.source_type]}</td>
-              <td className={dataTableTd}>
-                <StatusBadge
-                  label={t.knowledge.status[source.status]}
-                  tone={STATUS_TONE[source.status]}
-                />
-              </td>
-              <td className={`${dataTableTd} text-muted-foreground hidden text-sm md:table-cell`}>
-                {formatDate(source.updated_at)}
-              </td>
-              <td className={dataTableTd}>
-                {(canManage || canExecute) && (
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="icon" className="size-8">
-                        <MoreHorizontal className="size-4" aria-hidden />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      {canManage && (
-                        <DropdownMenuItem onClick={() => setRenameTarget(source)}>
-                          {t.knowledge.actions.edit}
-                        </DropdownMenuItem>
-                      )}
-                      {canExecute && (
-                        <DropdownMenuItem onClick={() => reprocess(source.id)}>
-                          {t.knowledge.actions.reprocess}
-                        </DropdownMenuItem>
-                      )}
-                      {canExecute && source.source_type === 'website' && (
-                        <DropdownMenuItem onClick={() => recrawl(source.id)}>
-                          {t.knowledge.actions.recrawl}
-                        </DropdownMenuItem>
-                      )}
-                      {canExecute && source.source_type === 'website' && (
-                        <DropdownMenuItem onClick={() => setPagesTarget(source)}>
-                          {t.knowledge.actions.managePages}
-                        </DropdownMenuItem>
-                      )}
-                      {canManage && (
-                        <DropdownMenuItem
-                          variant="destructive"
-                          onClick={() => setDeleteTarget(source)}
-                        >
-                          {t.knowledge.actions.delete}
-                        </DropdownMenuItem>
-                      )}
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                )}
-              </td>
-            </DataTableRow>
-          ))}
+          {sources.map((source) => {
+            const websiteSourceId = source.website_source_id;
+            return (
+              <DataTableRow key={source.id}>
+                <td className={`${dataTableTd} font-medium`}>{source.display_name}</td>
+                <td className={dataTableTd}>{t.knowledge.sourceType[source.source_type]}</td>
+                <td className={dataTableTd}>
+                  <StatusBadge
+                    label={t.knowledge.status[source.status]}
+                    tone={STATUS_TONE[source.status]}
+                  />
+                </td>
+                <td className={`${dataTableTd} text-muted-foreground hidden text-sm md:table-cell`}>
+                  {formatDate(source.updated_at)}
+                </td>
+                <td className={dataTableTd}>
+                  {(canManage || canExecute) && (
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="icon" className="size-8">
+                          <MoreHorizontal className="size-4" aria-hidden />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        {canManage && (
+                          <DropdownMenuItem onClick={() => setRenameTarget(source)}>
+                            {t.knowledge.actions.edit}
+                          </DropdownMenuItem>
+                        )}
+                        {canExecute && (
+                          <DropdownMenuItem onClick={() => reprocess(source.id)}>
+                            {t.knowledge.actions.reprocess}
+                          </DropdownMenuItem>
+                        )}
+                        {canExecute && websiteSourceId && (
+                          <DropdownMenuItem onClick={() => recrawl(websiteSourceId)}>
+                            {t.knowledge.actions.recrawl}
+                          </DropdownMenuItem>
+                        )}
+                        {canExecute && websiteSourceId && (
+                          <DropdownMenuItem onClick={() => setPagesTarget(source)}>
+                            {t.knowledge.actions.managePages}
+                          </DropdownMenuItem>
+                        )}
+                        {canManage && (
+                          <DropdownMenuItem
+                            variant="destructive"
+                            onClick={() => setDeleteTarget(source)}
+                          >
+                            {t.knowledge.actions.delete}
+                          </DropdownMenuItem>
+                        )}
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  )}
+                </td>
+              </DataTableRow>
+            );
+          })}
         </DataTableBody>
       </DataTable>
 

@@ -35,7 +35,7 @@ type Props = Readonly<{
  */
 export function KnowledgeSourcePagesPanel({ source, onOpenChange }: Props) {
   const { pages, isLoading, isError, recrawlSelected, isRecrawling } = useKnowledgeSourcePages(
-    source?.id ?? null
+    source?.website_source_id ?? null
   );
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
