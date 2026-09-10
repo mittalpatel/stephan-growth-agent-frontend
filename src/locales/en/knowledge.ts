@@ -40,6 +40,8 @@ export const knowledge = {
     delete: 'Delete source',
     reprocess: 'Reprocess',
     recrawl: 'Recrawl',
+    managePages: 'Manage pages',
+    recrawlSelected: 'Recrawl selected pages',
   },
   rename: {
     title: 'Rename source',
@@ -60,6 +62,7 @@ export const knowledge = {
     reprocessStarted: 'Reprocessing started.',
     recrawlStarted: 'Recrawl started.',
     recrawlAlreadyRunning: 'A discovery run is already in progress for this source.',
+    recrawlPagesStarted: 'Recrawl started for the selected pages.',
   },
   addWebsite: {
     title: 'Add a website',
@@ -148,6 +151,17 @@ export const knowledge = {
     truncated: 'Showing the first {shown} of {total} sources.',
     saved: 'Knowledge scope updated.',
     error: 'Knowledge scope could not be loaded.',
+  },
+  pages: {
+    title: 'Pages',
+    description: 'The pages this source has crawled for "{name}".',
+    errorTitle: 'Could not load pages',
+    errorDescription: 'Something went wrong while loading these pages. Please try again.',
+    empty: 'No pages have been crawled yet.',
+    lastChangedLabel: 'Last changed {when}',
+    neverChanged: 'never',
+    httpStatusLabel: 'HTTP {status}',
+    selectedCount: '{count} selected',
   },
   health: {
     title: 'Knowledge health',

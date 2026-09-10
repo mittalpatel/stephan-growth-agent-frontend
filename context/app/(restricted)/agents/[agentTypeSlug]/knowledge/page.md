@@ -69,8 +69,43 @@ choice; if the view ever adds the route, this can switch to fetching like
 `KnowledgeSourcesTable` renders name/type/status/updated, with a per-row
 `DropdownMenu` for rename (`knowledge:manage`), reprocess
 (`knowledge:execute`), recrawl (website sources only, `knowledge:execute`),
-and delete (`knowledge:manage`) — `useKnowledgeSourceActions.ts` owns these
-mutations, each invalidating the source list on success.
+"Manage pages" (website sources only, `knowledge:execute` — see below), and
+delete (`knowledge:manage`) — `useKnowledgeSourceActions.ts` owns the
+rename/reprocess/delete/recrawl mutations, each invalidating the source list
+on success.
+
+### Per-page management and selective recrawl (backend 2026-09-09)
+
+The backend's recrawl pipeline fix (fixing a false-positive page-removal bug
+and a discovery/extraction race, `apps/knowledge`) also shipped an
+API surface the frontend had nothing to consume it with: a
+`POST /knowledge/website/{id}/recrawl-pages/` endpoint (`{page_ids}`,
+1-200 ids, 202/200 duality like the whole-site recrawl) and three new
+`DiscoveredUrl` fields — `content_changed_at`, `http_status`,
+`content_hash` — plus `removed_count`/`requeued_count` on `CrawlJob`.
+
+Until now there was no way to recrawl anything narrower than the whole site,
+and no persistent view of an already-extracted source's pages at all — the
+only page list, `useDiscoveredUrls.ts` + `DiscoveredUrlsReview`, exists
+solely inside the one-time Add Website wizard's pre-extraction review step.
+
+`KnowledgeSourcePagesPanel.tsx` (opened via the table row's "Manage pages")
+plus `useKnowledgeSourcePages.ts` add that missing view: a `Sheet` listing
+the source's pages (reusing the same `GET .../discovered-urls/` read and
+`discoveredUrlsKey` the wizard's review step uses — same data, just readable
+outside the wizard now), each row showing when its content last changed
+(`content_changed_at`, relative time) and its last HTTP status (a danger
+badge at 4xx/5xx). `content_hash` is on the type for future dedup/debugging
+use but is not surfaced in the UI — it's not something an operator needs to
+see day to day. Checking a subset of pages and clicking "Recrawl selected
+pages" calls `recrawlSelected`, which posts to `websiteRecrawlPagesEndpoint`
+and invalidates the same `discoveredUrlsKey` on success; the "already
+running" 200 case reuses the identical `response.message ?? fallback` toast
+pattern `useKnowledgeSourceActions.recrawlMutation` already established for
+the whole-site recrawl button. `removed_count`/`requeued_count` are on
+`CrawlJob` for completeness but have no dedicated display yet — no
+`CrawlJob` count is rendered anywhere in this feature today, so this follows
+the existing pattern of tracking the job by polling status only.
 
 ## Add website flow
 

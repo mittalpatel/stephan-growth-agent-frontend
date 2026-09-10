@@ -35,6 +35,7 @@ import { t } from '@/locales';
 import type { KnowledgeSourceListItem, KnowledgeSourceStatus } from '@/types/knowledge';
 
 import { useKnowledgeSourceActions } from '../hooks/useKnowledgeSourceActions';
+import { KnowledgeSourcePagesPanel } from './KnowledgeSourcePagesPanel';
 import { RenameSourceDialog } from './RenameSourceDialog';
 
 const STATUS_TONE: Record<KnowledgeSourceStatus, StatusTone> = {
@@ -54,6 +55,7 @@ export function KnowledgeSourcesTable({ sources }: Props) {
   const { remove, reprocess, recrawl } = useKnowledgeSourceActions();
   const [renameTarget, setRenameTarget] = useState<KnowledgeSourceListItem | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<KnowledgeSourceListItem | null>(null);
+  const [pagesTarget, setPagesTarget] = useState<KnowledgeSourceListItem | null>(null);
 
   return (
     <>
@@ -107,6 +109,11 @@ export function KnowledgeSourcesTable({ sources }: Props) {
                           {t.knowledge.actions.recrawl}
                         </DropdownMenuItem>
                       )}
+                      {canExecute && source.source_type === 'website' && (
+                        <DropdownMenuItem onClick={() => setPagesTarget(source)}>
+                          {t.knowledge.actions.managePages}
+                        </DropdownMenuItem>
+                      )}
                       {canManage && (
                         <DropdownMenuItem
                           variant="destructive"
@@ -127,6 +134,11 @@ export function KnowledgeSourcesTable({ sources }: Props) {
       <RenameSourceDialog
         source={renameTarget}
         onOpenChange={(open) => !open && setRenameTarget(null)}
+      />
+
+      <KnowledgeSourcePagesPanel
+        source={pagesTarget}
+        onOpenChange={(open) => !open && setPagesTarget(null)}
       />
 
       <AlertDialog

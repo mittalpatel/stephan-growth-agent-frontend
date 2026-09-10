@@ -65,7 +65,13 @@ export type WebsiteDiscoverResult = {
   crawl_job: CrawlJob;
 };
 
-/** Row shape from `GET /knowledge/website/{id}/discovered-urls/`. */
+/**
+ * Row shape from `GET /knowledge/website/{id}/discovered-urls/`.
+ *
+ * `content_changed_at`, `http_status`, `content_hash` (backend
+ * 2026-09-09's recrawl pipeline fix) let a page-management view show why a
+ * page might need recrawling without triggering one blind.
+ */
 export type DiscoveredUrl = {
   id: string;
   url: string;
@@ -75,6 +81,9 @@ export type DiscoveredUrl = {
   status: PageStatus;
   error_message: string;
   fetched_at: string | null;
+  content_changed_at: string | null;
+  http_status: number | null;
+  content_hash: string | null;
 };
 
 /** Body for `PATCH /knowledge/website/{id}/discovered-urls/`. */
@@ -85,7 +94,15 @@ export type DiscoveredUrlBulkActionInput = Partial<{
   deselect_ids: string[];
 }>;
 
-/** `CrawlJobSerializer` — one discovery or extraction run. */
+/** Body for `POST /knowledge/website/{id}/recrawl-pages/`. */
+export type RecrawlPagesInput = { page_ids: string[] };
+
+/**
+ * `CrawlJobSerializer` — one discovery or extraction run.
+ *
+ * `removed_count`/`requeued_count` (backend 2026-09-09) surface the recrawl
+ * pipeline's page-removal-detection and selective-recrawl outcomes.
+ */
 export type CrawlJob = {
   id: string;
   website_source: string;
@@ -95,6 +112,8 @@ export type CrawlJob = {
   included_count: number;
   excluded_count: number;
   failed_count: number;
+  removed_count: number;
+  requeued_count: number;
   error_summary: string;
   created_at: string;
   updated_at: string;

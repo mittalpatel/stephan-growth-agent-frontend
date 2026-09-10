@@ -44,6 +44,8 @@ export const websiteExtractEndpoint = (websiteSourceId: string) =>
   `/api/v1/knowledge/website/${websiteSourceId}/extract/`;
 export const websiteRecrawlEndpoint = (websiteSourceId: string) =>
   `/api/v1/knowledge/website/${websiteSourceId}/recrawl/`;
+export const websiteRecrawlPagesEndpoint = (websiteSourceId: string) =>
+  `/api/v1/knowledge/website/${websiteSourceId}/recrawl-pages/`;
 
 export const KNOWLEDGE_SOURCES_LIST_KEY = 'knowledge-sources-list';
 export const INDEX_VERSIONS_LIST_KEY = 'index-versions-list';

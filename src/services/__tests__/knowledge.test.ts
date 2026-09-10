@@ -20,6 +20,7 @@ import {
   websiteDiscoveredUrlsEndpoint,
   websiteExtractEndpoint,
   websiteRecrawlEndpoint,
+  websiteRecrawlPagesEndpoint,
 } from '../knowledge';
 
 const AGENT_ID = '0c2f6a1e-1111-4a2b-8c3d-4e5f60718293';
@@ -81,6 +82,9 @@ describe('knowledge endpoints', () => {
     );
     expect(websiteRecrawlEndpoint(WEBSITE_SOURCE_ID)).toBe(
       `/api/v1/knowledge/website/${WEBSITE_SOURCE_ID}/recrawl/`
+    );
+    expect(websiteRecrawlPagesEndpoint(WEBSITE_SOURCE_ID)).toBe(
+      `/api/v1/knowledge/website/${WEBSITE_SOURCE_ID}/recrawl-pages/`
     );
   });
 
