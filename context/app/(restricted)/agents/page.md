@@ -223,16 +223,60 @@ role.
 exists because nothing previously told an operator what order to do things
 in to get a widget live: publish never mentioned domains or keys, and a
 brand-new unconfigured agent looked identical to a fully live one across all
-eight tabs. It shows four steps computed from data already available —
+eight tabs. Its steps are computed from data already available —
 `agent.draft_version !== null`, `agent.published_version !== null`, and
-`useAgentReadiness`'s domain/key presence checks (a small read-only hook,
-deliberately not the Settings tab's own `useAgentDomains`/
+`useAgentReadiness`'s knowledge/domain/key presence checks (a small read-only
+hook, deliberately not the Settings tab's own `useAgentDomains`/
 `useAgentDeploymentKeys`, which carry mutations this checklist has no
-business triggering) — and each unfinished step's "Go" button calls the same
-`setTab` the header's Configure button already used. Collapses to a
-one-line "ready" banner once all four are done. `useAgentReadiness` shares
-query keys (`agentDomainsKey`/`agentKeysKey`) with the Settings-tab hooks, so
-visiting either place primes the other's cache for free.
+business triggering) — and each unfinished step's "Go" button routes through
+the detail view's `requestTab`, the same path the header's Configure button
+uses. Collapses to a one-line "ready" banner once all are done.
+`useAgentReadiness` shares query keys (`agentDomainsKey`/`agentKeysKey`, plus
+the knowledge tab's `useAllKnowledgeSources`) with those hooks, so visiting
+either place primes the other's cache for free.
+
+**"Add knowledge" step (2026-09-10).** The list originally went draft →
+publish → domain → embed, with no mention of knowledge. These agents answer
+strictly from retrieved sources, so an operator who followed the checklist to
+completion got a widget that embedded correctly, reported itself healthy, and
+fell back on every question. It sits before "publish" because a published
+version with nothing to retrieve is the failure being prevented, not a later
+refinement. The check is org-wide (`some(status === 'ready')`) rather than
+resolved through this agent's `AgentKnowledgeTarget` narrowing, matching the
+backend's own fallback that no target rows means the agent reads every shared
+source; a narrowed agent pointed only at not-yet-ready sources reads as done
+here, which is the acceptable direction to be wrong for a check whose job is
+to catch "no knowledge at all". Hidden entirely without `knowledge:view`,
+since such a reader can neither verify nor act on it.
+
+Note that a website source is marked `ready` by the backend as soon as
+_discovery_ finishes (`_run_discovery` promotes it from `pending` once
+`discovered_count` is non-zero), before any page has been extracted — so this
+step can tick while the underlying pages are still unextracted. Per-page truth
+lives in the knowledge tab's pages panel, which labels that state "Not
+extracted yet".
+
+### Unsaved draft changes (2026-09-10)
+
+Radix unmounts inactive `TabsContent`, so switching away from Draft destroyed
+every unsaved field with no warning — and the natural next step after writing
+instructions is the Knowledge tab, with the checklist above actively sending
+people between tabs. `DraftForm` reports `formState.isDirty` up through
+`AgentDraftTab`'s `onDirtyChange`, `AgentDetailView` holds it as `isDraftDirty`,
+and `requestTab` intercepts any switch away from a dirty Draft to confirm
+first (`pendingTab` holds the destination until the user chooses). Every tab
+entry point goes through `requestTab` rather than `setTab` — the `Tabs`
+`onValueChange`, the checklist's "Go", and the header's Configure button — so
+there is no path around the guard. `useBeforeUnloadWarning` covers the leaves
+the app can't intercept (refresh, tab close, back button); it deliberately
+takes no message, since browsers ignore custom text and show their own.
+
+`useAgentDraftForm.submit` now calls `form.reset(form.getValues())` after a
+successful save. `handleSubmit` leaves `isDirty` set, which would strand the
+warning after the save it belongs to; re-baselining on the submitted values
+rather than waiting for the invalidated refetch keeps that independent of
+TanStack's structural sharing, which can return the identical object and never
+re-run the draft-load reset effect.
 
 ### Draft form progressive disclosure (2026-09-09)
 

@@ -383,6 +383,12 @@ export function useAgentDraftForm(
         },
       });
       toast.success(t.agents.toast.draftSaved);
+      // `handleSubmit` leaves `isDirty` set, and the unsaved-changes guard
+      // reads it — without this the warning outlives the save it belongs to.
+      // Re-baselining on the submitted values rather than waiting for the
+      // refetch keeps that independent of TanStack's structural sharing, which
+      // can hand back the identical object and never re-run the reset effect.
+      form.reset(form.getValues());
       void queryClient.invalidateQueries({ queryKey: agentDraftKey(agentId) });
     } catch (error) {
       bindContrastErrors(error, values, form.setError);

@@ -231,13 +231,14 @@ export const agents = {
     upgrade: 'Upgrade',
     checklist: {
       title: 'Get your widget live',
-      description: 'Four steps to have this agent answering visitors on your site.',
+      description: 'What is left before this agent can answer visitors on your site.',
       stepDraft: 'Edit your draft',
+      stepKnowledge: 'Add knowledge for it to answer from',
       stepPublish: 'Publish it',
       stepDomain: 'Allow your website domain',
       stepEmbed: 'Get your embed code',
       goTo: 'Go',
-      allDone: 'All set — this agent is ready to embed on your site.',
+      allDone: 'All set. This agent is ready to embed on your site.',
     },
     tabs: {
       overview: 'Overview',
@@ -430,6 +431,13 @@ export const agents = {
       configMustBeObject: 'Enter a valid JSON object, e.g. {}',
       triggerPhraseInvalid: '"trigger_phrases" must be a list of non-empty strings.',
       save: 'Save draft',
+      saving: 'Saving…',
+      unsavedChanges: 'You have unsaved changes.',
+      leaveConfirmTitle: 'Leave without saving?',
+      leaveConfirmDescription:
+        'Your draft has changes that have not been saved yet. Leaving this tab discards them.',
+      leaveConfirmStay: 'Stay here',
+      leaveConfirmDiscard: 'Discard changes',
       saveBlockedByContrast:
         'Fix the failing color contrast above before saving. The server rejects a save with any of these colors as they are.',
       loading: 'Loading draft…',

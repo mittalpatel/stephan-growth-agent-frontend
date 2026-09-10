@@ -9,6 +9,16 @@ import { ConversationsListView } from '@/app/(restricted)/conversations/componen
 import { LeadsListView } from '@/app/(restricted)/leads/components/LeadsListView';
 import { EmptyState } from '@/components/common/EmptyState';
 import { StatusBadge, type StatusTone } from '@/components/common/StatusBadge';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
@@ -62,6 +72,22 @@ export function AgentDetailView({ agentTypeSlug }: Props) {
      the reference's header does. Every other tab switch still goes through
      Radix untouched. */
   const [tab, setTab] = useState('overview');
+  /* Radix unmounts the inactive tab's content, so leaving Draft with edits in
+     flight discards them silently. The draft form reports its dirty state up
+     here so the switch can be confirmed first — the natural next step after
+     writing instructions is the Knowledge tab, and the checklist above sends
+     people between tabs by design, so this was easy to hit. */
+  const [isDraftDirty, setIsDraftDirty] = useState(false);
+  const [pendingTab, setPendingTab] = useState<string | null>(null);
+
+  const requestTab = (next: string) => {
+    if (tab === 'draft' && next !== 'draft' && isDraftDirty) {
+      setPendingTab(next);
+      return;
+    }
+    setTab(next);
+  };
+
   const canViewKnowledge = can('knowledge', 'view');
   const canViewConversations = can('conversation', 'view');
   const canViewLeads = can('lead', 'view');
@@ -151,7 +177,7 @@ export function AgentDetailView({ agentTypeSlug }: Props) {
           </div>
 
           <div className="flex shrink-0 items-center gap-2">
-            <Button variant="outline" size="sm" onClick={() => setTab('settings')}>
+            <Button variant="outline" size="sm" onClick={() => requestTab('settings')}>
               <Settings2 aria-hidden />
               {t.agents.detail.configure}
             </Button>
@@ -165,9 +191,9 @@ export function AgentDetailView({ agentTypeSlug }: Props) {
         </div>
       </div>
 
-      {canManage && <AgentSetupChecklist agent={agent} onNavigate={setTab} />}
+      {canManage && <AgentSetupChecklist agent={agent} onNavigate={requestTab} />}
 
-      <Tabs value={tab} onValueChange={setTab}>
+      <Tabs value={tab} onValueChange={requestTab}>
         {/* Full-width underlined tab row, as the reference draws it. The
             triggers are `flex-none` because the stock `line` variant still
             inherits `flex-1`, which would stretch eight tabs across the page
@@ -214,7 +240,7 @@ export function AgentDetailView({ agentTypeSlug }: Props) {
           <AgentSettingsView agent={agent} />
         </TabsContent>
         <TabsContent value="draft">
-          <AgentDraftTab agent={agent} />
+          <AgentDraftTab agent={agent} onDirtyChange={setIsDraftDirty} />
         </TabsContent>
         <TabsContent value="publish">
           <AgentPublishTab agent={agent} />
@@ -223,6 +249,29 @@ export function AgentDetailView({ agentTypeSlug }: Props) {
           <AgentTestTab agent={agent} />
         </TabsContent>
       </Tabs>
+
+      <AlertDialog open={pendingTab !== null} onOpenChange={() => setPendingTab(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t.agents.detail.draft.leaveConfirmTitle}</AlertDialogTitle>
+            <AlertDialogDescription>
+              {t.agents.detail.draft.leaveConfirmDescription}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{t.agents.detail.draft.leaveConfirmStay}</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                if (pendingTab) setTab(pendingTab);
+                setPendingTab(null);
+                setIsDraftDirty(false);
+              }}
+            >
+              {t.agents.detail.draft.leaveConfirmDiscard}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

@@ -1,7 +1,7 @@
 'use client';
 
 import { ChevronDown } from 'lucide-react';
-import type { ReactNode } from 'react';
+import { useEffect, type ReactNode } from 'react';
 import { FormProvider, useFormContext, useWatch } from 'react-hook-form';
 import { toast } from 'sonner';
 
@@ -24,6 +24,7 @@ import {
   fieldLabelCls,
 } from '@/components/common/form/fieldStyles';
 import { Skeleton } from '@/components/ui/skeleton';
+import { useBeforeUnloadWarning } from '@/hooks/useBeforeUnloadWarning';
 import { CONTRAST_CHECKED_PAIRS, type ThemeColorKey } from '@/lib/constants/agentTheme';
 import { checkContrast, isValidHexColor } from '@/lib/contrast';
 import { format } from '@/lib/i18n';
@@ -35,7 +36,7 @@ import { useAgentDraftForm } from '../hooks/useAgentDraftForm';
 import { WidgetPreview } from './WidgetPreview';
 import type { AgentDraftFormValues } from '@/lib/schemas/agent';
 
-type Props = Readonly<{ agent: Agent }>;
+type Props = Readonly<{ agent: Agent; onDirtyChange?: (dirty: boolean) => void }>;
 
 function optionsFromMap(map: Record<string, string>): SelectFieldOption[] {
   return Object.entries(map).map(([value, label]) => ({ value, label }));
@@ -182,13 +183,33 @@ function DraftForm({
   agent,
   draft,
   canManage,
-}: Readonly<{ agent: Agent; draft: AgentVersionDetail; canManage: boolean }>) {
+  onDirtyChange,
+}: Readonly<{
+  agent: Agent;
+  draft: AgentVersionDetail;
+  canManage: boolean;
+  onDirtyChange?: (dirty: boolean) => void;
+}>) {
   const { form, isPending, submit, resetToOrgDefault, isResettingToOrgDefault } = useAgentDraftForm(
     agent.id,
     draft,
     agent.enabled_languages
   );
   const { register } = form;
+  const isDirty = form.formState.isDirty;
+
+  // This tab's content is unmounted by Radix the moment another tab is
+  // selected, taking every unsaved field with it, so the detail view has to
+  // know about pending edits from out here to be able to warn first.
+  useEffect(() => {
+    onDirtyChange?.(isDirty);
+  }, [isDirty, onDirtyChange]);
+
+  // Unmount is also how "discard" is carried out, so clear the flag on the way
+  // out or the warning would outlive the form it belongs to.
+  useEffect(() => () => onDirtyChange?.(false), [onDirtyChange]);
+
+  useBeforeUnloadWarning(isDirty);
   const watchedColors = useWatch({ control: form.control });
   const colorsByKey = Object.fromEntries(
     THEME_COLOR_FIELD_KEYS.map((key) => [
@@ -489,9 +510,16 @@ function DraftForm({
 
           {canManage && (
             <div>
-              <Button type="submit" disabled={isPending || hasContrastFailure}>
-                {t.agents.detail.draft.save}
-              </Button>
+              <div className="flex items-center gap-3">
+                <Button type="submit" disabled={isPending || hasContrastFailure}>
+                  {isPending ? t.agents.detail.draft.saving : t.agents.detail.draft.save}
+                </Button>
+                {isDirty && !isPending && (
+                  <p className="text-muted-foreground text-xs">
+                    {t.agents.detail.draft.unsavedChanges}
+                  </p>
+                )}
+              </div>
               {hasContrastFailure && (
                 <p className="text-error mt-2 text-xs">
                   {t.agents.detail.draft.saveBlockedByContrast}
@@ -507,7 +535,7 @@ function DraftForm({
   );
 }
 
-export function AgentDraftTab({ agent }: Props) {
+export function AgentDraftTab({ agent, onDirtyChange }: Props) {
   const { draft, isLoading, isNotFound, createDraft, isCreatingDraft } = useAgentDraft(agent.id);
   const { can } = usePermissions();
   const canManage = can('agent', 'manage');
@@ -542,7 +570,12 @@ export function AgentDraftTab({ agent }: Props) {
             )}
           </div>
         ) : (
-          <DraftForm agent={agent} draft={draft} canManage={canManage} />
+          <DraftForm
+            agent={agent}
+            draft={draft}
+            canManage={canManage}
+            onDirtyChange={onDirtyChange}
+          />
         )}
       </CardContent>
     </Card>

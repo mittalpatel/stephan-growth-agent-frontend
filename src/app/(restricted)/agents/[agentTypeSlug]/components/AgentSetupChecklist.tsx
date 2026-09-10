@@ -13,25 +13,44 @@ import { useAgentReadiness } from '../hooks/useAgentReadiness';
 type Props = Readonly<{ agent: Agent; onNavigate: (tab: string) => void }>;
 
 /**
- * The four steps a non-technical operator has no other way to discover are
- * required, in order, to see the widget live on their own site: edit the
- * draft, publish it, allow the site's domain, and generate an embed code.
- * Nothing before this pointed Draft/Publish at Settings, or Settings back at
- * Draft/Publish, so a user could publish and grab a snippet with no domain
- * ever allowed and get only a silent 403 in devtools.
+ * The steps a non-technical operator has no other way to discover are
+ * required, in order, to see a *useful* widget live on their own site: edit
+ * the draft, give it something to answer from, publish it, allow the site's
+ * domain, and generate an embed code. Nothing before this pointed
+ * Draft/Publish at Settings, or Settings back at Draft/Publish, so a user
+ * could publish and grab a snippet with no domain ever allowed and get only a
+ * silent 403 in devtools.
+ *
+ * The knowledge step was added 2026-09-10 for the same class of reason: these
+ * agents answer strictly from retrieved sources, so following this list to the
+ * end with no knowledge added produced a widget that embedded correctly,
+ * looked healthy, and fell back on every single question. It sits before
+ * "publish" because a published version with nothing to retrieve is the
+ * failure being prevented, not a later refinement.
  *
  * Reads `agent.draft_version`/`agent.published_version` (already on the
- * `Agent` the caller has) plus `useAgentReadiness` for the domain/key state,
- * and never mutates anything itself — each unfinished step just switches the
- * detail page's tab via `onNavigate`, reusing the same controlled `tab`
- * state the header's Configure button already drives.
+ * `Agent` the caller has) plus `useAgentReadiness` for the knowledge/domain/key
+ * state, and never mutates anything itself — each unfinished step just
+ * switches the detail page's tab via `onNavigate`, reusing the same controlled
+ * `tab` state the header's Configure button already drives.
  */
 export function AgentSetupChecklist({ agent, onNavigate }: Props) {
-  const { hasAllowedDomain, hasActiveKey, isLoading } = useAgentReadiness(agent.id);
+  const { canViewKnowledge, hasReadyKnowledge, hasAllowedDomain, hasActiveKey, isLoading } =
+    useAgentReadiness(agent.id);
   const copy = t.agents.detail.checklist;
 
   const steps = [
     { key: 'draft', label: copy.stepDraft, done: agent.draft_version !== null, tab: 'draft' },
+    ...(canViewKnowledge
+      ? [
+          {
+            key: 'knowledge',
+            label: copy.stepKnowledge,
+            done: hasReadyKnowledge,
+            tab: 'knowledge',
+          },
+        ]
+      : []),
     {
       key: 'publish',
       label: copy.stepPublish,
@@ -40,7 +59,7 @@ export function AgentSetupChecklist({ agent, onNavigate }: Props) {
     },
     { key: 'domain', label: copy.stepDomain, done: hasAllowedDomain, tab: 'settings' },
     { key: 'embed', label: copy.stepEmbed, done: hasActiveKey, tab: 'settings' },
-  ] as const;
+  ];
 
   if (isLoading) return null;
 
