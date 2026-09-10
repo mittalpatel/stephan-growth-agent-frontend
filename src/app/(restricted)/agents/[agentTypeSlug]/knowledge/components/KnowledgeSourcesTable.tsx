@@ -88,45 +88,52 @@ export function KnowledgeSourcesTable({ sources }: Props) {
                   {formatDate(source.updated_at)}
                 </td>
                 <td className={dataTableTd}>
-                  {(canManage || canExecute) && (
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="icon" className="size-8">
-                          <MoreHorizontal className="size-4" aria-hidden />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        {canManage && (
-                          <DropdownMenuItem onClick={() => setRenameTarget(source)}>
-                            {t.knowledge.actions.edit}
-                          </DropdownMenuItem>
-                        )}
-                        {canExecute && (
-                          <DropdownMenuItem onClick={() => reprocess(source.id)}>
-                            {t.knowledge.actions.reprocess}
-                          </DropdownMenuItem>
-                        )}
-                        {canExecute && websiteSourceId && (
-                          <DropdownMenuItem onClick={() => recrawl(websiteSourceId)}>
-                            {t.knowledge.actions.recrawl}
-                          </DropdownMenuItem>
-                        )}
-                        {canExecute && websiteSourceId && (
-                          <DropdownMenuItem onClick={() => setPagesTarget(source)}>
-                            {t.knowledge.actions.managePages}
-                          </DropdownMenuItem>
-                        )}
-                        {canManage && (
-                          <DropdownMenuItem
-                            variant="destructive"
-                            onClick={() => setDeleteTarget(source)}
-                          >
-                            {t.knowledge.actions.delete}
-                          </DropdownMenuItem>
-                        )}
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  )}
+                  <div className="flex items-center justify-end gap-1">
+                    {/* Promoted out of the overflow menu: this is the only way
+                        to see what a crawl actually fetched, and behind a
+                        three-dot menu it read as "there are no options here".
+                        Viewing needs no execute right either — the panel's own
+                        recrawl button is what's privileged, not the list. */}
+                    {websiteSourceId && (
+                      <Button variant="outline" size="sm" onClick={() => setPagesTarget(source)}>
+                        {t.knowledge.actions.viewPages}
+                      </Button>
+                    )}
+                    {(canManage || canExecute) && (
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="icon" className="size-8">
+                            <MoreHorizontal className="size-4" aria-hidden />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          {canManage && (
+                            <DropdownMenuItem onClick={() => setRenameTarget(source)}>
+                              {t.knowledge.actions.edit}
+                            </DropdownMenuItem>
+                          )}
+                          {canExecute && (
+                            <DropdownMenuItem onClick={() => reprocess(source.id)}>
+                              {t.knowledge.actions.reprocess}
+                            </DropdownMenuItem>
+                          )}
+                          {canExecute && websiteSourceId && (
+                            <DropdownMenuItem onClick={() => recrawl(websiteSourceId)}>
+                              {t.knowledge.actions.recrawl}
+                            </DropdownMenuItem>
+                          )}
+                          {canManage && (
+                            <DropdownMenuItem
+                              variant="destructive"
+                              onClick={() => setDeleteTarget(source)}
+                            >
+                              {t.knowledge.actions.delete}
+                            </DropdownMenuItem>
+                          )}
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    )}
+                  </div>
                 </td>
               </DataTableRow>
             );

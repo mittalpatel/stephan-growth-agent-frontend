@@ -71,6 +71,10 @@ export function useAddWebsiteFlow(agentId: string, onCreated?: (sourceId: string
   // what actually went wrong instead of only the generic copy. Empty when the
   // backend sent none.
   const [errorSummary, setErrorSummary] = useState('');
+  // The finished extraction job, so the done screen can report what actually
+  // happened (how many pages made it in, how many failed or were skipped)
+  // instead of a bare "queued for indexing" with no numbers.
+  const [extractionResult, setExtractionResult] = useState<CrawlJob | null>(null);
 
   const discoverMutation = useAuthMutation<
     ApiResponse<WebsiteDiscoverResult>,
@@ -84,6 +88,7 @@ export function useAddWebsiteFlow(agentId: string, onCreated?: (sourceId: string
     setDiscoverJobId(null);
     setExtractJobId(null);
     setErrorSummary('');
+    setExtractionResult(null);
   }, []);
 
   const discover = useCallback(
@@ -136,6 +141,7 @@ export function useAddWebsiteFlow(agentId: string, onCreated?: (sourceId: string
   const onExtractionFinished = useCallback(
     (job: CrawlJob) => {
       setErrorSummary(job.error_summary);
+      setExtractionResult(job);
       if (job.status === 'completed') {
         void queryClient.invalidateQueries({ queryKey: knowledgeSourcesListKey() });
         setStep('done');
@@ -152,6 +158,7 @@ export function useAddWebsiteFlow(agentId: string, onCreated?: (sourceId: string
     discoverJobId,
     extractJobId,
     errorSummary,
+    extractionResult,
     reset,
     discover,
     isDiscovering: discoverMutation.isPending,

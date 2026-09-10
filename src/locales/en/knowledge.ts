@@ -40,7 +40,7 @@ export const knowledge = {
     delete: 'Delete source',
     reprocess: 'Reprocess',
     recrawl: 'Recrawl',
-    managePages: 'Manage pages',
+    viewPages: 'View pages',
     recrawlSelected: 'Recrawl selected pages',
   },
   rename: {
@@ -104,11 +104,16 @@ export const knowledge = {
     },
     review: {
       title: 'Choose pages to include',
-      description: '{count} pages found. Select the ones you want this agent to learn from.',
       preselectedNotice:
         'Every page starts selected. Use "Deselect all" first if you only want a few, otherwise all selected pages are extracted.',
+      selectionHint: 'Only the selected pages are read and added to this agent.',
       selectAll: 'Select all',
       deselectAll: 'Deselect all',
+      selectMatching: 'Select matching',
+      deselectMatching: 'Deselect matching',
+      searchPlaceholder: 'Search these pages',
+      noMatches: 'No pages match "{query}".',
+      filterCount: 'Showing {shown} of {total} pages.',
       selectedCount: '{count} of {total} selected',
       extract: 'Extract selected pages',
       extractCount: {
@@ -118,9 +123,12 @@ export const knowledge = {
       slowWarning:
         'Extracting {count} pages takes a while: each one is fetched and read separately.',
       noPages: 'No pages were found on this site.',
+      addUrlHint: 'Missing a page? Add its address here.',
       addUrlPlaceholder: 'https://example.com/extra-page',
       addUrlAction: 'Add URL',
-      removeUrl: 'Remove',
+      removeUrlHint:
+        'Remove this page from the list. To keep it but skip it for now, clear its checkbox instead.',
+      removeUrlLabel: 'Remove {url} from the list',
     },
     extracting: {
       title: 'Extracting selected pages…',
@@ -143,7 +151,12 @@ export const knowledge = {
     },
     done: {
       title: 'Website added',
-      description: 'The selected pages have been queued for indexing.',
+      description: 'The pages below have been read and queued for indexing.',
+      indexedLabel: 'Pages added',
+      failedLabel: 'Pages that could not be read',
+      skippedLabel: 'Pages skipped as empty or duplicate',
+      wherePages:
+        'To see every page, or to recrawl some of them later, open this source from the list and choose "View pages".',
       close: 'Done',
     },
     close: 'Cancel',
@@ -181,6 +194,13 @@ export const knowledge = {
     errorTitle: 'Could not load pages',
     errorDescription: 'Something went wrong while loading these pages. Please try again.',
     empty: 'No pages have been crawled yet.',
+    summary: {
+      total: 'Pages found',
+      indexed: 'Added to this agent',
+      notExtracted: 'Not extracted yet',
+      failed: 'Could not be read',
+      skipped: 'Skipped as empty or duplicate',
+    },
     lastChangedLabel: 'Last changed {when}',
     neverChanged: 'never',
     httpStatusLabel: 'HTTP {status}',

@@ -66,13 +66,20 @@ values (`src/services/knowledge.ts`'s `KNOWLEDGE_SOURCE_STATUS_VALUES`/
 choice; if the view ever adds the route, this can switch to fetching like
 `useAgentsList` does.
 
-`KnowledgeSourcesTable` renders name/type/status/updated, with a per-row
-`DropdownMenu` for rename (`knowledge:manage`), reprocess
-(`knowledge:execute`), recrawl (website sources only, `knowledge:execute`),
-"Manage pages" (website sources only, `knowledge:execute` — see below), and
-delete (`knowledge:manage`) — `useKnowledgeSourceActions.ts` owns the
-rename/reprocess/delete/recrawl mutations, each invalidating the source list
-on success.
+`KnowledgeSourcesTable` renders name/type/status/updated. Each website row
+carries a visible "View pages" button, with rename (`knowledge:manage`),
+reprocess (`knowledge:execute`), recrawl (`knowledge:execute`) and delete
+(`knowledge:manage`) behind a per-row `DropdownMenu` —
+`useKnowledgeSourceActions.ts` owns the rename/reprocess/delete/recrawl
+mutations, each invalidating the source list on success.
+
+**"View pages" is promoted out of the overflow menu (2026-09-10)** and no
+longer requires `knowledge:execute`. It was the only route to what a crawl
+actually fetched, and behind a three-dot menu it read as there being no
+options at all. Viewing is not the privileged act here: the panel's own
+"Recrawl selected pages" footer and its row checkboxes are what
+`knowledge:execute` now gates, so a `knowledge:view` reader gets a plain,
+readable list instead of checkboxes wired to a button they never see.
 
 ### Per-page management and selective recrawl (backend 2026-09-09)
 
@@ -89,13 +96,17 @@ and no persistent view of an already-extracted source's pages at all — the
 only page list, `useDiscoveredUrls.ts` + `DiscoveredUrlsReview`, exists
 solely inside the one-time Add Website wizard's pre-extraction review step.
 
-`KnowledgeSourcePagesPanel.tsx` (opened via the table row's "Manage pages")
+`KnowledgeSourcePagesPanel.tsx` (opened via the table row's "View pages")
 plus `useKnowledgeSourcePages.ts` add that missing view: a `Sheet` listing
 the source's pages (reusing the same `GET .../discovered-urls/` read and
 `discoveredUrlsKey` the wizard's review step uses — same data, just readable
 outside the wizard now), each row showing when its content last changed
 (`content_changed_at`, relative time) and its last HTTP status (a danger
-badge at 4xx/5xx). `content_hash` is on the type for future dedup/debugging
+badge at 4xx/5xx). It opens with a counts summary (pages found, added,
+not-yet-extracted, failed, skipped) computed from the loaded rows, since the
+panel otherwise answered "which pages exist" but not "how did the crawl go",
+which is the first thing anyone asks once it finishes. `content_hash` is on
+the type for future dedup/debugging
 use but is not surfaced in the UI — it's not something an operator needs to
 see day to day. Checking a subset of pages and clicking "Recrawl selected
 pages" calls `recrawlSelected`, which posts to `websiteRecrawlPagesEndpoint`
@@ -244,10 +255,48 @@ failure state per polling step):
    run will be slow. None of this changes what is submitted — selection state
    stays server-side, one `PATCH` per toggle.
 
+   **Review step layout (reworked 2026-09-10).** Ordered the way the decision
+   is actually made: the selection summary, then the tools to narrow it, then
+   the list, then commit. Specifics worth keeping:
+   - The manual "add a URL" field used to sit _above_ the list, giving the
+     rarest action on the screen the most prominent position. It is now below
+     the list, introduced by a hint, where it reads as the exception it is.
+   - A client-side search filters the list, and "Select all"/"Deselect all"
+     re-label to "Select/Deselect matching" and scope themselves to the
+     filtered ids while it is active. A "select all" that silently acted on
+     rows the user had filtered out would be the opposite of what a filtered
+     view implies.
+   - Each row leads with the path and prints the origin muted beneath it.
+     Every row in a single-site crawl repeats the same origin, so leading with
+     it made 250 rows look identical. `splitUrl` falls back to the raw string
+     for anything unparseable, e.g. a half-typed manual entry.
+   - The checkbox and the row's X mean different things (skip for now versus
+     drop from the list entirely), which nothing previously explained. The X
+     now carries a `title` spelling out both, and an id-specific `aria-label`.
+
 4. **extracting** — `POST /knowledge/website/{id}/extract/`, polled the same
    way as discovery, plus a real progress bar from `useExtractionProgress`.
-5. **done** — the knowledge sources list is invalidated so the new source
-   shows up with its post-extraction status.
+5. **done** — `ExtractionSummary` reports the finished job's own
+   `included_count`/`failed_count`/`excluded_count` (zero-valued rows omitted)
+   and points at "View pages" for anything more detailed. This step used to
+   say only "the selected pages have been queued for indexing", with no
+   numbers at all, so there was no way to tell whether 3 pages or 300 had made
+   it in, or that any had failed. The knowledge sources list is invalidated
+   here so the new source shows up with its post-extraction status.
+
+### Selection is optimistic (2026-09-10)
+
+`useDiscoveredUrls` patches the cached row and drops the refetch rather than
+awaiting `PATCH` + a full re-read before the checkbox moves. On a real crawl
+that was a round trip plus a 250-row refetch per click, so boxes appeared not
+to respond and users clicked them again. Rollback restores the previous cache
+entry and surfaces the error, so the list can never silently disagree with the
+server. `add`/`remove_ids` still refetch: both change which rows exist, and the
+server assigns the id of anything added, so there is nothing to patch in.
+
+`selectAll`/`deselectAll` were replaced by `selectMany`/`deselectMany` taking
+explicit ids, so the caller decides whether an action means the whole crawl or
+just the filtered view.
 
 ### Waiting-step feedback (2026-09-10)
 

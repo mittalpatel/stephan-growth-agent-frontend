@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useForm, FormProvider } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Globe, Loader2, X } from 'lucide-react';
+import { CheckCircle2, Globe, Loader2, Search, X } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -28,7 +28,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import { RHFStringListField, RHFTextField } from '@/components/common/form';
 import { EmptyState } from '@/components/common/EmptyState';
-import { format, formatDuration, plural } from '@/lib/i18n';
+import { format, formatDuration, formatNumber, plural } from '@/lib/i18n';
 import { useElapsedSeconds } from '@/hooks/useElapsedSeconds';
 import {
   websiteDiscoverSchema,
@@ -36,6 +36,7 @@ import {
   type WebsiteDiscoverSubmitValues,
 } from '@/lib/schemas/knowledge';
 import { t } from '@/locales';
+import type { CrawlJob } from '@/types/knowledge';
 
 import { useAddWebsiteFlow } from '../hooks/useAddWebsiteFlow';
 import { useCrawlJob } from '../hooks/useCrawlJob';
@@ -126,6 +127,30 @@ function CrawlProgress({
   );
 }
 
+/**
+ * Splits a URL so the part that distinguishes one row from the next can carry
+ * the visual weight. Every row in a single-site crawl repeats the same origin,
+ * so leading with it makes 250 rows look identical and forces the reader to
+ * scan to the middle of each line. Falls back to the raw string for anything
+ * unparseable, e.g. a half-typed manual entry.
+ */
+function splitUrl(raw: string): { origin: string; path: string } {
+  try {
+    const parsed = new URL(raw);
+    return { origin: parsed.origin, path: `${parsed.pathname}${parsed.search}` };
+  } catch {
+    return { origin: '', path: raw };
+  }
+}
+
+/**
+ * Choose which discovered pages to extract.
+ *
+ * Ordered the way the decision is actually made: what was found, then narrowing
+ * it, then the list, then commit. The manual "add a URL" field used to sit
+ * above everything, giving the rarest action on the screen the most prominent
+ * position; it is now below the list, where it reads as the exception it is.
+ */
 function DiscoveredUrlsReview({
   websiteSourceId,
   onExtract,
@@ -135,9 +160,10 @@ function DiscoveredUrlsReview({
   onExtract: () => void;
   isExtracting: boolean;
 }>) {
-  const { urls, isLoading, selectedCount, toggle, selectAll, deselectAll, addUrl, removeUrl } =
+  const { urls, isLoading, selectedCount, toggle, selectMany, deselectMany, addUrl, removeUrl } =
     useDiscoveredUrls(websiteSourceId);
   const [newUrl, setNewUrl] = useState('');
+  const [search, setSearch] = useState('');
 
   if (isLoading) {
     return (
@@ -154,8 +180,15 @@ function DiscoveredUrlsReview({
     setNewUrl('');
   };
 
-  return (
-    <div className="space-y-4">
+  const query = search.trim().toLowerCase();
+  const visibleUrls = query ? urls.filter((url) => url.url.toLowerCase().includes(query)) : urls;
+  const visibleIds = visibleUrls.map((url) => url.id);
+  const isFiltered = query.length > 0;
+  const allSelected = selectedCount === urls.length && urls.length > 0;
+
+  const addUrlField = (
+    <div className="space-y-1.5">
+      <p className="text-muted-foreground text-xs">{t.knowledge.addWebsite.review.addUrlHint}</p>
       <div className="flex items-center gap-2">
         <Input
           value={newUrl}
@@ -172,91 +205,201 @@ function DiscoveredUrlsReview({
           {t.knowledge.addWebsite.review.addUrlAction}
         </Button>
       </div>
+    </div>
+  );
 
-      {urls.length === 0 ? (
+  if (urls.length === 0) {
+    return (
+      <div className="space-y-4">
         <EmptyState title={t.knowledge.addWebsite.review.noPages} />
+        {addUrlField}
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-4">
+      {/* Every discovered page arrives `is_selected: true` from the backend,
+          which reads as "nothing is selected yet" to anyone expecting an opt-in
+          list — the reported symptom was checking one box and being surprised
+          that extraction processed the whole site. So the headline states the
+          selection, not just the number found. */}
+      <div>
+        <p className="text-sm font-medium tabular-nums">
+          {format(t.knowledge.addWebsite.review.selectedCount, {
+            count: selectedCount,
+            total: urls.length,
+          })}
+        </p>
+        <p className="text-muted-foreground mt-0.5 text-xs">
+          {allSelected && urls.length > 1
+            ? t.knowledge.addWebsite.review.preselectedNotice
+            : t.knowledge.addWebsite.review.selectionHint}
+        </p>
+      </div>
+
+      <div className="flex flex-wrap items-center gap-2">
+        <div className="relative min-w-48 flex-1">
+          <Search
+            className="text-muted-foreground pointer-events-none absolute top-1/2 left-2.5 size-4 -translate-y-1/2"
+            aria-hidden
+          />
+          <Input
+            value={search}
+            onChange={(event) => setSearch(event.target.value)}
+            placeholder={t.knowledge.addWebsite.review.searchPlaceholder}
+            aria-label={t.knowledge.addWebsite.review.searchPlaceholder}
+            className="pl-8"
+          />
+        </div>
+        {/* Scoped to what is on screen: with a filter active, "select all"
+            meaning the whole crawl would silently act on rows the user cannot
+            see, which is the opposite of what a filtered view implies. */}
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          onClick={() => void selectMany(visibleIds)}
+        >
+          {isFiltered
+            ? t.knowledge.addWebsite.review.selectMatching
+            : t.knowledge.addWebsite.review.selectAll}
+        </Button>
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          onClick={() => void deselectMany(visibleIds)}
+        >
+          {isFiltered
+            ? t.knowledge.addWebsite.review.deselectMatching
+            : t.knowledge.addWebsite.review.deselectAll}
+        </Button>
+      </div>
+
+      {visibleUrls.length === 0 ? (
+        <p className="text-muted-foreground rounded-md border py-8 text-center text-sm">
+          {format(t.knowledge.addWebsite.review.noMatches, { query: search.trim() })}
+        </p>
       ) : (
-        <>
-          <div className="flex items-center justify-between">
-            <p className="text-muted-foreground text-sm">
-              {format(t.knowledge.addWebsite.review.description, { count: urls.length })}
-            </p>
-            <div className="flex gap-2">
-              <Button type="button" variant="ghost" size="sm" onClick={() => void selectAll()}>
-                {t.knowledge.addWebsite.review.selectAll}
-              </Button>
-              <Button type="button" variant="ghost" size="sm" onClick={() => void deselectAll()}>
-                {t.knowledge.addWebsite.review.deselectAll}
-              </Button>
-            </div>
-          </div>
-
-          {/* Every discovered page arrives `is_selected: true` from the
-              backend, which reads as "nothing is selected yet" to anyone who
-              expects an opt-in list — the reported symptom was checking one
-              box and being surprised that extraction processed the whole
-              site. The count moves above the list too, so what is about to
-              be extracted is visible without scrolling past every URL. */}
-          <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
-            <p className="text-sm font-medium tabular-nums">
-              {format(t.knowledge.addWebsite.review.selectedCount, {
-                count: selectedCount,
-                total: urls.length,
-              })}
-            </p>
-            {selectedCount === urls.length && urls.length > 1 && (
-              <p className="text-muted-foreground text-xs">
-                {t.knowledge.addWebsite.review.preselectedNotice}
-              </p>
-            )}
-          </div>
-
-          <div className="max-h-112 space-y-1 overflow-y-auto rounded-md border p-2">
-            {urls.map((url) => (
-              <div
-                key={url.id}
-                className="hover:bg-accent flex items-start gap-2 rounded-md px-2 py-1.5 text-sm"
-              >
-                <label className="flex min-w-0 flex-1 items-start gap-2">
+        <div className="max-h-96 divide-y overflow-y-auto rounded-md border">
+          {visibleUrls.map((url) => {
+            const { origin, path } = splitUrl(url.url);
+            return (
+              <div key={url.id} className="hover:bg-accent flex items-start gap-3 px-3 py-2">
+                <label className="flex min-w-0 flex-1 cursor-pointer items-start gap-3">
                   <Checkbox
                     className="mt-0.5"
                     checked={url.is_selected}
                     onCheckedChange={(checked) => void toggle(url.id, checked === true)}
                   />
-                  <span className="min-w-0 break-all">{url.url}</span>
+                  <span className="min-w-0 text-sm">
+                    <span className="break-all">{path}</span>
+                    {origin && (
+                      <span className="text-muted-foreground block text-xs break-all">
+                        {origin}
+                      </span>
+                    )}
+                  </span>
                 </label>
                 <button
                   type="button"
-                  aria-label={t.knowledge.addWebsite.review.removeUrl}
+                  title={t.knowledge.addWebsite.review.removeUrlHint}
+                  aria-label={format(t.knowledge.addWebsite.review.removeUrlLabel, {
+                    url: url.url,
+                  })}
                   onClick={() => void removeUrl(url.id)}
                   className="text-muted-foreground hover:text-destructive mt-0.5 shrink-0 rounded p-1"
                 >
                   <X className="size-3.5" aria-hidden />
                 </button>
               </div>
-            ))}
-          </div>
-
-          {selectedCount > SLOW_EXTRACTION_PAGE_COUNT && (
-            <p className="text-muted-foreground text-sm">
-              {format(t.knowledge.addWebsite.review.slowWarning, { count: selectedCount })}
-            </p>
-          )}
-
-          {/* The count lives on the button itself so the cost of the action is
-              stated at the moment of committing to it, not just above the list. */}
-          <Button
-            type="button"
-            className="w-full"
-            disabled={selectedCount === 0 || isExtracting}
-            onClick={onExtract}
-          >
-            {selectedCount > 0
-              ? plural(selectedCount, t.knowledge.addWebsite.review.extractCount)
-              : t.knowledge.addWebsite.review.extract}
-          </Button>
-        </>
+            );
+          })}
+        </div>
       )}
+
+      {isFiltered && visibleUrls.length > 0 && (
+        <p className="text-muted-foreground text-xs">
+          {format(t.knowledge.addWebsite.review.filterCount, {
+            shown: visibleUrls.length,
+            total: urls.length,
+          })}
+        </p>
+      )}
+
+      {addUrlField}
+
+      <div className="border-t pt-4">
+        {selectedCount > SLOW_EXTRACTION_PAGE_COUNT && (
+          <p className="text-muted-foreground mb-2 text-sm">
+            {format(t.knowledge.addWebsite.review.slowWarning, { count: selectedCount })}
+          </p>
+        )}
+        {/* The count lives on the button itself so the cost of the action is
+            stated at the moment of committing to it, not just above the list. */}
+        <Button
+          type="button"
+          className="w-full"
+          disabled={selectedCount === 0 || isExtracting}
+          onClick={onExtract}
+        >
+          {selectedCount > 0
+            ? plural(selectedCount, t.knowledge.addWebsite.review.extractCount)
+            : t.knowledge.addWebsite.review.extract}
+        </Button>
+      </div>
+    </div>
+  );
+}
+
+/**
+ * What the extraction actually produced, from the finished job's own counters.
+ *
+ * The done step used to say only "the selected pages have been queued for
+ * indexing" — no numbers at all, so an operator had no way to tell whether 3
+ * pages or 300 had made it in, or that any had failed, and nothing pointed at
+ * where to look afterwards. `excluded_count` covers pages the extractor
+ * deliberately skipped (too little content, or duplicate text), which is why
+ * it is worded as skipped rather than failed.
+ */
+function ExtractionSummary({
+  job,
+  onClose,
+}: Readonly<{ job: CrawlJob | null; onClose: () => void }>) {
+  const copy = t.knowledge.addWebsite.done;
+  const rows = job
+    ? [
+        { key: 'indexed', label: copy.indexedLabel, value: job.included_count },
+        { key: 'failed', label: copy.failedLabel, value: job.failed_count },
+        { key: 'skipped', label: copy.skippedLabel, value: job.excluded_count },
+      ].filter((row) => row.value > 0)
+    : [];
+
+  return (
+    <div className="space-y-4 py-4">
+      <div className="text-center">
+        <CheckCircle2 className="text-success-foreground mx-auto size-8" aria-hidden />
+        <p className="mt-2 font-medium">{copy.title}</p>
+        <p className="text-muted-foreground mt-1 text-sm">{copy.description}</p>
+      </div>
+
+      {rows.length > 0 && (
+        <dl className="divide-y rounded-md border">
+          {rows.map((row) => (
+            <div key={row.key} className="flex items-center justify-between px-3 py-2 text-sm">
+              <dt className="text-muted-foreground">{row.label}</dt>
+              <dd className="font-medium tabular-nums">{formatNumber(row.value)}</dd>
+            </div>
+          ))}
+        </dl>
+      )}
+
+      <p className="text-muted-foreground text-xs">{copy.wherePages}</p>
+
+      <Button className="w-full" onClick={onClose}>
+        {copy.close}
+      </Button>
     </div>
   );
 }
@@ -324,7 +467,14 @@ export function AddWebsiteDialog({ agentId, onCreated }: Props) {
       </DialogTrigger>
       <DialogContent className="max-w-2xl">
         <DialogHeader>
-          <DialogTitle>{t.knowledge.addWebsite.title}</DialogTitle>
+          {/* Step-aware: the header read "Add a website" through all six
+              steps, so the review step never actually said what it was asking
+              for. */}
+          <DialogTitle>
+            {flow.step === 'review'
+              ? t.knowledge.addWebsite.review.title
+              : t.knowledge.addWebsite.title}
+          </DialogTitle>
         </DialogHeader>
 
         {flow.step === 'form' && (
@@ -447,13 +597,7 @@ export function AddWebsiteDialog({ agentId, onCreated }: Props) {
         )}
 
         {flow.step === 'done' && (
-          <EmptyState
-            title={t.knowledge.addWebsite.done.title}
-            description={t.knowledge.addWebsite.done.description}
-            action={
-              <Button onClick={() => close(false)}>{t.knowledge.addWebsite.done.close}</Button>
-            }
-          />
+          <ExtractionSummary job={flow.extractionResult} onClose={() => close(false)} />
         )}
 
         <AlertDialog open={confirmingClose} onOpenChange={setConfirmingClose}>

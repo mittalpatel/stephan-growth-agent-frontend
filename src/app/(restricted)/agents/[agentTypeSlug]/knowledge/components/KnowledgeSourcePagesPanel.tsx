@@ -15,8 +15,9 @@ import {
   SheetHeader,
   SheetTitle,
 } from '@/components/ui/sheet';
+import { usePermissions } from '@/app/(restricted)/context/PermissionsContext';
 import type { StatusTone } from '@/components/common/StatusBadge';
-import { format, formatRelativeTime } from '@/lib/i18n';
+import { format, formatNumber, formatRelativeTime } from '@/lib/i18n';
 import { t } from '@/locales';
 import type { KnowledgeSourceListItem, PageStatus } from '@/types/knowledge';
 
@@ -56,6 +57,26 @@ export function KnowledgeSourcePagesPanel({ source, onOpenChange }: Props) {
     source?.website_source_id ?? null
   );
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const { can } = usePermissions();
+  const canRecrawl = can('knowledge', 'execute');
+
+  const countByStatus = (status: PageStatus) =>
+    pages.filter((page) => page.status === status).length;
+  const summaryRows = [
+    { key: 'total', label: t.knowledge.pages.summary.total, value: pages.length },
+    { key: 'ready', label: t.knowledge.pages.summary.indexed, value: countByStatus('ready') },
+    {
+      key: 'pending',
+      label: t.knowledge.pages.summary.notExtracted,
+      value: countByStatus('discovered'),
+    },
+    { key: 'failed', label: t.knowledge.pages.summary.failed, value: countByStatus('failed') },
+    {
+      key: 'skipped',
+      label: t.knowledge.pages.summary.skipped,
+      value: countByStatus('low_quality') + countByStatus('duplicate'),
+    },
+  ].filter((row) => row.key === 'total' || row.value > 0);
 
   const close = (open: boolean) => {
     if (!open) setSelectedIds(new Set());
@@ -99,6 +120,21 @@ export function KnowledgeSourcePagesPanel({ source, onOpenChange }: Props) {
             <EmptyState title={t.knowledge.pages.empty} />
           )}
 
+          {/* What the crawl actually produced, counted from the rows already
+              loaded. Without this the panel answers "which pages exist" but
+              not "how did it go", which is the first thing anyone asks after a
+              crawl finishes. */}
+          {!isLoading && !isError && pages.length > 0 && (
+            <dl className="divide-y rounded-md border">
+              {summaryRows.map((row) => (
+                <div key={row.key} className="flex items-center justify-between px-3 py-2 text-sm">
+                  <dt className="text-muted-foreground">{row.label}</dt>
+                  <dd className="font-medium tabular-nums">{formatNumber(row.value)}</dd>
+                </div>
+              ))}
+            </dl>
+          )}
+
           {!isLoading && !isError && pages.length > 0 && (
             <div className="space-y-1">
               {pages.map((page) => {
@@ -109,13 +145,18 @@ export function KnowledgeSourcePagesPanel({ source, onOpenChange }: Props) {
                     key={page.id}
                     className="hover:bg-accent flex items-start gap-2 rounded-md px-2 py-2 text-sm"
                   >
-                    <Checkbox
-                      className="mt-0.5"
-                      checked={selectedIds.has(page.id)}
-                      onCheckedChange={(checked) => toggle(page.id, checked === true)}
-                    />
+                    {/* Selection only exists to drive the recrawl action, so a
+                        reader without it gets a plain list rather than
+                        checkboxes wired to a button they never see. */}
+                    {canRecrawl && (
+                      <Checkbox
+                        className="mt-0.5"
+                        checked={selectedIds.has(page.id)}
+                        onCheckedChange={(checked) => toggle(page.id, checked === true)}
+                      />
+                    )}
                     <div className="min-w-0 flex-1 space-y-1">
-                      <p className="truncate font-medium">{page.url}</p>
+                      <p className="font-medium break-all">{page.url}</p>
                       <div className="text-muted-foreground flex flex-wrap items-center gap-x-3 gap-y-1 text-xs">
                         <span>
                           {format(t.knowledge.pages.lastChangedLabel, {
@@ -150,19 +191,21 @@ export function KnowledgeSourcePagesPanel({ source, onOpenChange }: Props) {
           )}
         </div>
 
-        <SheetFooter>
-          <p className="text-muted-foreground text-sm">
-            {format(t.knowledge.pages.selectedCount, { count: selectedIds.size })}
-          </p>
-          <Button
-            type="button"
-            className="w-full"
-            disabled={selectedIds.size === 0 || isRecrawling}
-            onClick={() => recrawlSelected(Array.from(selectedIds))}
-          >
-            {t.knowledge.actions.recrawlSelected}
-          </Button>
-        </SheetFooter>
+        {canRecrawl && (
+          <SheetFooter>
+            <p className="text-muted-foreground text-sm">
+              {format(t.knowledge.pages.selectedCount, { count: selectedIds.size })}
+            </p>
+            <Button
+              type="button"
+              className="w-full"
+              disabled={selectedIds.size === 0 || isRecrawling}
+              onClick={() => recrawlSelected(Array.from(selectedIds))}
+            >
+              {t.knowledge.actions.recrawlSelected}
+            </Button>
+          </SheetFooter>
+        )}
       </SheetContent>
     </Sheet>
   );
