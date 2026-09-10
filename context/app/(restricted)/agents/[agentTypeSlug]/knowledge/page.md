@@ -124,6 +124,29 @@ and into `KnowledgeSourcePagesPanel`, which in turn passes it (not
 affected by this bug — it gets the correct id from `CrawlJob.website_source`
 in the discovery-job response, never from the list endpoint.
 
+### Per-page processing failures now surfaced (backend 2026-09-10)
+
+The backend's `security-and-correctness-fixes-2026-09-10` branch replaced its
+hand-rolled HTML text extractor with a Scrapling Markdown conversion pass and,
+as part of that, fixed extraction failures so one bad page no longer aborts
+the whole crawl job — a page whose content fails to convert now gets
+`Page.status = 'failed'` with an `error_message`, while the rest of the job
+keeps going. This makes a new, previously rare state common: a page can fetch
+fine (`http_status: 200`) yet still end up `status: 'failed'`, which the
+`http_status >= 400` danger badge in `KnowledgeSourcePagesPanel` didn't
+account for. Added a second, independent danger badge
+(`t.knowledge.pages.processingFailedLabel`) driven by `page.status ===
+'failed'`, plus the `error_message` text itself rendered below the row, so a
+conversion failure is visible even when the HTTP fetch succeeded. No other
+change was needed on this branch: `WIDGET_POSITIONS`
+(`src/lib/constants/agentTheme.ts`) already covered the new `top_left`/
+`top_right` values, `WidgetPreview.tsx` already positions all four corners
+correctly, nothing references the removed `PlatformSetting
+.default_crawl_provider` field, and the `AgentService.update_draft`
+partial-validation fix and the widget's own embedded chrome-text i18n table
+are backend/embed-script internals with no API or type surface for this
+frontend to mirror.
+
 ## Add website flow
 
 `AddWebsiteDialog` is a five-step dialog driven by `useAddWebsiteFlow.ts`'s

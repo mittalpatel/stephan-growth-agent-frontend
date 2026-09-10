@@ -161,6 +161,7 @@ export const knowledge = {
     lastChangedLabel: 'Last changed {when}',
     neverChanged: 'never',
     httpStatusLabel: 'HTTP {status}',
+    processingFailedLabel: 'Processing failed',
     selectedCount: '{count} selected',
   },
   health: {

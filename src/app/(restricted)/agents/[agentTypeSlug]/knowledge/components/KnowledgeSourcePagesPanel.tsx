@@ -85,6 +85,7 @@ export function KnowledgeSourcePagesPanel({ source, onOpenChange }: Props) {
             <div className="space-y-1">
               {pages.map((page) => {
                 const isFailedStatus = (page.http_status ?? 200) >= 400;
+                const isProcessingFailed = page.status === 'failed';
                 return (
                   <div
                     key={page.id}
@@ -114,7 +115,16 @@ export function KnowledgeSourcePagesPanel({ source, onOpenChange }: Props) {
                             tone={isFailedStatus ? 'danger' : 'success'}
                           />
                         )}
+                        {isProcessingFailed && (
+                          <StatusBadge
+                            label={t.knowledge.pages.processingFailedLabel}
+                            tone="danger"
+                          />
+                        )}
                       </div>
+                      {isProcessingFailed && page.error_message && (
+                        <p className="text-destructive text-xs">{page.error_message}</p>
+                      )}
                     </div>
                   </div>
                 );
