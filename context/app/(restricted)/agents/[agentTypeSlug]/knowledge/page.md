@@ -182,7 +182,11 @@ failure state per polling step):
    posts `{ add: [url] }` for a page outside what discovery found, and each
    row has a "Remove" button (`removeUrl`, `{ remove_ids: [id] }`) that
    drops the page outright — distinct from deselecting, which keeps the row
-   visible but excludes it from extraction.
+   visible but excludes it from extraction. The dialog is `max-w-2xl`
+   (2026-09-10, widened from `max-w-lg`) and each URL wraps (`break-all`)
+   instead of truncating with an ellipsis — a real crawl commonly discovers
+   long, deeply-nested paths, and an operator deciding which pages to
+   extract needs to read the full URL, not guess from a cut-off prefix.
 4. **extracting** — `POST /knowledge/website/{id}/extract/`, polled the same
    way as discovery.
 5. **done** — the knowledge sources list is invalidated so the new source

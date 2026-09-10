@@ -127,24 +127,25 @@ function DiscoveredUrlsReview({
             </div>
           </div>
 
-          <div className="max-h-80 space-y-1 overflow-y-auto rounded-md border p-2">
+          <div className="max-h-112 space-y-1 overflow-y-auto rounded-md border p-2">
             {urls.map((url) => (
               <div
                 key={url.id}
-                className="hover:bg-accent flex items-center gap-2 rounded-md px-2 py-1.5 text-sm"
+                className="hover:bg-accent flex items-start gap-2 rounded-md px-2 py-1.5 text-sm"
               >
-                <label className="flex min-w-0 flex-1 items-center gap-2">
+                <label className="flex min-w-0 flex-1 items-start gap-2">
                   <Checkbox
+                    className="mt-0.5"
                     checked={url.is_selected}
                     onCheckedChange={(checked) => void toggle(url.id, checked === true)}
                   />
-                  <span className="truncate">{url.url}</span>
+                  <span className="min-w-0 break-all">{url.url}</span>
                 </label>
                 <button
                   type="button"
                   aria-label={t.knowledge.addWebsite.review.removeUrl}
                   onClick={() => void removeUrl(url.id)}
-                  className="text-muted-foreground hover:text-destructive shrink-0 rounded p-1"
+                  className="text-muted-foreground hover:text-destructive mt-0.5 shrink-0 rounded p-1"
                 >
                   <X className="size-3.5" aria-hidden />
                 </button>
@@ -210,7 +211,7 @@ export function AddWebsiteDialog({ agentId, onCreated }: Props) {
           {t.knowledge.actions.addWebsite}
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-lg">
+      <DialogContent className="max-w-2xl">
         <DialogHeader>
           <DialogTitle>{t.knowledge.addWebsite.title}</DialogTitle>
         </DialogHeader>
