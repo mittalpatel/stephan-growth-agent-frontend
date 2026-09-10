@@ -124,6 +124,21 @@ and into `KnowledgeSourcePagesPanel`, which in turn passes it (not
 affected by this bug — it gets the correct id from `CrawlJob.website_source`
 in the discovery-job response, never from the list endpoint.
 
+### Page outcomes: `low_quality` and `duplicate` (2026-09-10)
+
+`PageStatus` had drifted: the backend added `low_quality` and `duplicate` in
+its 2026-09-08 audit fix, and the frontend union still had only
+`discovered`/`ready`/`failed`. Both are terminal, deliberate, _non-error_
+outcomes of extraction — a page under `MIN_CONTENT_CHARS` after sanitization,
+or one whose content exactly matches an already-`ready` page in the same
+source, is skipped rather than producing near-empty or duplicate chunks.
+Because they aren't failures, nothing in the UI mentioned them, so a page the
+operator explicitly selected could come back from a "completed" extraction
+with no error and simply never appear in the index, with no way to find out
+why. `KnowledgeSourcePagesPanel` now badges every page's status through
+`PAGE_STATUS_TONES` (warning, not danger, for these two) and prints a plain
+explanation for the two whose reason isn't self-evident from the label.
+
 ### Per-page processing failures now surfaced (backend 2026-09-10)
 
 The backend's `security-and-correctness-fixes-2026-09-10` branch replaced its
@@ -134,10 +149,10 @@ the whole crawl job — a page whose content fails to convert now gets
 keeps going. This makes a new, previously rare state common: a page can fetch
 fine (`http_status: 200`) yet still end up `status: 'failed'`, which the
 `http_status >= 400` danger badge in `KnowledgeSourcePagesPanel` didn't
-account for. Added a second, independent danger badge
-(`t.knowledge.pages.processingFailedLabel`) driven by `page.status ===
-'failed'`, plus the `error_message` text itself rendered below the row, so a
-conversion failure is visible even when the HTTP fetch succeeded. No other
+account for. Fixed by badging `page.status` independently of `http_status`
+(now via the `PAGE_STATUS_TONES` map described above) and rendering the
+`error_message` text below the row, so a conversion failure is visible even
+when the HTTP fetch itself succeeded. No other
 change was needed on this branch: `WIDGET_POSITIONS`
 (`src/lib/constants/agentTheme.ts`) already covered the new `top_left`/
 `top_right` values, `WidgetPreview.tsx` already positions all four corners
@@ -196,6 +211,10 @@ failure state per polling step):
    `pending`/`running`. The website source id needed for every later step
    comes from the discovery `CrawlJob.website_source` field, not the
    discover response directly (the view never serializes it there).
+   `CrawlProgress` shows a ticking elapsed counter (`useElapsedSeconds` +
+   `formatDuration`, seeded from `CrawlJob.created_at`) and states up front
+   that a site without a usable sitemap is crawled link by link and can take
+   ten minutes — see "Waiting-step feedback" below for why.
 3. **review** — `useDiscoveredUrls.ts` lists
    `GET /knowledge/website/{id}/discovered-urls/` and toggles selection via
    `PATCH .../discovered-urls/` (`select_ids`/`deselect_ids`), one bulk call
@@ -210,10 +229,59 @@ failure state per polling step):
    instead of truncating with an ellipsis — a real crawl commonly discovers
    long, deeply-nested paths, and an operator deciding which pages to
    extract needs to read the full URL, not guess from a cut-off prefix.
+
+   **Everything arrives pre-selected.** The backend's discovery task creates
+   every `Page` with `is_selected=True`, so this list opens fully checked. That
+   reads as "nothing is selected yet" to anyone expecting an opt-in list, and
+   the reported symptom was an operator checking a single box, assuming that
+   meant one page, and then waiting through an extraction of the whole site.
+   Three things guard against it now: an "N of M selected" count above the
+   list (it used to sit below every URL, off-screen for a long crawl), a
+   notice pointing at "Deselect all" whenever the selection is still untouched
+   and covers everything, and a page count on the extract button itself
+   (`plural`), so the size of what is about to run is stated at the moment of
+   committing. Above `SLOW_EXTRACTION_PAGE_COUNT` (25) it also warns that the
+   run will be slow. None of this changes what is submitted — selection state
+   stays server-side, one `PATCH` per toggle.
+
 4. **extracting** — `POST /knowledge/website/{id}/extract/`, polled the same
-   way as discovery.
+   way as discovery, plus a real progress bar from `useExtractionProgress`.
 5. **done** — the knowledge sources list is invalidated so the new source
    shows up with its post-extraction status.
+
+### Waiting-step feedback (2026-09-10)
+
+Both polling steps used to render a bare spinner and one line of "this can
+take a moment" copy. Discovery routinely runs to the backend's
+`MAX_CRAWL_JOB_SECONDS` (600) ceiling on a site whose sitemap isn't usable,
+and extraction is one fetch plus one embedding call per page, so multi-minute
+waits are normal and were repeatedly reported as the app being stuck. The
+three additions are all frontend-only:
+
+- **Elapsed time** (`useElapsedSeconds`, `formatDuration`): a ticking value is
+  the cheapest honest proof that something is still running, and needs nothing
+  from the API. `formatDuration` is deliberately separate from
+  `formatRelativeTime` — the latter collapses to a flat "2 minutes ago" that
+  stops visibly moving, which is the opposite of what a progress readout needs.
+- **Extraction progress** (`useExtractionProgress`): `CrawlJob.included_count`/
+  `failed_count` would be the natural source but `extract_selected_pages`
+  writes them only once, after its loop — they read `0` for the entire run,
+  exactly the window a progress indicator exists for. Individual `Page.status`
+  values _are_ saved per page as it's processed, so the hook counts selected
+  pages that have left `discovered` and derives an honest fraction. It shares
+  `discoveredUrlsKey` with `useDiscoveredUrls` (no duplicate fetch) and is
+  gated to the extracting step, since it's a `page_size=500` read every 5s.
+  Delete it in favour of the job counters if the backend ever reports them
+  incrementally.
+- **"You can close this"**: closing mid-run drops every id the flow holds, and
+  the review step is only reachable from inside this dialog, so an accidental
+  dismiss during a ten-minute discovery strands a source that's still being
+  crawled. The run is safe (it finishes server-side, the source is already
+  saved), so `requestClose` confirms via `AlertDialog` rather than blocking.
+
+Both failure steps now render the job's own `error_summary` when the backend
+sent one, falling back to the generic copy — previously the real reason was
+fetched, held in state, and thrown away.
 
 ## Add PDF flow
 

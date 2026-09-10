@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 
-import { format, formatCurrency, formatDate, formatNumber, plural } from '../i18n';
+import { format, formatCurrency, formatDate, formatDuration, formatNumber, plural } from '../i18n';
 
 describe('format', () => {
   it('substitutes named placeholders', () => {
@@ -46,6 +46,28 @@ describe('plural', () => {
 describe('formatNumber', () => {
   it('applies the locale thousands separator', () => {
     expect(formatNumber(1234567)).toBe('1,234,567');
+  });
+});
+
+describe('formatDuration', () => {
+  it('shows seconds alone under a minute', () => {
+    expect(formatDuration(45)).toBe('45s');
+  });
+
+  it('zero-pads the seconds once minutes appear, so the value stops jittering in width', () => {
+    expect(formatDuration(134)).toBe('2m 14s');
+    expect(formatDuration(305)).toBe('5m 05s');
+  });
+
+  it('drops to hours and minutes past an hour', () => {
+    expect(formatDuration(3780)).toBe('1h 03m');
+  });
+
+  it('floors fractional seconds and clamps a negative span to zero', () => {
+    // Clock skew between the server's `created_at` and the browser can put a
+    // just-started job slightly in the future; "-3s elapsed" reads as a bug.
+    expect(formatDuration(9.87)).toBe('9s');
+    expect(formatDuration(-5)).toBe('0s');
   });
 });
 

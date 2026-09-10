@@ -67,6 +67,10 @@ export function useAddWebsiteFlow(agentId: string, onCreated?: (sourceId: string
   const [websiteSourceId, setWebsiteSourceId] = useState<string | null>(null);
   const [discoverJobId, setDiscoverJobId] = useState<string | null>(null);
   const [extractJobId, setExtractJobId] = useState<string | null>(null);
+  // The failed job's own `error_summary`, kept so the failure screens can say
+  // what actually went wrong instead of only the generic copy. Empty when the
+  // backend sent none.
+  const [errorSummary, setErrorSummary] = useState('');
 
   const discoverMutation = useAuthMutation<
     ApiResponse<WebsiteDiscoverResult>,
@@ -79,6 +83,7 @@ export function useAddWebsiteFlow(agentId: string, onCreated?: (sourceId: string
     setWebsiteSourceId(null);
     setDiscoverJobId(null);
     setExtractJobId(null);
+    setErrorSummary('');
   }, []);
 
   const discover = useCallback(
@@ -108,6 +113,7 @@ export function useAddWebsiteFlow(agentId: string, onCreated?: (sourceId: string
 
   /** Called by the dialog once `useCrawlJob` reports the discovery run is done. */
   const onDiscoveryFinished = useCallback((job: CrawlJob) => {
+    setErrorSummary(job.error_summary);
     setStep(job.status === 'completed' ? 'review' : 'discovery-failed');
   }, []);
 
@@ -129,6 +135,7 @@ export function useAddWebsiteFlow(agentId: string, onCreated?: (sourceId: string
   /** Called by the dialog once `useCrawlJob` reports the extraction run is done. */
   const onExtractionFinished = useCallback(
     (job: CrawlJob) => {
+      setErrorSummary(job.error_summary);
       if (job.status === 'completed') {
         void queryClient.invalidateQueries({ queryKey: knowledgeSourcesListKey() });
         setStep('done');
@@ -144,6 +151,7 @@ export function useAddWebsiteFlow(agentId: string, onCreated?: (sourceId: string
     websiteSourceId,
     discoverJobId,
     extractJobId,
+    errorSummary,
     reset,
     discover,
     isDiscovering: discoverMutation.isPending,

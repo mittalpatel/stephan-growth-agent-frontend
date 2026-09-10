@@ -15,9 +15,10 @@ import {
   SheetHeader,
   SheetTitle,
 } from '@/components/ui/sheet';
+import type { StatusTone } from '@/components/common/StatusBadge';
 import { format, formatRelativeTime } from '@/lib/i18n';
 import { t } from '@/locales';
-import type { KnowledgeSourceListItem } from '@/types/knowledge';
+import type { KnowledgeSourceListItem, PageStatus } from '@/types/knowledge';
 
 import { useKnowledgeSourcePages } from '../hooks/useKnowledgeSourcePages';
 
@@ -25,6 +26,23 @@ type Props = Readonly<{
   source: KnowledgeSourceListItem | null;
   onOpenChange: (open: boolean) => void;
 }>;
+
+const PAGE_STATUS_TONES: Record<PageStatus, StatusTone> = {
+  discovered: 'neutral',
+  ready: 'success',
+  failed: 'danger',
+  // Warning, not danger: both are deliberate skips by the extractor, not
+  // errors, but the operator still needs to know the page they picked is not
+  // in the index.
+  low_quality: 'warning',
+  duplicate: 'warning',
+};
+
+/** Only the two outcomes whose reason isn't self-evident from the label. */
+const PAGE_STATUS_HINTS: Partial<Record<PageStatus, string>> = {
+  low_quality: t.knowledge.pages.pageStatusHint.low_quality,
+  duplicate: t.knowledge.pages.pageStatusHint.duplicate,
+};
 
 /**
  * A website source's page list, opened from its row menu: shows each page's
@@ -85,7 +103,7 @@ export function KnowledgeSourcePagesPanel({ source, onOpenChange }: Props) {
             <div className="space-y-1">
               {pages.map((page) => {
                 const isFailedStatus = (page.http_status ?? 200) >= 400;
-                const isProcessingFailed = page.status === 'failed';
+                const hint = PAGE_STATUS_HINTS[page.status];
                 return (
                   <div
                     key={page.id}
@@ -115,16 +133,15 @@ export function KnowledgeSourcePagesPanel({ source, onOpenChange }: Props) {
                             tone={isFailedStatus ? 'danger' : 'success'}
                           />
                         )}
-                        {isProcessingFailed && (
-                          <StatusBadge
-                            label={t.knowledge.pages.processingFailedLabel}
-                            tone="danger"
-                          />
-                        )}
+                        <StatusBadge
+                          label={t.knowledge.pages.pageStatus[page.status]}
+                          tone={PAGE_STATUS_TONES[page.status]}
+                        />
                       </div>
-                      {isProcessingFailed && page.error_message && (
+                      {page.status === 'failed' && page.error_message && (
                         <p className="text-destructive text-xs">{page.error_message}</p>
                       )}
+                      {hint && <p className="text-muted-foreground text-xs">{hint}</p>}
                     </div>
                   </div>
                 );

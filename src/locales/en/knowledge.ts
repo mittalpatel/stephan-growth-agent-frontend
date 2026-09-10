@@ -92,7 +92,11 @@ export const knowledge = {
     submit: 'Start discovery',
     discovering: {
       title: 'Discovering pages…',
-      description: 'Finding pages on this site. This can take a moment.',
+      description:
+        'Finding pages on this site. Sites without a usable sitemap are crawled link by link, which can take up to 10 minutes.',
+      elapsed: 'Running for {duration}',
+      backgroundNotice:
+        'You can close this and keep working. The crawl continues, and the pages appear under this source when it finishes.',
     },
     discoveryFailed: {
       title: 'Discovery failed',
@@ -101,10 +105,18 @@ export const knowledge = {
     review: {
       title: 'Choose pages to include',
       description: '{count} pages found. Select the ones you want this agent to learn from.',
+      preselectedNotice:
+        'Every page starts selected. Use "Deselect all" first if you only want a few, otherwise all selected pages are extracted.',
       selectAll: 'Select all',
       deselectAll: 'Deselect all',
-      selectedCount: '{count} selected',
+      selectedCount: '{count} of {total} selected',
       extract: 'Extract selected pages',
+      extractCount: {
+        one: 'Extract {count} page',
+        other: 'Extract {count} pages',
+      },
+      slowWarning:
+        'Extracting {count} pages takes a while: each one is fetched and read separately.',
       noPages: 'No pages were found on this site.',
       addUrlPlaceholder: 'https://example.com/extra-page',
       addUrlAction: 'Add URL',
@@ -112,11 +124,22 @@ export const knowledge = {
     },
     extracting: {
       title: 'Extracting selected pages…',
-      description: 'Reading the selected pages. This can take a moment.',
+      description: 'Each selected page is fetched and read separately, so this takes a while.',
+      progress: '{done} of {total} pages processed',
+      elapsed: 'Running for {duration}',
+      backgroundNotice:
+        'You can close this and keep working. Extraction continues, and the pages appear under this source when it finishes.',
     },
     extractionFailed: {
       title: 'Extraction failed',
       description: 'Something went wrong while extracting the selected pages.',
+    },
+    closeWhileRunning: {
+      title: 'Close and let this finish in the background?',
+      description:
+        'The crawl keeps running on the server. This source is already saved, and you can pick it back up from its row in the list.',
+      confirm: 'Close',
+      cancel: 'Keep watching',
     },
     done: {
       title: 'Website added',
@@ -161,7 +184,17 @@ export const knowledge = {
     lastChangedLabel: 'Last changed {when}',
     neverChanged: 'never',
     httpStatusLabel: 'HTTP {status}',
-    processingFailedLabel: 'Processing failed',
+    pageStatus: {
+      discovered: 'Not extracted yet',
+      ready: 'Indexed',
+      failed: 'Processing failed',
+      low_quality: 'Too little content',
+      duplicate: 'Duplicate content',
+    },
+    pageStatusHint: {
+      low_quality: 'This page had too little text to be worth indexing, so it was skipped.',
+      duplicate: 'This page’s content matches another page on this site, so it was skipped.',
+    },
     selectedCount: '{count} selected',
   },
   health: {

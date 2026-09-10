@@ -15,8 +15,18 @@ export type CrawlJobType = 'discovery' | 'extraction';
 /** Mirrors `CrawlJobStatus` in `apps/knowledge/constants.py`. */
 export type CrawlJobStatus = 'pending' | 'running' | 'completed' | 'failed';
 
-/** Mirrors `PageStatus` in `apps/knowledge/constants.py`. */
-export type PageStatus = 'discovered' | 'ready' | 'failed';
+/**
+ * Mirrors `PageStatus` in `apps/knowledge/constants.py`.
+ *
+ * `low_quality`/`duplicate` are terminal, non-`ready` outcomes of extraction
+ * and deliberately not errors: a page below the backend's `MIN_CONTENT_CHARS`
+ * after sanitization, or one whose content exactly matches an already-`ready`
+ * page in the same source, is excluded from indexing rather than producing
+ * near-empty or duplicate chunks. They still need surfacing, since to an
+ * operator they otherwise look like a page that was selected, reported no
+ * error, and silently never made it into the index.
+ */
+export type PageStatus = 'discovered' | 'ready' | 'failed' | 'low_quality' | 'duplicate';
 
 /** Mirrors `PageDiscoverySource` in `apps/knowledge/constants.py`. */
 export type PageDiscoverySource = 'sitemap' | 'robots_crawl' | 'fallback_link_scan' | 'manual';

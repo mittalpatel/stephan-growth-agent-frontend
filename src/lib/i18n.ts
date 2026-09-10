@@ -133,6 +133,30 @@ export function formatDateTime(
 }
 
 /**
+ * An elapsed span as "45s" / "2m 14s" / "1h 03m", for a run in progress.
+ *
+ * Distinct from `formatRelativeTime`, which answers "when did this happen"
+ * against the clock ("2 minutes ago"). This answers "how long has it been
+ * going", where a ticking, unrounded value is the point: a crawl that can run
+ * for ten minutes reads as stuck if its only feedback is a spinner, and
+ * `Intl.RelativeTimeFormat` collapses to a flat "2 minutes ago" that stops
+ * visibly moving.
+ *
+ * `Intl.NumberFormat` supplies the digits so the numerals localize; the unit
+ * letters are ASCII and deliberately not translated here, matching how the
+ * rest of this file leaves `Intl` to own grammar rather than hand-rolling it.
+ */
+export function formatDuration(totalSeconds: number): string {
+  const seconds = Math.max(0, Math.floor(totalSeconds));
+  const pad = (value: number) =>
+    formatNumber(value, { minimumIntegerDigits: 2, useGrouping: false });
+
+  if (seconds < 60) return `${formatNumber(seconds)}s`;
+  if (seconds < 3600) return `${formatNumber(Math.floor(seconds / 60))}m ${pad(seconds % 60)}s`;
+  return `${formatNumber(Math.floor(seconds / 3600))}h ${pad(Math.floor((seconds % 3600) / 60))}m`;
+}
+
+/**
  * "3 days ago" / "in 2 hours".
  *
  * `Intl.RelativeTimeFormat` handles the grammar; the only work here is choosing
