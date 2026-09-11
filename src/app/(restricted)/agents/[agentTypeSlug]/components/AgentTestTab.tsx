@@ -4,6 +4,7 @@ import { useState } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Markdown } from '@/components/common/Markdown';
 import { StatusBadge } from '@/components/common/StatusBadge';
 import { fieldInputCls } from '@/components/common/form/fieldStyles';
 import { t } from '@/locales';
@@ -60,7 +61,7 @@ export function AgentTestTab({ agent }: Props) {
                 />
               </div>
             </div>
-            <p className="text-sm leading-relaxed whitespace-pre-wrap">{result.answer}</p>
+            <Markdown className="text-sm leading-relaxed">{result.answer}</Markdown>
 
             <div className="border-border border-t pt-3">
               <p className="mb-2 text-xs font-semibold">{t.agents.detail.test.citationsLabel}</p>
@@ -71,7 +72,7 @@ export function AgentTestTab({ agent }: Props) {
                   {result.citations.map((citation, index) => (
                     <li key={`${citation.source_url}-${index}`} className="text-xs">
                       <p className="font-medium">{citation.source_title}</p>
-                      <p className="text-muted-foreground">{citation.excerpt}</p>
+                      <Markdown className="text-muted-foreground">{citation.excerpt}</Markdown>
                     </li>
                   ))}
                 </ul>

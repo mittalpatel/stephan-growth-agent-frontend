@@ -4,7 +4,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 
 import { useAuthMutation } from '@/hooks/useAuthMutation';
-import { getAxiosError } from '@/lib/helper';
+import { getAxiosError, getErrorCode } from '@/lib/helper';
 import {
   agentDetailEndpoint,
   agentDetailKey,
@@ -56,7 +56,21 @@ export function useAgentActions(agentId: string) {
       toast.success(t.agents.toast.published);
       invalidate();
     },
-    onError: (error) => toast.error(getAxiosError(error)),
+    // `no_draft` and `disclosure_cannot_be_disabled` get dedicated copy since
+    // they're reachable, expected states, not surprise failures. Everything
+    // else (including `missing_language_localization`, whose backend message
+    // already names the specific missing languages/fields) falls back to the
+    // server's own message text via getAxiosError.
+    onError: (error) => {
+      const code = getErrorCode(error);
+      if (code === 'no_draft') {
+        toast.error(t.agents.toast.publishNoDraft);
+      } else if (code === 'disclosure_cannot_be_disabled') {
+        toast.error(t.agents.toast.publishDisclosureRequired);
+      } else {
+        toast.error(getAxiosError(error));
+      }
+    },
   });
 
   const rollbackMutation = useAuthMutation<ApiResponse<Agent>, AgentRollbackInput>({

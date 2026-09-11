@@ -106,6 +106,19 @@ decorative, so it carries no information the label does not.
 
 Never rely on colour alone to convey state; the label must say it too.
 
+## Markdown
+
+`src/components/common/Markdown.tsx` (added 2026-09-11). Renders a markdown
+string via `react-markdown` + `remark-gfm` — for backend-supplied markdown
+that isn't a locale string (an agent's test-ask `answer`, a knowledge
+citation `excerpt`), never for `t.*` copy, which stays plain JSX text.
+
+No `dangerouslySetInnerHTML`: the library maps its parsed AST to React
+elements itself, which is what makes it safe to point at crawled-page or
+model-generated text with no separate sanitizer step. Links always render
+with `target="_blank" rel="noopener noreferrer"`, since this content only
+ever links to citation sources, not this app's own routes.
+
 ## PreviewBanner
 
 `src/components/common/PreviewBanner.tsx`. Takes one already-translated `note`.

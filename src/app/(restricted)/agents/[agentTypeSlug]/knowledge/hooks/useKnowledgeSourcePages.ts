@@ -9,6 +9,8 @@ import { getAxiosError } from '@/lib/helper';
 import { t } from '@/locales';
 import {
   discoveredUrlsKey,
+  INDEX_VERSIONS_LIST_KEY,
+  KNOWLEDGE_HEALTH_KEY,
   websiteDiscoveredUrlsEndpoint,
   websiteRecrawlPagesEndpoint,
 } from '@/services/knowledge';
@@ -39,6 +41,13 @@ export function useKnowledgeSourcePages(websiteSourceId: string | null) {
           : t.knowledge.toast.recrawlPagesStarted
       );
       void queryClient.invalidateQueries({ queryKey: discoveredUrlsKey(websiteSourceId ?? '') });
+      // A recrawl re-extracts the selected pages, which also kicks off a
+      // background index rebuild for every agent this source feeds. No
+      // agent id is known here (this panel is source-scoped, not
+      // agent-scoped), so invalidate by key prefix rather than a specific
+      // agent's entry — there's normally only one agent's page open anyway.
+      void queryClient.invalidateQueries({ queryKey: [INDEX_VERSIONS_LIST_KEY] });
+      void queryClient.invalidateQueries({ queryKey: [KNOWLEDGE_HEALTH_KEY] });
     },
     onError: (error) => toast.error(getAxiosError(error)),
   });

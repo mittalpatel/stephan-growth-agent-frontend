@@ -520,9 +520,40 @@ of validation already tracked here.
   history" limited to rolling back to the currently published version
   (`POST .../rollback/`). The backend has no version-list endpoint, so a full
   history browser isn't possible yet.
+
+  **Publish error codes (2026-09-10 sync)**: `useAgentActions`'s
+  `publishMutation.onError` branches on `getErrorCode(error)`
+  (`AgentService.publish()`'s three reachable codes) instead of always
+  showing a generic toast: `no_draft` (draft cleared by a prior publish,
+  `t.agents.toast.publishNoDraft`) and `disclosure_cannot_be_disabled`
+  (`t.agents.toast.publishDisclosureRequired`) get dedicated copy since
+  they're expected, reachable states, not surprise failures.
+  `missing_language_localization` still falls through to `getAxiosError`,
+  since the backend's own message text already lists which
+  languages/fields are missing (`errors.localized_text[0]`) and there's no
+  separate structured field to bind to — `custom_exception_handler` only
+  ever forwards `code` and the single interpolated message, never the
+  per-language `errors` dict the service raises internally. The backend's
+  now-removed `index_not_ready` code (dropped 2026-09-09, publish no longer
+  requires a ready knowledge index) was never handled here, so there's
+  nothing to migrate away from.
+
 - **Test** — `useAgentTestAsk` posts to `POST .../draft/test/`, gated
   `agent:execute`, rendering the answer, confidence decision, and citations
   from `ChatRuntimeService`.
+
+  **Markdown rendering (2026-09-11)**: `result.answer` and each citation's
+  `excerpt` are markdown (the answer's own formatting, and — since the
+  backend's `d86388e` switched extraction to Scrapling's Markdown
+  conversion — real headings/lists/links in an excerpt pulled from a crawled
+  page). Both used to render as a plain `<p>`, so `**bold**` and
+  `[text](url)` showed as literal syntax with no clickable links. Both now
+  go through `src/components/common/Markdown.tsx` (`react-markdown` +
+  `remark-gfm`, no `dangerouslySetInnerHTML` — the library maps the parsed
+  AST straight to React elements, which is what makes it safe to point at
+  crawled/model-generated text with no separate sanitizer). Links always get
+  `target="_blank" rel="noopener noreferrer"`, since they point at citation
+  sources, never this app's own routes.
 
 ## Nav and route registration
 

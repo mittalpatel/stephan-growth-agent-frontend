@@ -215,6 +215,8 @@ export const agents = {
     rolledBack: 'Rolled back to the selected version.',
     draftSaved: 'Draft saved.',
     draftCreateFailed: 'Could not start a new draft. Try again.',
+    publishNoDraft: 'Save a draft before publishing.',
+    publishDisclosureRequired: 'AI disclosure cannot be turned off. Enable it before publishing.',
   },
   validation: {
     nameRequired: 'Name is required.',

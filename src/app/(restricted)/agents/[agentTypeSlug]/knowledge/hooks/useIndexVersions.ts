@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 
@@ -12,11 +12,13 @@ import {
   agentBuildIndexEndpoint,
   agentIndexVersionsEndpoint,
   indexVersionsListKey,
+  knowledgeHealthKey,
 } from '@/services/knowledge';
 import type { ApiResponse } from '@/types/api';
-import type { IndexVersion } from '@/types/knowledge';
+import type { IndexVersion, IndexVersionStatus } from '@/types/knowledge';
 
 const DEFAULT_LIMIT = 10;
+const POLL_INTERVAL_MS = 5000;
 
 /**
  * An agent's index build history plus the "build index" action. Its own
@@ -30,8 +32,34 @@ export function useIndexVersions(agentId: string) {
   const listQuery = useAuthQuery<ApiResponse<IndexVersion[]>>(
     [...indexVersionsListKey(agentId), page],
     `${agentIndexVersionsEndpoint(agentId)}?page=${page}&page_size=${DEFAULT_LIMIT}`,
-    { enabled: Boolean(agentId), placeholderData: (previous) => previous }
+    {
+      enabled: Boolean(agentId),
+      placeholderData: (previous) => previous,
+      // The newest version (list is ordered `-version_number`) goes through
+      // `building` while `build_index_version` runs in the background —
+      // triggered either by this panel's own "Build index" action or
+      // automatically after an extraction elsewhere on the page. Poll only
+      // while that's true, so the status flips to `ready`/`failed` on its
+      // own instead of needing a manual refetch.
+      refetchInterval: (query) => {
+        const versions = query.state.data?.data ?? [];
+        return versions[0]?.status === 'building' ? POLL_INTERVAL_MS : false;
+      },
+    }
   );
+
+  // Once the newest version leaves `building`, the health summary
+  // (indexed_chunks/score) it feeds is stale too — refresh it right when the
+  // build actually finishes, rather than waiting for the next unrelated
+  // invalidation.
+  const latestStatus = listQuery.data?.data[0]?.status;
+  const previousStatusRef = useRef<IndexVersionStatus | undefined>(latestStatus);
+  useEffect(() => {
+    if (previousStatusRef.current === 'building' && latestStatus !== 'building') {
+      void queryClient.invalidateQueries({ queryKey: knowledgeHealthKey(agentId) });
+    }
+    previousStatusRef.current = latestStatus;
+  }, [latestStatus, agentId, queryClient]);
 
   const buildMutation = useAuthMutation<ApiResponse<IndexVersion>, undefined>({
     onSuccess: () => {

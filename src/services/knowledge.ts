@@ -49,6 +49,7 @@ export const websiteRecrawlPagesEndpoint = (websiteSourceId: string) =>
 
 export const KNOWLEDGE_SOURCES_LIST_KEY = 'knowledge-sources-list';
 export const INDEX_VERSIONS_LIST_KEY = 'index-versions-list';
+export const KNOWLEDGE_HEALTH_KEY = 'knowledge-health';
 
 /**
  * No agent id in the key: one org-wide list, so a source added from any
@@ -56,7 +57,7 @@ export const INDEX_VERSIONS_LIST_KEY = 'index-versions-list';
  */
 export const knowledgeSourcesListKey = () => [KNOWLEDGE_SOURCES_LIST_KEY];
 export const indexVersionsListKey = (agentId: string) => [INDEX_VERSIONS_LIST_KEY, agentId];
-export const knowledgeHealthKey = (agentId: string) => ['knowledge-health', agentId];
+export const knowledgeHealthKey = (agentId: string) => [KNOWLEDGE_HEALTH_KEY, agentId];
 export const knowledgeTargetsKey = (agentId: string) => ['knowledge-targets', agentId];
 export const crawlJobKey = (agentId: string, jobId: string) => ['crawl-job', agentId, jobId];
 export const discoveredUrlsKey = (websiteSourceId: string) => ['discovered-urls', websiteSourceId];

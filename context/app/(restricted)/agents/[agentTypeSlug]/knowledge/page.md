@@ -190,6 +190,21 @@ failure state per polling step):
    fires here, not at the end of the flow, so a narrowed agent can see the
    source before its own crawl-job read has to resolve it.
 
+   **Duplicate source (backend 2026-09-11)**: `WebsiteDiscoveryService` now
+   normalizes `root_url` and rejects a second source for the same
+   organization+URL with a 409, `errors.code: "duplicate_website_source"`,
+   `errors.existing_source_id` (a `KnowledgeSource.id`). No frontend change
+   was needed: `discover()`'s bare `applyApiError(error)` call (no
+   `setError` passed) already toasts the envelope's `message` verbatim when
+   nothing binds to a field, and the backend's message text for this code is
+   already the full actionable sentence ("This website has already been
+   added as a knowledge source. Use the existing source to recrawl or add
+   more pages instead."). `errors.existing_source_id` is not read
+   client-side — there's no URL-based route to a knowledge source to deep
+   link to (it's opened as local `pagesTarget` state inside
+   `KnowledgeSourcesTable.tsx`), so wiring it up would need lifting that
+   state further than a single conflict message justifies.
+
    `scope_config` was already accepted by this endpoint (a raw, unvalidated
    `JSONField`) but silently ignored until the backend's `822e91c` (harden
    website-crawling pipeline) made it real. Its keys, mirrored from
@@ -240,6 +255,17 @@ failure state per polling step):
    instead of truncating with an ellipsis — a real crawl commonly discovers
    long, deeply-nested paths, and an operator deciding which pages to
    extract needs to read the full URL, not guess from a cut-off prefix.
+
+   **Manual-add limit (backend 2026-09-11)**: a source can hold at most 25
+   manually-added URLs; exceeding it 409s with
+   `errors.code: "manual_url_limit_exceeded"`,
+   `errors: { existing, requested, limit }`. No frontend change needed here
+   either, for the same reason as the duplicate-source 409 above:
+   `applyStructuralAction`'s bare `applyApiError(error)` already toasts the
+   backend's message, which is composed server-side with the real
+   `existing`/`requested`/`limit` numbers already interpolated. `addUrl`
+   only ever sends one URL per call, so the sibling 400 (a single request's
+   `add` array itself capped at 25) is unreachable from this UI.
 
    **Everything arrives pre-selected.** The backend's discovery task creates
    every `Page` with `is_selected=True`, so this list opens fully checked. That
@@ -378,11 +404,28 @@ between retrying and retyping.
 `IndexVersionsPanel` + `useIndexVersions.ts` — its own local pagination
 (not URL-namespaced; it's a side panel, not the page's primary list), lists
 `GET /agents/{id}/knowledge/index-versions/` and triggers
-`POST /agents/{id}/knowledge/build-index/`, gated `knowledge:execute`. This
-is where publishing's index-readiness guard becomes visible: a failed
-publish because the index isn't `ready` surfaces as the backend's own error
-message via the existing `useAgentActions` toast, not a separate frontend
-check.
+`POST /agents/{id}/knowledge/build-index/`, gated `knowledge:execute`.
+Publishing no longer requires a `ready` index at all (backend dropped
+`_assert_index_ready` 2026-09-09, `AgentMessages.INDEX_NOT_READY` and its
+`code="index_not_ready"` are gone) — this panel is purely informational now,
+not a publish blocker.
+
+**Auto-refresh (2026-09-11)**: extraction (`_trigger_index_rebuild_for_source_safely`,
+called by both `extract_selected_pages` and `recrawl-pages/`) enqueues a
+background `build_index_version` for every agent the source feeds, without
+the operator ever calling `build-index/` themselves. Before this fix, the
+frontend never learned this happened: `useAddWebsiteFlow.ts`'s
+`onExtractionFinished` only invalidated `knowledgeSourcesListKey()`, leaving
+`discoveredUrlsKey` (the "View pages" panel), `indexVersionsListKey`, and
+`knowledgeHealthKey` all showing their pre-extraction snapshot until a full
+page reload. Same gap in `useKnowledgeSourcePages.ts`'s `recrawlPagesMutation`
+(recrawl-pages is the same underlying trigger). Both now also invalidate the
+index-versions and health caches; since the resulting build itself finishes
+asynchronously, `useIndexVersions` polls (5s) while the newest version
+(`versions[0]`, list is `-version_number` ordered) is `building`, and
+invalidates `knowledgeHealthKey` the moment it leaves that state, so the
+health widget's `indexed_chunks`/`score` catch up automatically rather than
+staying pinned to the pre-build numbers.
 
 ## Knowledge health (Sprint-1 gap closure)
 

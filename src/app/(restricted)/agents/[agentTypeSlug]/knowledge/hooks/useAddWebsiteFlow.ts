@@ -7,6 +7,9 @@ import { useAuthMutation } from '@/hooks/useAuthMutation';
 import { applyApiError } from '@/lib/apiError';
 import type { WebsiteDiscoverSubmitValues } from '@/lib/schemas/knowledge';
 import {
+  discoveredUrlsKey,
+  indexVersionsListKey,
+  knowledgeHealthKey,
   KNOWLEDGE_WEBSITE_DISCOVER_ENDPOINT,
   knowledgeSourcesListKey,
   websiteExtractEndpoint,
@@ -144,12 +147,23 @@ export function useAddWebsiteFlow(agentId: string, onCreated?: (sourceId: string
       setExtractionResult(job);
       if (job.status === 'completed') {
         void queryClient.invalidateQueries({ queryKey: knowledgeSourcesListKey() });
+        // A successful extraction also updates this source's own page list
+        // (statuses move off `discovered`) and kicks off a background index
+        // rebuild (`_trigger_index_rebuild_for_source_safely`) for every
+        // agent the source feeds — without these, "View pages" and the
+        // index/health panels keep showing their pre-extraction snapshot
+        // until the operator reloads the page.
+        if (websiteSourceId) {
+          void queryClient.invalidateQueries({ queryKey: discoveredUrlsKey(websiteSourceId) });
+        }
+        void queryClient.invalidateQueries({ queryKey: indexVersionsListKey(agentId) });
+        void queryClient.invalidateQueries({ queryKey: knowledgeHealthKey(agentId) });
         setStep('done');
       } else {
         setStep('extraction-failed');
       }
     },
-    [queryClient]
+    [queryClient, agentId, websiteSourceId]
   );
 
   return {
