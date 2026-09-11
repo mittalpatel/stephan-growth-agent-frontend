@@ -8,6 +8,8 @@ import { getAxiosError } from '@/lib/helper';
 import { t } from '@/locales';
 import {
   knowledgeSourceDetailEndpoint,
+  knowledgeSourceDisableEndpoint,
+  knowledgeSourceEnableEndpoint,
   knowledgeSourceReprocessEndpoint,
   knowledgeSourcesListKey,
   websiteRecrawlEndpoint,
@@ -17,7 +19,7 @@ import type { ApiResponse } from '@/types/api';
 
 /**
  * Per-source row actions on the knowledge sources list: rename, delete,
- * reprocess, recrawl (website sources only). Each invalidates the source
+ * reprocess, recrawl (website sources only), disable/enable. Each invalidates the source
  * list on success rather than patching it locally — low-frequency actions
  * where a confirmed server read is worth the round trip, same rationale as
  * `useAgentActions`.
@@ -69,6 +71,22 @@ export function useKnowledgeSourceActions() {
     onError: (error) => toast.error(getAxiosError(error)),
   });
 
+  const disableMutation = useAuthMutation<ApiResponse<KnowledgeSource>, undefined>({
+    onSuccess: (response) => {
+      toast.success(response.message || t.knowledge.toast.disabled);
+      invalidate();
+    },
+    onError: (error) => toast.error(getAxiosError(error)),
+  });
+
+  const enableMutation = useAuthMutation<ApiResponse<KnowledgeSource>, undefined>({
+    onSuccess: (response) => {
+      toast.success(response.message || t.knowledge.toast.enabled);
+      invalidate();
+    },
+    onError: (error) => toast.error(getAxiosError(error)),
+  });
+
   return {
     rename: (sourceId: string, body: KnowledgeSourceUpdateInput) =>
       renameMutation.mutateAsync({
@@ -93,5 +111,13 @@ export function useKnowledgeSourceActions() {
     recrawl: (websiteSourceId: string) =>
       recrawlMutation.mutate({ url: websiteRecrawlEndpoint(websiteSourceId) }),
     isRecrawling: recrawlMutation.isPending,
+
+    disable: (sourceId: string) =>
+      disableMutation.mutate({ url: knowledgeSourceDisableEndpoint(sourceId) }),
+    isDisabling: disableMutation.isPending,
+
+    enable: (sourceId: string) =>
+      enableMutation.mutate({ url: knowledgeSourceEnableEndpoint(sourceId) }),
+    isEnabling: enableMutation.isPending,
   };
 }

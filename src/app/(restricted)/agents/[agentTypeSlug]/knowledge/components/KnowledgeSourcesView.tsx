@@ -19,7 +19,7 @@ import { KnowledgeSourcesSkeleton } from './KnowledgeSourcesSkeleton';
 import { KnowledgeSourcesTable } from './KnowledgeSourcesTable';
 import { KnowledgeTargetsPanel } from './KnowledgeTargetsPanel';
 
-type Props = Readonly<{ agentId: string }>;
+type Props = Readonly<{ agentId: string; agentTypeSlug: string }>;
 
 /**
  * The organization's shared knowledge sources, plus the parts that belong to
@@ -36,7 +36,7 @@ type Props = Readonly<{ agentId: string }>;
  * `/agents/[id]/knowledge` route until that page moved to the reference
  * platform's tabbed layout, which is why it carries no header of its own.
  */
-export function KnowledgeSourcesView({ agentId }: Props) {
+export function KnowledgeSourcesView({ agentId, agentTypeSlug }: Props) {
   const list = useKnowledgeSources();
   const { includeSource } = useKnowledgeTargets(agentId);
   const { can } = usePermissions();
@@ -81,7 +81,7 @@ export function KnowledgeSourcesView({ agentId }: Props) {
       );
     }
 
-    return <KnowledgeSourcesTable sources={list.sources} />;
+    return <KnowledgeSourcesTable agentTypeSlug={agentTypeSlug} sources={list.sources} />;
   }
 
   return (
@@ -99,7 +99,11 @@ export function KnowledgeSourcesView({ agentId }: Props) {
                 it cannot then see — and, before that, from 404ing on its own
                 crawl-job poll. It is a no-op for an un-narrowed agent. */}
             <AddPdfDialog onCreated={includeSource} />
-            <AddWebsiteDialog agentId={agentId} onCreated={includeSource} />
+            <AddWebsiteDialog
+              agentId={agentId}
+              agentTypeSlug={agentTypeSlug}
+              onCreated={includeSource}
+            />
           </div>
         )}
 

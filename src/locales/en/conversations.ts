@@ -40,6 +40,11 @@ export const conversations = {
     assign: 'Assign',
     generateFollowup: 'Generate follow-up',
     citationsLabel: 'Sources',
+    loadOlder: 'Load earlier messages',
+    loadingOlder: 'Loading…',
+    transcriptCount: 'Showing the latest {shown} of {total} messages.',
+    transcriptError: 'The transcript could not be loaded.',
+    noMessages: 'This conversation has no messages yet.',
     confidence: {
       answered: 'Answered',
       clarify: 'Clarify',

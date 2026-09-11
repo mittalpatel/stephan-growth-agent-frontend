@@ -9,6 +9,7 @@ import { usePermissions } from '@/app/(restricted)/context/PermissionsContext';
 import { EmptyState } from '@/components/common/EmptyState';
 import { FilterToolbar } from '@/components/common/FilterToolbar';
 import { ListPagination } from '@/components/common/ListPagination';
+import { Markdown } from '@/components/common/Markdown';
 import { PageHeader } from '@/components/common/PageHeader';
 import { StatusBadge, type StatusTone } from '@/components/common/StatusBadge';
 import { useAuthQuery } from '@/hooks/useAuthQuery';
@@ -21,7 +22,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Skeleton } from '@/components/ui/skeleton';
-import { formatDate } from '@/lib/i18n';
+import { format, formatDate, formatNumber } from '@/lib/i18n';
 import { cn } from '@/lib/utils';
 import { t } from '@/locales';
 import { organizationMembersEndpoint, organizationMembersKey } from '@/services/organizations';
@@ -30,6 +31,7 @@ import type { ConversationStatus } from '@/types/conversation';
 
 import { useConversationActions } from '../hooks/useConversationActions';
 import { useConversationDetail } from '../hooks/useConversationDetail';
+import { useConversationMessages } from '../hooks/useConversationMessages';
 import { useConversationsList } from '../hooks/useConversationsList';
 
 type OrganizationMember = { user_id: string; email: string; full_name: string };
@@ -41,6 +43,127 @@ const STATUS_TONE: Record<ConversationStatus, StatusTone> = {
   resolved: 'success',
   abandoned: 'neutral',
 };
+
+/**
+ * One conversation's full transcript.
+ *
+ * Reads the paginated `/messages/` endpoint rather than the detail response's
+ * embedded `messages` array: that array is capped at 50 server-side and, since
+ * messages are ordered oldest-first, the cap drops the *newest* turns on any
+ * longer conversation. See `useConversationMessages`.
+ */
+function ConversationTranscript({ conversationId }: Readonly<{ conversationId: string }>) {
+  const { messages, total, isLoading, isError, refetch, hasOlder, loadOlder, isLoadingOlder } =
+    useConversationMessages(conversationId);
+
+  if (isLoading) {
+    return (
+      <div className="flex flex-1 flex-col gap-4 px-5 py-5">
+        {[0, 1, 2].map((row) => (
+          <Skeleton key={row} className="h-16 w-3/4 rounded-2xl" />
+        ))}
+      </div>
+    );
+  }
+
+  if (isError) {
+    return (
+      <div className="flex flex-1 flex-col items-center justify-center gap-3 px-5 py-5">
+        <p className="text-muted-foreground text-sm">{t.conversations.detail.transcriptError}</p>
+        <Button variant="outline" size="sm" onClick={() => void refetch()}>
+          {t.buttons.tryAgain}
+        </Button>
+      </div>
+    );
+  }
+
+  if (messages.length === 0) {
+    return (
+      <div className="flex flex-1 items-center justify-center px-5 py-5">
+        <p className="text-muted-foreground text-sm">{t.conversations.detail.noMessages}</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex flex-1 flex-col gap-4 overflow-y-auto px-5 py-5">
+      {/* Older turns load upward, so the control that fetches them belongs at
+          the top of the scroll region, above the oldest message on screen. */}
+      {hasOlder && (
+        <div className="flex flex-col items-center gap-1.5">
+          <Button variant="outline" size="sm" onClick={loadOlder} disabled={isLoadingOlder}>
+            {isLoadingOlder
+              ? t.conversations.detail.loadingOlder
+              : t.conversations.detail.loadOlder}
+          </Button>
+          <p className="text-muted-foreground text-[11px]">
+            {format(t.conversations.detail.transcriptCount, {
+              shown: formatNumber(messages.length),
+              total: formatNumber(total),
+            })}
+          </p>
+        </div>
+      )}
+      {messages.map((m) => (
+        <div
+          key={m.id}
+          className={cn('flex', m.role === 'visitor' ? 'justify-end' : 'justify-start')}
+        >
+          <div
+            className={cn(
+              'max-w-[80%] rounded-2xl px-4 py-2.5 text-sm leading-relaxed',
+              m.role === 'visitor'
+                ? 'bg-primary text-primary-foreground rounded-br-sm'
+                : 'bg-muted rounded-bl-sm'
+            )}
+          >
+            {m.role === 'agent' && (
+              <div className="text-primary-strong mb-1 flex items-center gap-1.5 text-[11px] font-semibold">
+                <Sparkles className="size-[11px]" /> {t.conversations.detail.transcriptHeading}
+              </div>
+            )}
+            {/* Only the agent side is backend-composed markdown; a visitor's
+                own message is exactly what they typed, so it renders as plain
+                text rather than being parsed (and avoids `text-primary` links
+                landing on this bubble's `bg-primary` fill). */}
+            {m.role === 'agent' ? (
+              <Markdown>{m.content}</Markdown>
+            ) : (
+              <p className="whitespace-pre-wrap">{m.content}</p>
+            )}
+            {m.citations.length > 0 && (
+              <p
+                className={cn(
+                  'mt-1 text-[10px]',
+                  m.role === 'visitor' ? 'text-primary-foreground/60' : 'text-muted-foreground'
+                )}
+              >
+                {t.conversations.detail.citationsLabel}:{' '}
+                {m.citations.map((c, index) => (
+                  <span key={`${c.source_url}-${index}`}>
+                    {index > 0 && ', '}
+                    {c.source_url ? (
+                      <a
+                        href={c.source_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="underline underline-offset-2 hover:no-underline"
+                      >
+                        {c.source_title}
+                      </a>
+                    ) : (
+                      c.source_title
+                    )}
+                  </span>
+                ))}
+              </p>
+            )}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
 
 function AssignOperator({ conversationId }: Readonly<{ conversationId: string }>) {
   const { organization } = useOrganization();
@@ -277,47 +400,10 @@ export function ConversationsListView({ agentId: pinnedAgentId }: Props = {}) {
                       />
                     )}
                   </div>
-                  <div className="flex flex-1 flex-col gap-4 overflow-y-auto px-5 py-5">
-                    {conversation?.messages.map((m) => (
-                      <div
-                        key={m.id}
-                        className={cn(
-                          'flex',
-                          m.role === 'visitor' ? 'justify-end' : 'justify-start'
-                        )}
-                      >
-                        <div
-                          className={cn(
-                            'max-w-[80%] rounded-2xl px-4 py-2.5 text-sm leading-relaxed',
-                            m.role === 'visitor'
-                              ? 'bg-primary text-primary-foreground rounded-br-sm'
-                              : 'bg-muted rounded-bl-sm'
-                          )}
-                        >
-                          {m.role === 'agent' && (
-                            <div className="text-primary-strong mb-1 flex items-center gap-1.5 text-[11px] font-semibold">
-                              <Sparkles className="size-[11px]" />{' '}
-                              {t.conversations.detail.transcriptHeading}
-                            </div>
-                          )}
-                          <p>{m.content}</p>
-                          {m.citations.length > 0 && (
-                            <p
-                              className={cn(
-                                'mt-1 text-[10px]',
-                                m.role === 'visitor'
-                                  ? 'text-primary-foreground/60'
-                                  : 'text-muted-foreground'
-                              )}
-                            >
-                              {t.conversations.detail.citationsLabel}:{' '}
-                              {m.citations.map((c) => c.source_title).join(', ')}
-                            </p>
-                          )}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
+                  {/* Keyed on the conversation so switching rows discards the
+                      previously accumulated transcript pages instead of
+                      carrying them into the next conversation. */}
+                  <ConversationTranscript key={activeId} conversationId={activeId} />
                 </>
               )}
             </div>

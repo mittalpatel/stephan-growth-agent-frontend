@@ -37,6 +37,10 @@ export const knowledgeSourceDetailEndpoint = (sourceId: string) =>
   `/api/v1/knowledge/sources/${sourceId}/`;
 export const knowledgeSourceReprocessEndpoint = (sourceId: string) =>
   `/api/v1/knowledge/sources/${sourceId}/reprocess/`;
+export const knowledgeSourceDisableEndpoint = (sourceId: string) =>
+  `/api/v1/knowledge/sources/${sourceId}/disable/`;
+export const knowledgeSourceEnableEndpoint = (sourceId: string) =>
+  `/api/v1/knowledge/sources/${sourceId}/enable/`;
 
 export const websiteDiscoveredUrlsEndpoint = (websiteSourceId: string) =>
   `/api/v1/knowledge/website/${websiteSourceId}/discovered-urls/`;
@@ -46,6 +50,8 @@ export const websiteRecrawlEndpoint = (websiteSourceId: string) =>
   `/api/v1/knowledge/website/${websiteSourceId}/recrawl/`;
 export const websiteRecrawlPagesEndpoint = (websiteSourceId: string) =>
   `/api/v1/knowledge/website/${websiteSourceId}/recrawl-pages/`;
+export const websiteSourceConfigEndpoint = (websiteSourceId: string) =>
+  `/api/v1/knowledge/website/${websiteSourceId}/config/`;
 
 export const KNOWLEDGE_SOURCES_LIST_KEY = 'knowledge-sources-list';
 export const INDEX_VERSIONS_LIST_KEY = 'index-versions-list';
@@ -83,6 +89,19 @@ export function knowledgeSourcesListUrl(query: KnowledgeSourceListQuery): string
  * truncating if an org ever exceeds it.
  */
 export const KNOWLEDGE_TARGET_PICKER_PAGE_SIZE = 100;
+
+/**
+ * One max-size page of a website source's pages, matching the backend's
+ * `DefaultPagination.max_page_size`. Both page surfaces (the wizard's review
+ * step and the dedicated pages route) read the whole source in one call and
+ * filter/sort client-side, so this has to be a real ceiling rather than an
+ * optimistic one: a larger number is silently clamped to 100 server-side, which
+ * would truncate the list with no pagination control and no way to tell. A
+ * source tops out at 50 auto-discovered plus 25 manually added pages today, so
+ * this fits with headroom, and callers surface `isTruncated` if that ever
+ * changes.
+ */
+export const DISCOVERED_URLS_PAGE_SIZE = 100;
 
 /** Must be a subset of the searchable fields in `KnowledgeSourceSelector`. */
 export const KNOWLEDGE_SOURCE_SEARCH_COLUMNS = ['display_name'];

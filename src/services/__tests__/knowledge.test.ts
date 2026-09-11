@@ -7,6 +7,7 @@ import {
   agentKnowledgeHealthEndpoint,
   agentKnowledgeTargetsEndpoint,
   crawlJobKey,
+  DISCOVERED_URLS_PAGE_SIZE,
   discoveredUrlsKey,
   indexVersionsListKey,
   knowledgeSourceDetailEndpoint,
@@ -96,6 +97,14 @@ describe('knowledge endpoints', () => {
     expect(indexVersionsListKey(AGENT_ID)).toEqual(['index-versions-list', AGENT_ID]);
     expect(crawlJobKey(AGENT_ID, JOB_ID)).toEqual(['crawl-job', AGENT_ID, JOB_ID]);
     expect(discoveredUrlsKey(WEBSITE_SOURCE_ID)).toEqual(['discovered-urls', WEBSITE_SOURCE_ID]);
+  });
+
+  // Both page surfaces read a whole source in one call and filter client-side,
+  // so this has to stay within the backend's `DefaultPagination.max_page_size`.
+  // A larger value is clamped silently, which would present a truncated list
+  // as the complete one, with no pagination control to reveal the difference.
+  it('requests a page of discovered URLs no larger than the backend allows', () => {
+    expect(DISCOVERED_URLS_PAGE_SIZE).toBeLessThanOrEqual(100);
   });
 
   it('encodes list params onto the org-level list endpoint', () => {

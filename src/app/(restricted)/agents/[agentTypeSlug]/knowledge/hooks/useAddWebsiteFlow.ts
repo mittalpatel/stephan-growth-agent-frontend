@@ -4,7 +4,8 @@ import { useCallback, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 
 import { useAuthMutation } from '@/hooks/useAuthMutation';
-import { applyApiError } from '@/lib/apiError';
+import { applyApiError, getEnvelope } from '@/lib/apiError';
+import { getErrorCode } from '@/lib/helper';
 import type { WebsiteDiscoverSubmitValues } from '@/lib/schemas/knowledge';
 import {
   discoveredUrlsKey,
@@ -78,6 +79,10 @@ export function useAddWebsiteFlow(agentId: string, onCreated?: (sourceId: string
   // happened (how many pages made it in, how many failed or were skipped)
   // instead of a bare "queued for indexing" with no numbers.
   const [extractionResult, setExtractionResult] = useState<CrawlJob | null>(null);
+  /** `KnowledgeSource.id` of the source that already covers this root URL, set
+   * only by a `duplicate_website_source` 409. Not a `WebsiteSource.id`, so the
+   * consumer resolves it before routing. */
+  const [duplicateSourceId, setDuplicateSourceId] = useState<string | null>(null);
 
   const discoverMutation = useAuthMutation<
     ApiResponse<WebsiteDiscoverResult>,
@@ -92,6 +97,7 @@ export function useAddWebsiteFlow(agentId: string, onCreated?: (sourceId: string
     setExtractJobId(null);
     setErrorSummary('');
     setExtractionResult(null);
+    setDuplicateSourceId(null);
   }, []);
 
   const discover = useCallback(
@@ -101,6 +107,7 @@ export function useAddWebsiteFlow(agentId: string, onCreated?: (sourceId: string
         root_url: values.root_url,
         ...(scope_config && { scope_config }),
       };
+      setDuplicateSourceId(null);
       try {
         const response = await discoverMutation.mutateAsync({
           url: KNOWLEDGE_WEBSITE_DISCOVER_ENDPOINT,
@@ -112,6 +119,18 @@ export function useAddWebsiteFlow(agentId: string, onCreated?: (sourceId: string
         setStep('discovering');
         return true;
       } catch (error) {
+        // The backend's own message for this 409 is already the full
+        // actionable sentence, so `applyApiError` still toasts it as before.
+        // What it can't do is act on `errors.existing_source_id`: until the
+        // per-source page route existed (2026-09-11) there was nowhere to send
+        // the operator, so the id was read by nothing. Capturing it here turns
+        // "this is already added" into a way to go open it.
+        if (getErrorCode(error) === 'duplicate_website_source') {
+          const existing = getEnvelope(error)?.errors as
+            | { existing_source_id?: string }
+            | undefined;
+          setDuplicateSourceId(existing?.existing_source_id ?? null);
+        }
         applyApiError(error);
         return false;
       }
@@ -176,6 +195,7 @@ export function useAddWebsiteFlow(agentId: string, onCreated?: (sourceId: string
     reset,
     discover,
     isDiscovering: discoverMutation.isPending,
+    duplicateSourceId,
     onDiscoveryFinished,
     extract,
     isExtracting: extractMutation.isPending,

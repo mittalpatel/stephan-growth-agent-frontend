@@ -42,6 +42,8 @@ export const knowledge = {
     recrawl: 'Recrawl',
     viewPages: 'View pages',
     recrawlSelected: 'Recrawl selected pages',
+    disable: 'Disable',
+    enable: 'Enable',
   },
   rename: {
     title: 'Rename source',
@@ -63,12 +65,15 @@ export const knowledge = {
     recrawlStarted: 'Recrawl started.',
     recrawlAlreadyRunning: 'A discovery run is already in progress for this source.',
     recrawlPagesStarted: 'Recrawl started for the selected pages.',
+    disabled: 'Source disabled.',
+    enabled: 'Source enabled.',
   },
   addWebsite: {
     title: 'Add a website',
     description: 'The agent will crawl this site and let you choose which pages to include.',
     rootUrlLabel: 'Website URL',
     rootUrlPlaceholder: 'https://example.com',
+    viewExistingSource: 'Open the source that already covers this website',
     scope: {
       toggle: 'Advanced crawl options',
       maxPagesLabel: 'Max pages',
@@ -191,15 +196,19 @@ export const knowledge = {
   pages: {
     title: 'Pages',
     description: 'The pages this source has crawled for "{name}".',
+    backToKnowledge: 'Back to knowledge sources',
     errorTitle: 'Could not load pages',
     errorDescription: 'Something went wrong while loading these pages. Please try again.',
     empty: 'No pages have been crawled yet.',
+    noPermissionTitle: 'View permission required',
+    noPermissionDescription: "You don't have permission to view this source's pages.",
     summary: {
       total: 'Pages found',
       indexed: 'Added to this agent',
       notExtracted: 'Not extracted yet',
       failed: 'Could not be read',
       skipped: 'Skipped as empty or duplicate',
+      excluded: 'Excluded from the index',
     },
     lastChangedLabel: 'Last changed {when}',
     neverChanged: 'never',
@@ -216,6 +225,27 @@ export const knowledge = {
       duplicate: 'This page’s content matches another page on this site, so it was skipped.',
     },
     selectedCount: '{count} selected',
+    searchPlaceholder: 'Search these pages',
+    noMatches: 'No pages match "{query}".',
+    filterCount: 'Showing {shown} of {total} pages.',
+    addUrlHint: 'Missing a page? Add its address here.',
+    addUrlPlaceholder: 'https://example.com/extra-page',
+    addUrlAction: 'Add URL',
+    excludedBadge: 'Excluded from the index',
+    excludedHint:
+      'This page was crawled, but its content is not part of the index and the agent cannot answer from it. Include it to add it back on the next rebuild.',
+    includeAction: 'Include',
+    excludeAction: 'Exclude',
+    includeTitle: 'Add this page back to the index on the next rebuild.',
+    excludeTitle:
+      'Keep this page in the list but leave its content out of the index. The crawled text is kept, so you can include it again later.',
+    removeAction: 'Remove',
+    removeTitle:
+      'Delete this page from the list entirely. A later recrawl has to rediscover it. To keep the row but drop it from the index, use Exclude.',
+    removeRowLabel: 'Remove {url} from this source',
+    recrawlRowLabel: 'Select {url} for recrawling',
+    truncatedNotice:
+      'This source has {total} pages, and only the first {shown} are shown. Search and the counts above cover the loaded pages only.',
   },
   health: {
     title: 'Knowledge health',

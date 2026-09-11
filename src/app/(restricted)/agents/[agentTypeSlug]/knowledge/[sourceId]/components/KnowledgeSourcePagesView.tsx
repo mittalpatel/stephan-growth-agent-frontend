@@ -1,0 +1,380 @@
+'use client';
+
+import { useMemo, useState } from 'react';
+import Link from 'next/link';
+import { AlertTriangle, ArrowLeft, Loader2, Search, X } from 'lucide-react';
+
+import { usePermissions } from '@/app/(restricted)/context/PermissionsContext';
+import { EmptyState } from '@/components/common/EmptyState';
+import { StatusBadge, type StatusTone } from '@/components/common/StatusBadge';
+import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Input } from '@/components/ui/input';
+import { format, formatNumber, formatRelativeTime } from '@/lib/i18n';
+import { t } from '@/locales';
+import type { PageStatus } from '@/types/knowledge';
+
+import { useAllKnowledgeSources } from '../../hooks/useAllKnowledgeSources';
+import { useKnowledgeSourcePages } from '../../hooks/useKnowledgeSourcePages';
+
+type Props = Readonly<{ agentTypeSlug: string; websiteSourceId: string }>;
+
+const PAGE_STATUS_TONES: Record<PageStatus, StatusTone> = {
+  discovered: 'neutral',
+  ready: 'success',
+  failed: 'danger',
+  // Warning, not danger: both are deliberate skips by the extractor, not
+  // errors, but the operator still needs to know the page they picked is not
+  // in the index.
+  low_quality: 'warning',
+  duplicate: 'warning',
+};
+
+/** Only the two outcomes whose reason isn't self-evident from the label. */
+const PAGE_STATUS_HINTS: Partial<Record<PageStatus, string>> = {
+  low_quality: t.knowledge.pages.pageStatusHint.low_quality,
+  duplicate: t.knowledge.pages.pageStatusHint.duplicate,
+};
+
+/** Already-indexed pages first (what the request was for), then whatever
+ * needs attention next (failed), then deliberate skips, then everything
+ * still waiting to be extracted at all. */
+const STATUS_SORT_PRIORITY: Record<PageStatus, number> = {
+  ready: 0,
+  failed: 1,
+  low_quality: 2,
+  duplicate: 2,
+  discovered: 3,
+};
+
+/**
+ * A website source's page list: crawl health per page (last content change,
+ * HTTP status), a search box, a way to add a page manually, and selective
+ * recrawl via the backend's 2026-09-09 `recrawl-pages/` endpoint. Its own
+ * route (2026-09-11) rather than a side sheet — a real crawl commonly finds
+ * hundreds of pages, which a sheet has no room to search or manage well.
+ * Distinct from `DiscoveredUrlsReview` in `AddWebsiteDialog.tsx`, which is
+ * the one-time, pre-extraction wizard step for a brand-new source.
+ */
+export function KnowledgeSourcePagesView({ agentTypeSlug, websiteSourceId }: Props) {
+  const { can } = usePermissions();
+  const canView = can('knowledge', 'view');
+  const canManage = can('knowledge', 'manage');
+  const canRecrawl = can('knowledge', 'execute');
+
+  const {
+    pages,
+    isLoading,
+    isError,
+    recrawlSelected,
+    isRecrawling,
+    addUrl,
+    setIncluded,
+    removePage,
+    isTruncated,
+    total,
+  } = useKnowledgeSourcePages(canView ? websiteSourceId : null);
+  // Only used to resolve this source's display name for the header — the
+  // pages endpoint itself carries no source metadata, and adding one just
+  // for a title isn't worth it when the org-wide list is already fetched
+  // elsewhere on this page's parent tab.
+  const { sources } = useAllKnowledgeSources();
+  const source = sources.find((item) => item.website_source_id === websiteSourceId);
+
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [search, setSearch] = useState('');
+  const [newUrl, setNewUrl] = useState('');
+
+  const toggle = (pageId: string, checked: boolean) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (checked) next.add(pageId);
+      else next.delete(pageId);
+      return next;
+    });
+  };
+
+  const sortedPages = useMemo(
+    () =>
+      [...pages].sort((a, b) => STATUS_SORT_PRIORITY[a.status] - STATUS_SORT_PRIORITY[b.status]),
+    [pages]
+  );
+
+  const query = search.trim().toLowerCase();
+  const visiblePages = query
+    ? sortedPages.filter((page) => page.url.toLowerCase().includes(query))
+    : sortedPages;
+  const isFiltered = query.length > 0;
+
+  const countByStatus = (status: PageStatus) =>
+    pages.filter((page) => page.status === status).length;
+  const summaryRows = [
+    { key: 'total', label: t.knowledge.pages.summary.total, value: pages.length },
+    { key: 'ready', label: t.knowledge.pages.summary.indexed, value: countByStatus('ready') },
+    {
+      key: 'pending',
+      label: t.knowledge.pages.summary.notExtracted,
+      value: countByStatus('discovered'),
+    },
+    { key: 'failed', label: t.knowledge.pages.summary.failed, value: countByStatus('failed') },
+    {
+      key: 'skipped',
+      label: t.knowledge.pages.summary.skipped,
+      value: countByStatus('low_quality') + countByStatus('duplicate'),
+    },
+    // Counted separately from status: a page can be `ready` and still excluded,
+    // which is the one combination that otherwise looks entirely healthy while
+    // contributing nothing to the index.
+    {
+      key: 'excluded',
+      label: t.knowledge.pages.summary.excluded,
+      value: pages.filter((page) => !page.is_selected).length,
+    },
+  ].filter((row) => row.key === 'total' || row.value > 0);
+
+  const submitNewUrl = () => {
+    const trimmed = newUrl.trim();
+    if (!trimmed) return;
+    void addUrl(trimmed);
+    setNewUrl('');
+  };
+
+  return (
+    <div className="flex flex-col gap-6">
+      <div>
+        <Link
+          href={`/agents/${agentTypeSlug}`}
+          className="text-muted-foreground hover:text-foreground inline-flex items-center gap-1.5 text-sm"
+        >
+          <ArrowLeft className="size-4" aria-hidden />
+          {t.knowledge.pages.backToKnowledge}
+        </Link>
+        <h1 className="font-display mt-3 text-2xl font-bold tracking-tight">
+          {source?.display_name ?? t.knowledge.pages.title}
+        </h1>
+        <p className="text-muted-foreground mt-1 text-sm">
+          {format(t.knowledge.pages.description, { name: source?.display_name ?? '' })}
+        </p>
+      </div>
+
+      {!canView && (
+        <EmptyState
+          title={t.knowledge.pages.noPermissionTitle}
+          description={t.knowledge.pages.noPermissionDescription}
+        />
+      )}
+
+      {canView && isLoading && (
+        <div className="flex justify-center py-12">
+          <Loader2 className="text-muted-foreground size-6 animate-spin" aria-hidden />
+        </div>
+      )}
+
+      {canView && !isLoading && isError && (
+        <EmptyState
+          icon={AlertTriangle}
+          title={t.knowledge.pages.errorTitle}
+          description={t.knowledge.pages.errorDescription}
+        />
+      )}
+
+      {canView && !isLoading && !isError && pages.length === 0 && (
+        <EmptyState title={t.knowledge.pages.empty} />
+      )}
+
+      {canView && !isLoading && !isError && pages.length > 0 && (
+        <>
+          {/* What the crawl actually produced, counted from the rows already
+              loaded. Without this the page answers "which pages exist" but
+              not "how did it go", which is the first thing anyone asks after a
+              crawl finishes. */}
+          <dl className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
+            {summaryRows.map((row) => (
+              <div key={row.key} className="bg-card rounded-lg border px-4 py-3">
+                <dt className="text-muted-foreground text-xs">{row.label}</dt>
+                <dd className="mt-1 text-xl font-semibold tabular-nums">
+                  {formatNumber(row.value)}
+                </dd>
+              </div>
+            ))}
+          </dl>
+
+          {/* One max-size page is read at a time, so a source larger than that
+              would otherwise present a partial list as the whole thing. */}
+          {isTruncated && (
+            <p className="text-warning-foreground bg-warning rounded-md px-4 py-2.5 text-xs">
+              {format(t.knowledge.pages.truncatedNotice, {
+                total: formatNumber(total),
+                shown: formatNumber(pages.length),
+              })}
+            </p>
+          )}
+
+          <div className="relative">
+            <Search
+              className="text-muted-foreground pointer-events-none absolute top-1/2 left-2.5 size-4 -translate-y-1/2"
+              aria-hidden
+            />
+            <Input
+              value={search}
+              onChange={(event) => setSearch(event.target.value)}
+              placeholder={t.knowledge.pages.searchPlaceholder}
+              aria-label={t.knowledge.pages.searchPlaceholder}
+              className="pl-8"
+            />
+          </div>
+
+          {visiblePages.length === 0 ? (
+            <p className="text-muted-foreground rounded-md border py-8 text-center text-sm">
+              {format(t.knowledge.pages.noMatches, { query: search.trim() })}
+            </p>
+          ) : (
+            <div className="divide-y rounded-md border">
+              {visiblePages.map((page) => {
+                const isFailedStatus = (page.http_status ?? 200) >= 400;
+                const hint = PAGE_STATUS_HINTS[page.status];
+                return (
+                  <div
+                    key={page.id}
+                    className="hover:bg-accent flex items-start gap-3 px-4 py-3 text-sm"
+                  >
+                    {canRecrawl && (
+                      <Checkbox
+                        className="mt-0.5"
+                        checked={selectedIds.has(page.id)}
+                        onCheckedChange={(checked) => toggle(page.id, checked === true)}
+                        aria-label={format(t.knowledge.pages.recrawlRowLabel, { url: page.url })}
+                      />
+                    )}
+                    <div className="min-w-0 flex-1 space-y-1">
+                      <p className="font-medium break-all">{page.url}</p>
+                      <div className="text-muted-foreground flex flex-wrap items-center gap-x-3 gap-y-1 text-xs">
+                        <span>
+                          {format(t.knowledge.pages.lastChangedLabel, {
+                            when: formatRelativeTime(
+                              page.content_changed_at,
+                              t.knowledge.pages.neverChanged
+                            ),
+                          })}
+                        </span>
+                        {page.http_status !== null && (
+                          <StatusBadge
+                            label={format(t.knowledge.pages.httpStatusLabel, {
+                              status: page.http_status,
+                            })}
+                            tone={isFailedStatus ? 'danger' : 'success'}
+                          />
+                        )}
+                        {/* An excluded page keeps its crawl-outcome badge, but
+                            never a success tone: `ready` + excluded reads as
+                            "Indexed" while contributing nothing to retrieval,
+                            which is exactly the state that made a real
+                            extracted-but-unanswerable page look healthy. */}
+                        <StatusBadge
+                          label={t.knowledge.pages.pageStatus[page.status]}
+                          tone={page.is_selected ? PAGE_STATUS_TONES[page.status] : 'neutral'}
+                        />
+                        {!page.is_selected && (
+                          <StatusBadge label={t.knowledge.pages.excludedBadge} tone="warning" />
+                        )}
+                      </div>
+                      {page.status === 'failed' && page.error_message && (
+                        <p className="text-destructive text-xs">{page.error_message}</p>
+                      )}
+                      {hint && <p className="text-muted-foreground text-xs">{hint}</p>}
+                      {!page.is_selected && (
+                        <p className="text-muted-foreground text-xs">
+                          {t.knowledge.pages.excludedHint}
+                        </p>
+                      )}
+                    </div>
+                    {canManage && (
+                      <div className="flex shrink-0 items-center gap-1">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => void setIncluded(page.id, !page.is_selected)}
+                          title={
+                            page.is_selected
+                              ? t.knowledge.pages.excludeTitle
+                              : t.knowledge.pages.includeTitle
+                          }
+                        >
+                          {page.is_selected
+                            ? t.knowledge.pages.excludeAction
+                            : t.knowledge.pages.includeAction}
+                        </Button>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => void removePage(page.id)}
+                          title={t.knowledge.pages.removeTitle}
+                          aria-label={format(t.knowledge.pages.removeRowLabel, { url: page.url })}
+                        >
+                          <X aria-hidden />
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          )}
+
+          {isFiltered && visiblePages.length > 0 && (
+            <p className="text-muted-foreground text-xs">
+              {format(t.knowledge.pages.filterCount, {
+                shown: visiblePages.length,
+                total: pages.length,
+              })}
+            </p>
+          )}
+
+          {canManage && (
+            <div className="space-y-1.5">
+              <p className="text-muted-foreground text-xs">{t.knowledge.pages.addUrlHint}</p>
+              <div className="flex items-center gap-2">
+                <Input
+                  value={newUrl}
+                  onChange={(event) => setNewUrl(event.target.value)}
+                  placeholder={t.knowledge.pages.addUrlPlaceholder}
+                  onKeyDown={(event) => {
+                    if (event.key === 'Enter') {
+                      event.preventDefault();
+                      submitNewUrl();
+                    }
+                  }}
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={submitNewUrl}
+                  disabled={!newUrl.trim()}
+                >
+                  {t.knowledge.pages.addUrlAction}
+                </Button>
+              </div>
+            </div>
+          )}
+        </>
+      )}
+
+      {canView && canRecrawl && pages.length > 0 && (
+        <div className="bg-card/95 border-border sticky bottom-4 flex items-center justify-between gap-4 rounded-lg border px-4 py-3 shadow-sm backdrop-blur">
+          <p className="text-muted-foreground text-sm">
+            {format(t.knowledge.pages.selectedCount, { count: selectedIds.size })}
+          </p>
+          <Button
+            type="button"
+            disabled={selectedIds.size === 0 || isRecrawling}
+            onClick={() => recrawlSelected(Array.from(selectedIds))}
+          >
+            {t.knowledge.actions.recrawlSelected}
+          </Button>
+        </div>
+      )}
+    </div>
+  );
+}

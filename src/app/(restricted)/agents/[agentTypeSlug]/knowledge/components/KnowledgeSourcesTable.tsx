@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
 import { MoreHorizontal } from 'lucide-react';
 
 import { usePermissions } from '@/app/(restricted)/context/PermissionsContext';
@@ -35,7 +36,6 @@ import { t } from '@/locales';
 import type { KnowledgeSourceListItem, KnowledgeSourceStatus } from '@/types/knowledge';
 
 import { useKnowledgeSourceActions } from '../hooks/useKnowledgeSourceActions';
-import { KnowledgeSourcePagesPanel } from './KnowledgeSourcePagesPanel';
 import { RenameSourceDialog } from './RenameSourceDialog';
 
 const STATUS_TONE: Record<KnowledgeSourceStatus, StatusTone> = {
@@ -46,16 +46,15 @@ const STATUS_TONE: Record<KnowledgeSourceStatus, StatusTone> = {
   disabled: 'neutral',
 };
 
-type Props = Readonly<{ sources: KnowledgeSourceListItem[] }>;
+type Props = Readonly<{ agentTypeSlug: string; sources: KnowledgeSourceListItem[] }>;
 
-export function KnowledgeSourcesTable({ sources }: Props) {
+export function KnowledgeSourcesTable({ agentTypeSlug, sources }: Props) {
   const { can } = usePermissions();
   const canManage = can('knowledge', 'manage');
   const canExecute = can('knowledge', 'execute');
-  const { remove, reprocess, recrawl } = useKnowledgeSourceActions();
+  const { remove, reprocess, recrawl, disable, enable } = useKnowledgeSourceActions();
   const [renameTarget, setRenameTarget] = useState<KnowledgeSourceListItem | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<KnowledgeSourceListItem | null>(null);
-  const [pagesTarget, setPagesTarget] = useState<KnowledgeSourceListItem | null>(null);
 
   return (
     <>
@@ -95,8 +94,10 @@ export function KnowledgeSourcesTable({ sources }: Props) {
                         Viewing needs no execute right either — the panel's own
                         recrawl button is what's privileged, not the list. */}
                     {websiteSourceId && (
-                      <Button variant="outline" size="sm" onClick={() => setPagesTarget(source)}>
-                        {t.knowledge.actions.viewPages}
+                      <Button variant="outline" size="sm" asChild>
+                        <Link href={`/agents/${agentTypeSlug}/knowledge/${websiteSourceId}`}>
+                          {t.knowledge.actions.viewPages}
+                        </Link>
                       </Button>
                     )}
                     {(canManage || canExecute) && (
@@ -122,6 +123,16 @@ export function KnowledgeSourcesTable({ sources }: Props) {
                               {t.knowledge.actions.recrawl}
                             </DropdownMenuItem>
                           )}
+                          {canManage &&
+                            (source.status === 'disabled' ? (
+                              <DropdownMenuItem onClick={() => enable(source.id)}>
+                                {t.knowledge.actions.enable}
+                              </DropdownMenuItem>
+                            ) : (
+                              <DropdownMenuItem onClick={() => disable(source.id)}>
+                                {t.knowledge.actions.disable}
+                              </DropdownMenuItem>
+                            ))}
                           {canManage && (
                             <DropdownMenuItem
                               variant="destructive"
@@ -144,11 +155,6 @@ export function KnowledgeSourcesTable({ sources }: Props) {
       <RenameSourceDialog
         source={renameTarget}
         onOpenChange={(open) => !open && setRenameTarget(null)}
-      />
-
-      <KnowledgeSourcePagesPanel
-        source={pagesTarget}
-        onOpenChange={(open) => !open && setPagesTarget(null)}
       />
 
       <AlertDialog

@@ -14,6 +14,14 @@ export const agentAnalyticsSummaryEndpoint = (agentId: string) =>
   `/api/v1/agents/${agentId}/analytics/summary/`;
 export const conversationDetailEndpoint = (conversationId: string) =>
   `/api/v1/conversations/${conversationId}/`;
+/**
+ * Paginated message history. `GET /conversations/{id}/` embeds only the first
+ * `DETAIL_INLINE_MESSAGE_LIMIT` messages (backend
+ * `ConversationSelector.get_conversation`), so this is the only way to read a
+ * transcript longer than that.
+ */
+export const conversationMessagesEndpoint = (conversationId: string) =>
+  `/api/v1/conversations/${conversationId}/messages/`;
 export const conversationAssignEndpoint = (conversationId: string) =>
   `/api/v1/conversations/${conversationId}/assign/`;
 export const conversationGenerateFollowupEndpoint = (conversationId: string) =>
@@ -25,6 +33,18 @@ export const conversationDetailKey = (conversationId: string) => [
   'conversation-detail',
   conversationId,
 ];
+export const conversationMessagesKey = (conversationId: string, page: number) => [
+  'conversation-messages',
+  conversationId,
+  page,
+];
+
+/**
+ * One transcript page. Messages are ordered oldest-first server-side
+ * (`Message.Meta.ordering`), so the newest live on the *last* page, which is
+ * what `?page=last` resolves to (DRF `PageNumberPagination.last_page_strings`).
+ */
+export const CONVERSATION_MESSAGES_PAGE_SIZE = 50;
 export const analyticsSummaryKey = (agentId: string, range: string) => [
   'analytics-summary',
   agentId,

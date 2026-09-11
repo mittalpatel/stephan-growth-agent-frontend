@@ -5,13 +5,17 @@
 Introduced in Sprint 1 Phase 2 (`apps/knowledge`), reworked for the backend's
 2026-09-06 org-shared-knowledge change.
 
-**This is a tab, not a route.** It owned `/agents/[id]/knowledge` until the
-agent detail page moved to the reference platform's tabbed layout; that
-`page.tsx` is deleted and `AgentDetailView` renders this as its Knowledge
-tab, gated `knowledge:view`. The view lost its own back-link and page header
-in the move, since the detail page owns both now. The components and hooks
-stay in this folder, which is now a plain directory rather than a route
-segment.
+**The source list itself is a tab, not a route.** It owned
+`/agents/[id]/knowledge` until the agent detail page moved to the reference
+platform's tabbed layout; that `page.tsx` is deleted and `AgentDetailView`
+renders this as its Knowledge tab, gated `knowledge:view`. The view lost its
+own back-link and page header in the move, since the detail page owns both
+now. The components and hooks stay in this folder, which is a plain
+directory rather than a route segment — **except** `[sourceId]/`, added
+2026-09-11: a single source's page list is real enough (search, manual add,
+selective recrawl, potentially hundreds of rows) to need its own screen
+rather than living inside the tab. See "Per-page management and selective
+recrawl" below.
 
 ## Knowledge is org-shared, not agent-owned (backend 2026-09-06)
 
@@ -76,8 +80,8 @@ mutations, each invalidating the source list on success.
 **"View pages" is promoted out of the overflow menu (2026-09-10)** and no
 longer requires `knowledge:execute`. It was the only route to what a crawl
 actually fetched, and behind a three-dot menu it read as there being no
-options at all. Viewing is not the privileged act here: the panel's own
-"Recrawl selected pages" footer and its row checkboxes are what
+options at all. Viewing is not the privileged act here: the page's own
+"Recrawl selected pages" bar and its row checkboxes are what
 `knowledge:execute` now gates, so a `knowledge:view` reader gets a plain,
 readable list instead of checkboxes wired to a button they never see.
 
@@ -96,27 +100,124 @@ and no persistent view of an already-extracted source's pages at all — the
 only page list, `useDiscoveredUrls.ts` + `DiscoveredUrlsReview`, exists
 solely inside the one-time Add Website wizard's pre-extraction review step.
 
-`KnowledgeSourcePagesPanel.tsx` (opened via the table row's "View pages")
-plus `useKnowledgeSourcePages.ts` add that missing view: a `Sheet` listing
-the source's pages (reusing the same `GET .../discovered-urls/` read and
-`discoveredUrlsKey` the wizard's review step uses — same data, just readable
-outside the wizard now), each row showing when its content last changed
-(`content_changed_at`, relative time) and its last HTTP status (a danger
-badge at 4xx/5xx). It opens with a counts summary (pages found, added,
-not-yet-extracted, failed, skipped) computed from the loaded rows, since the
-panel otherwise answered "which pages exist" but not "how did the crawl go",
-which is the first thing anyone asks once it finishes. `content_hash` is on
-the type for future dedup/debugging
-use but is not surfaced in the UI — it's not something an operator needs to
-see day to day. Checking a subset of pages and clicking "Recrawl selected
-pages" calls `recrawlSelected`, which posts to `websiteRecrawlPagesEndpoint`
-and invalidates the same `discoveredUrlsKey` on success; the "already
-running" 200 case reuses the identical `response.message ?? fallback` toast
-pattern `useKnowledgeSourceActions.recrawlMutation` already established for
-the whole-site recrawl button. `removed_count`/`requeued_count` are on
+`useKnowledgeSourcePages.ts` (in `knowledge/hooks/`, shared by the tab and
+the dedicated page below) added that missing view: a listing reusing the
+same `GET .../discovered-urls/` read and `discoveredUrlsKey` the wizard's
+review step uses — same data, just readable outside the wizard now — each
+row showing when its content last changed (`content_changed_at`, relative
+time) and its last HTTP status (a danger badge at 4xx/5xx). It opens with a
+counts summary (pages found, added, not-yet-extracted, failed, skipped)
+computed from the loaded rows, since the raw list otherwise answers "which
+pages exist" but not "how did the crawl go", which is the first thing
+anyone asks once it finishes. `content_hash` is on the type for future
+dedup/debugging use but is not surfaced in the UI — it's not something an
+operator needs to see day to day. Checking a subset of pages and clicking
+"Recrawl selected pages" calls `recrawlSelected`, which posts to
+`websiteRecrawlPagesEndpoint` and invalidates the same `discoveredUrlsKey`
+on success; the "already running" 200 case reuses the identical
+`response.message ?? fallback` toast pattern
+`useKnowledgeSourceActions.recrawlMutation` already established for the
+whole-site recrawl button. `removed_count`/`requeued_count` are on
 `CrawlJob` for completeness but have no dedicated display yet — no
 `CrawlJob` count is rendered anywhere in this feature today, so this follows
 the existing pattern of tracking the job by polling status only.
+
+**Its own route, search, and manual add (2026-09-11).** The view first
+shipped as `KnowledgeSourcePagesPanel.tsx`, a `Sheet` opened from the
+table row's "View pages" button. A real crawl commonly finds hundreds of
+pages (the report that prompted this: 48 found on one source), and a side
+sheet has no real room to search or manage that many rows well — it was
+also the only place in this feature with no way to add a page manually
+outside the one-time wizard. Replaced by
+`agents/[agentTypeSlug]/knowledge/[sourceId]/page.tsx` +
+`KnowledgeSourcePagesView.tsx`, a full page:
+
+- `[sourceId]` is the `WebsiteSource.id` (what
+  `KnowledgeSourceListItem.website_source_id` carries), not the parent
+  `KnowledgeSource.id` — same id every other pages-scoped route already
+  keyed on (see "`id` vs `website_source_id`" below). `KnowledgeSourcesTable`'s
+  "View pages" button is now a `Link` to this route instead of local
+  `pagesTarget` state, so `KnowledgeSourcesTable`/`KnowledgeSourcesView`
+  gained an `agentTypeSlug` prop threaded down from `AgentDetailView` to
+  build the URL.
+- The page's own title/breadcrumb needs the source's `display_name`, which
+  the pages endpoint doesn't carry. Rather than adding a per-source detail
+  endpoint for one field, the view resolves it client-side from
+  `useAllKnowledgeSources()` (already built for the knowledge-scope target
+  picker) by matching `website_source_id` — a cheap lookup against an
+  already-fetched org-wide list, not a new request.
+  `KnowledgeSourcePagesPanel`'s permission gate (view-gated at the route
+  level, following `AgentSettingsView`'s `noPermissionTitle`/
+  `noPermissionDescription` pattern) moved here since there's no longer a
+  parent panel-opener to gate.
+- **Already-indexed pages sort first** (`STATUS_SORT_PRIORITY`:
+  ready → failed → low_quality/duplicate → discovered), a client-side sort
+  since the backend endpoint returns a plain `url`-ordered list with no
+  sort/filter query params of its own (confirmed against
+  `WebsiteDiscoveredUrlsView` — `page_size`/`page` only). Search is the same
+  reason client-only: the full source is already loaded in one
+  `page_size=500` call (see `useKnowledgeSourcePages`), so filtering the
+  already-fetched array by `url.includes(query)` (mirroring
+  `AddWebsiteDialog.tsx`'s review-step search, not the server-backed
+  `useDebouncedSearch` the main sources list uses) needs no round trip.
+- **Manual add** reuses the wizard review step's exact mechanism —
+  `useKnowledgeSourcePages.addUrl(url)`, a bulk `PATCH .../discovered-urls/`
+  with `{ add: [url] }` then a refetch — added to the hook rather than
+  duplicated, gated on `knowledge:manage` (the wizard's own add flow is
+  reachable only by someone who could already open it, i.e. `manage`).
+- The "Recrawl selected" action is a `sticky bottom-4` bar within the page's
+  own content column rather than `fixed` to the viewport — `fixed
+inset-x-0` would span the app shell's sidebar too, which a page-scoped
+  component has no business overlaying.
+
+### Include/exclude and remove, and why "Indexed" was lying (2026-09-11)
+
+A page reaches the index only when `status === 'ready'` **and**
+`is_selected` — `_chunk_dicts_for_source` requires both. This view read
+`is_selected` off the API and never rendered it, so a page that was crawled
+and then excluded displayed a green "Indexed" badge while contributing
+nothing to retrieval. That is the exact state behind a real report of two
+pages that extracted successfully but never answered questions; the backend
+half was fixed in `9f05390`, but the screen that made it invisible was not.
+
+Three changes close it:
+
+- An excluded page keeps its crawl-outcome badge but never a success tone
+  (`ready` renders `neutral` when excluded), gains a warning "Excluded from
+  the index" badge, and prints a plain explanation of what that means.
+- The summary row counts excluded pages separately from status, since
+  `ready` + excluded is the one combination that looks entirely healthy.
+- Each row gains **Include**/**Exclude** and **Remove** actions
+  (`knowledge:manage`), which the route shipped without: `select_ids`/
+  `deselect_ids`/`remove_ids` existed in `DiscoveredUrlBulkActionInput` and
+  were wired only in the wizard, so "select and update URLs" worked before
+  the first extraction and nowhere after it. The two carry `title` text
+  spelling out the difference (exclude keeps the crawled text and the row;
+  remove deletes the row and forces rediscovery), the same way the wizard's
+  checkbox-versus-X distinction is explained.
+
+`useKnowledgeSourcePages` now **composes `useDiscoveredUrls`** instead of
+re-reading the same endpoint itself. Both are views over one source's `Page`
+rows, share `discoveredUrlsKey`, and need identical optimistic
+include/exclude behaviour; keeping them as two independent hooks over the
+same data is how this route shipped missing three actions the other one
+already had. The recrawl mutation is the only thing left that is genuinely
+this route's own.
+
+### Reading a whole source in one call (2026-09-11)
+
+Both surfaces load a source's full page list in a single request and then
+filter/sort client-side. That request asked for `page_size=500`, but the
+backend clamps to `DefaultPagination.max_page_size` (100) **silently** — so
+the code read as "fetch everything" while not actually doing so. Harmless
+today (a source tops out at 50 auto-discovered plus 25 manual pages), but it
+would have truncated the list with no pagination control and no signal the
+moment `MAX_AUTO_DISCOVERED_URLS` rose above 100. Now
+`DISCOVERED_URLS_PAGE_SIZE` (100, asserted in the service test against that
+ceiling), with `useDiscoveredUrls` exposing `isTruncated`/`total` from
+`meta.count` and the pages view rendering a warning when a partial list is
+on screen. Same pattern `useAllKnowledgeSources` already uses for the target
+picker.
 
 ### `id` vs `website_source_id` (backend 2026-09-10 fix)
 
@@ -130,7 +231,7 @@ behind a plain `OneToOneField`, not a shared primary key. Until 2026-09-10
 (`null` for `pdf` sources): `KnowledgeSourcesTable` now derives a local
 `websiteSourceId` per row and gates both actions' visibility on it being
 non-null, passing it (not `source.id`) to `useKnowledgeSourceActions.recrawl`
-and into `KnowledgeSourcePagesPanel`, which in turn passes it (not
+and into `KnowledgeSourcePagesView`, which in turn passes it (not
 `source.id`) to `useKnowledgeSourcePages`. The add-website wizard was never
 affected by this bug — it gets the correct id from `CrawlJob.website_source`
 in the discovery-job response, never from the list endpoint.
@@ -146,7 +247,7 @@ source, is skipped rather than producing near-empty or duplicate chunks.
 Because they aren't failures, nothing in the UI mentioned them, so a page the
 operator explicitly selected could come back from a "completed" extraction
 with no error and simply never appear in the index, with no way to find out
-why. `KnowledgeSourcePagesPanel` now badges every page's status through
+why. `KnowledgeSourcePagesView` now badges every page's status through
 `PAGE_STATUS_TONES` (warning, not danger, for these two) and prints a plain
 explanation for the two whose reason isn't self-evident from the label.
 
@@ -159,7 +260,7 @@ the whole crawl job — a page whose content fails to convert now gets
 `Page.status = 'failed'` with an `error_message`, while the rest of the job
 keeps going. This makes a new, previously rare state common: a page can fetch
 fine (`http_status: 200`) yet still end up `status: 'failed'`, which the
-`http_status >= 400` danger badge in `KnowledgeSourcePagesPanel` didn't
+`http_status >= 400` danger badge in `KnowledgeSourcePagesView` didn't
 account for. Fixed by badging `page.status` independently of `http_status`
 (now via the `PAGE_STATUS_TONES` map described above) and rendering the
 `error_message` text below the row, so a conversion failure is visible even
@@ -193,17 +294,26 @@ failure state per polling step):
    **Duplicate source (backend 2026-09-11)**: `WebsiteDiscoveryService` now
    normalizes `root_url` and rejects a second source for the same
    organization+URL with a 409, `errors.code: "duplicate_website_source"`,
-   `errors.existing_source_id` (a `KnowledgeSource.id`). No frontend change
-   was needed: `discover()`'s bare `applyApiError(error)` call (no
-   `setError` passed) already toasts the envelope's `message` verbatim when
-   nothing binds to a field, and the backend's message text for this code is
-   already the full actionable sentence ("This website has already been
-   added as a knowledge source. Use the existing source to recrawl or add
-   more pages instead."). `errors.existing_source_id` is not read
-   client-side — there's no URL-based route to a knowledge source to deep
-   link to (it's opened as local `pagesTarget` state inside
-   `KnowledgeSourcesTable.tsx`), so wiring it up would need lifting that
-   state further than a single conflict message justifies.
+   `errors.existing_source_id` (a `KnowledgeSource.id`). The message itself
+   still needs no special handling: `discover()`'s bare `applyApiError(error)`
+   call (no `setError` passed) toasts the envelope's `message` verbatim when
+   nothing binds to a field, and the backend's text for this code is already
+   the full actionable sentence ("This website has already been added as a
+   knowledge source. Use the existing source to recrawl or add more pages
+   instead.").
+
+   **`existing_source_id` is now read (2026-09-11).** It previously was not,
+   because there was no URL-based route to a knowledge source to link to —
+   the pages view opened as local `pagesTarget` state inside
+   `KnowledgeSourcesTable.tsx`. The `[sourceId]` route removed that
+   constraint, so `useAddWebsiteFlow` captures the id into
+   `duplicateSourceId` (via `getErrorCode` + `getEnvelope`, both already
+   exported) and `AddWebsiteDialog` renders a link straight to that source's
+   pages. The id is a `KnowledgeSource.id` and the route is keyed on
+   `WebsiteSource.id`, so the dialog resolves one to the other through
+   `useAllKnowledgeSources()` — a lookup against an already-fetched org-wide
+   list, not a new request — and renders nothing if it doesn't resolve. This
+   is why `AddWebsiteDialog` takes an `agentTypeSlug` prop.
 
    `scope_config` was already accepted by this endpoint (a raw, unvalidated
    `JSONField`) but silently ignored until the backend's `822e91c` (harden
@@ -442,6 +552,53 @@ The score is shown as `n/100` and suppressed to a dash when `sources === 0`:
 the backend returns `0` in that case, which reads as "broken" rather than
 "nothing added yet". A failed read renders an inline message with a retry
 rather than leaving the panel on its skeleton forever.
+
+## Enable/disable a source (2026-09-11, backend audit fix B9)
+
+`KnowledgeSourcesTable.tsx`'s overflow menu now has a Disable/Enable item
+(`useKnowledgeSourceActions.ts`'s `disable`/`enable`, `POST
+knowledge/sources/{id}/{disable,enable}/`), gated `knowledge:manage` same as
+rename/delete. Toggles the existing `status: 'disabled'` enum value the
+frontend type already carried but no action ever set. No new status tone
+needed: `KnowledgeSourcesTable.tsx`'s `STATUS_TONE` map already had a
+`disabled: 'neutral'` entry from before this action existed.
+
+Re-enabling restores `ready` or `pending` server-side depending on whether
+the source has indexed chunks already — the list simply reflects whatever
+`status` the response returns after `invalidate()`, no client-side guessing
+of which one it'll be.
+
+Also from B6 in the same audit fix: `get_health_summary`'s `score` can now
+read `0` for a `ready` source with zero indexed chunks (previously it read
+100%, which was the bug). Checked `KnowledgeHealthPanel.tsx` — it only
+special-cases `sources === 0` as a dash; a nonzero `sources` with `score: 0`
+already renders as a plain `0/100`, which is now the correct, intended
+reading. No change needed.
+
+## Editing a website source's crawl config after creation — blocked on a
+
+## backend read gap (2026-09-11, backend audit fix B8)
+
+The backend audit fix added `PATCH knowledge/website/{id}/config/`
+(`WebsiteSourceConfigUpdateSerializer`) so `scope_config`/
+`recrawl_interval_hours` are no longer write-once. It's a **full replace,
+not a merge** — a request sending only one key overwrites the whole object,
+by deliberate product decision (documented in that serializer's own
+docstring), not a bug.
+
+**Not wired up on the frontend.** Building an edit dialog for a full-replace
+field requires pre-filling it with the _current_ config, or an operator who
+edits just one field silently wipes every other `scope_config` key they
+forgot was set. Checked every read path a website source detail could come
+from — `KnowledgeSourceDetailView.GET` (`KnowledgeSourceSerializer`),
+`KnowledgeSourceListSerializer`, the discovered-urls list — none of them,
+nor any other route, return a `WebsiteSource`'s `scope_config` or
+`recrawl_interval_hours` once creation is past. The PATCH endpoint's own
+response only echoes back what was just written, not what a fresh page load
+would need to show first. There is currently no safe way to build this UI.
+Flagged for the backend team: needs either a `scope_config`/
+`recrawl_interval_hours` field added to `KnowledgeSourceSerializer` (or a
+website-source-scoped GET), before this can be built.
 
 ## Route protection
 

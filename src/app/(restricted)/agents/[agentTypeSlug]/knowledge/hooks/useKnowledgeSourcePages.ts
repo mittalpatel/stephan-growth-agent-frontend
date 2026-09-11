@@ -4,34 +4,36 @@ import { useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 
 import { useAuthMutation } from '@/hooks/useAuthMutation';
-import { useAuthQuery } from '@/hooks/useAuthQuery';
 import { getAxiosError } from '@/lib/helper';
 import { t } from '@/locales';
 import {
   discoveredUrlsKey,
   INDEX_VERSIONS_LIST_KEY,
   KNOWLEDGE_HEALTH_KEY,
-  websiteDiscoveredUrlsEndpoint,
   websiteRecrawlPagesEndpoint,
 } from '@/services/knowledge';
 import type { ApiResponse } from '@/types/api';
-import type { CrawlJob, DiscoveredUrl, RecrawlPagesInput } from '@/types/knowledge';
+import type { CrawlJob, RecrawlPagesInput } from '@/types/knowledge';
+
+import { useDiscoveredUrls } from './useDiscoveredUrls';
 
 /**
- * The page-management panel for an already-extracted website source:
- * lists its pages (same data and endpoint the add-website wizard's review
- * step reads, `websiteDiscoveredUrlsEndpoint`) and lets the user recrawl a
- * chosen subset via the backend's 2026-09-09 `recrawl-pages/` endpoint,
- * rather than only being able to recrawl the whole site.
+ * The dedicated page-management route for an already-extracted website source.
+ *
+ * Composes `useDiscoveredUrls` rather than re-reading the same endpoint itself:
+ * both surfaces are views over one source's `Page` rows, share
+ * `discoveredUrlsKey`, and need the same optimistic include/exclude behaviour.
+ * The two were separate hooks over identical data until 2026-09-11, which is
+ * how this route shipped without the include/exclude and remove actions the
+ * wizard's review step already had.
+ *
+ * What this hook adds on top is the one thing the wizard has no use for:
+ * selective recrawl of specific already-known pages, via the backend's
+ * `recrawl-pages/` endpoint.
  */
 export function useKnowledgeSourcePages(websiteSourceId: string | null) {
   const queryClient = useQueryClient();
-
-  const listQuery = useAuthQuery<ApiResponse<DiscoveredUrl[]>>(
-    discoveredUrlsKey(websiteSourceId ?? ''),
-    `${websiteDiscoveredUrlsEndpoint(websiteSourceId ?? '')}?page_size=500`,
-    { enabled: Boolean(websiteSourceId) }
-  );
+  const pages = useDiscoveredUrls(websiteSourceId);
 
   const recrawlPagesMutation = useAuthMutation<ApiResponse<CrawlJob>, RecrawlPagesInput>({
     onSuccess: (response) => {
@@ -42,10 +44,9 @@ export function useKnowledgeSourcePages(websiteSourceId: string | null) {
       );
       void queryClient.invalidateQueries({ queryKey: discoveredUrlsKey(websiteSourceId ?? '') });
       // A recrawl re-extracts the selected pages, which also kicks off a
-      // background index rebuild for every agent this source feeds. No
-      // agent id is known here (this panel is source-scoped, not
-      // agent-scoped), so invalidate by key prefix rather than a specific
-      // agent's entry — there's normally only one agent's page open anyway.
+      // background index rebuild for every agent this source feeds. No agent id
+      // is known here (this route is source-scoped, not agent-scoped), so
+      // invalidate by key prefix rather than a specific agent's entry.
       void queryClient.invalidateQueries({ queryKey: [INDEX_VERSIONS_LIST_KEY] });
       void queryClient.invalidateQueries({ queryKey: [KNOWLEDGE_HEALTH_KEY] });
     },
@@ -53,10 +54,24 @@ export function useKnowledgeSourcePages(websiteSourceId: string | null) {
   });
 
   return {
-    pages: listQuery.data?.data ?? [],
-    isLoading: listQuery.isLoading,
-    isError: listQuery.isError,
-    refetch: listQuery.refetch,
+    pages: pages.urls,
+    isLoading: pages.isLoading,
+    isError: pages.isError,
+    refetch: pages.refetch,
+    isTruncated: pages.isTruncated,
+    total: pages.total,
+
+    /** Whether a page's content feeds the index. Indexing needs `is_selected`
+     * *and* `status === 'ready'`, so excluding a page here removes it from
+     * retrieval on the next build without discarding what was already
+     * crawled. */
+    setIncluded: (pageId: string, included: boolean) =>
+      included ? pages.selectMany([pageId]) : pages.deselectMany([pageId]),
+    /** Drops the page entirely, distinct from excluding it: the row goes away
+     * and a later recrawl has to rediscover the URL. */
+    removePage: pages.removeUrl,
+    /** A page outside what discovery found, added manually after extraction. */
+    addUrl: pages.addUrl,
 
     recrawlSelected: (pageIds: string[]) => {
       if (!websiteSourceId || pageIds.length === 0) return;

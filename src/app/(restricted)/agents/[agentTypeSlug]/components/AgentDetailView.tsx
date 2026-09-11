@@ -233,7 +233,7 @@ export function AgentDetailView({ agentTypeSlug }: Props) {
         )}
         {canViewKnowledge && (
           <TabsContent value="knowledge">
-            <KnowledgeSourcesView agentId={agent.id} />
+            <KnowledgeSourcesView agentId={agent.id} agentTypeSlug={agentTypeSlug} />
           </TabsContent>
         )}
         <TabsContent value="settings">

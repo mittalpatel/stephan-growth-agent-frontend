@@ -5,7 +5,11 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useAuthMutation } from '@/hooks/useAuthMutation';
 import { useAuthQuery } from '@/hooks/useAuthQuery';
 import { applyApiError } from '@/lib/apiError';
-import { discoveredUrlsKey, websiteDiscoveredUrlsEndpoint } from '@/services/knowledge';
+import {
+  DISCOVERED_URLS_PAGE_SIZE,
+  discoveredUrlsKey,
+  websiteDiscoveredUrlsEndpoint,
+} from '@/services/knowledge';
 import type { ApiResponse } from '@/types/api';
 import type { DiscoveredUrl, DiscoveredUrlBulkActionInput } from '@/types/knowledge';
 
@@ -30,7 +34,7 @@ export function useDiscoveredUrls(websiteSourceId: string | null) {
 
   const listQuery = useAuthQuery<ApiResponse<DiscoveredUrl[]>>(
     queryKey,
-    `${websiteDiscoveredUrlsEndpoint(websiteSourceId ?? '')}?page_size=500`,
+    `${websiteDiscoveredUrlsEndpoint(websiteSourceId ?? '')}?page_size=${DISCOVERED_URLS_PAGE_SIZE}`,
     { enabled: Boolean(websiteSourceId) }
   );
 
@@ -85,6 +89,7 @@ export function useDiscoveredUrls(websiteSourceId: string | null) {
   };
 
   const urls = listQuery.data?.data ?? [];
+  const total = listQuery.data?.meta.count ?? urls.length;
 
   return {
     urls,
@@ -92,6 +97,10 @@ export function useDiscoveredUrls(websiteSourceId: string | null) {
     isError: listQuery.isError,
     refetch: listQuery.refetch,
     selectedCount: urls.filter((url) => url.is_selected).length,
+    /** True when the source holds more pages than one max-size page can carry,
+     * so everything below is operating on a partial list. */
+    isTruncated: total > urls.length,
+    total,
 
     toggle: (urlId: string, selected: boolean) => setSelection([urlId], selected),
     /** Both take explicit ids so the caller can scope them to a filtered view

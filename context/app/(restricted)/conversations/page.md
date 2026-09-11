@@ -32,8 +32,51 @@ wired into the toolbar — out of scope for this pass; add them as plain query
 params (not through `filter`/`filter_by`) if a future pass needs them.
 
 Selecting a row loads that conversation's detail (`useConversationDetail`)
-into the transcript pane; messages render visitor/agent/operator bubbles,
+into the side panel; messages render visitor/agent/operator bubbles,
 citations show under a message compactly rather than as a separate panel.
+
+### The transcript is its own paginated read (2026-09-11)
+
+`ConversationTranscript` + `useConversationMessages` read
+`GET /conversations/{id}/messages/`, **not** the detail response's embedded
+`messages` array. Two reasons, and the second is the real one:
+
+- `ConversationSelector.get_conversation()` caps the embedded array at
+  `DETAIL_INLINE_MESSAGE_LIMIT` (50), so anything longer was simply
+  unreadable here, with no control and no signal that it had been cut.
+- `Message.Meta.ordering` is **ascending**, so that cap keeps the _oldest_
+  50 messages, not the most recent. On a long conversation the panel was
+  showing the opening and hiding the end, which on an escalated chat is
+  precisely the part an operator needs. (The backend serializer's own
+  comment claims "most recent first"; it does not match the slice. Reported
+  to the backend team, not worked around here beyond not using the field.)
+
+Paging therefore runs **backwards**, which nothing else in this app does:
+the hook opens on `?page=last` (resolved server-side by DRF's
+`PageNumberPagination.last_page_strings`, so the newest page costs one
+request and no count round trip), and "Load earlier messages" walks down
+toward page 1. `olderPageParam` and `flattenTranscript` are exported from the
+hook and unit-tested directly — the page direction and the
+reverse-the-pages-not-the-rows ordering are the two things most likely to
+break silently. The component is keyed on the conversation id so switching
+rows discards accumulated pages rather than carrying them across.
+
+This is the one consumer of `useAuthInfiniteQuery` (`src/hooks/`), added
+alongside it: `useAuthQuery`'s accumulating sibling, for reads whose pages
+stack in the UI. Ordinary lists must keep using `useQueryParams` so they stay
+linkable; this hook's page state is deliberately local, which a transcript
+inside a detail panel wants and a list screen does not.
+
+**Markdown rendering (2026-09-11)**: an agent bubble's `m.content` goes
+through `src/components/common/Markdown.tsx` (same component the Test tab
+uses), not a plain `<p>` — an inline `[1]`-style citation marker or any
+other formatting the answer carries now renders instead of showing as
+literal syntax. A visitor bubble stays plain text on purpose: it's exactly
+what the visitor typed, not backend-composed content, and `Markdown`'s link
+colour (`text-primary`) would fail contrast against that bubble's
+`bg-primary` fill anyway. The citations line under a message now links each
+`source_title` to its `source_url` (when the citation has one) instead of
+listing bare, unclickable titles.
 
 ## Assign operator, but no escalation resolve
 

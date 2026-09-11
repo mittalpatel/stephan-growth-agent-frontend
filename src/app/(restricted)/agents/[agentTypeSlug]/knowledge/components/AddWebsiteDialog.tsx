@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import Link from 'next/link';
 import { useForm, FormProvider } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { CheckCircle2, Globe, Loader2, Search, X } from 'lucide-react';
@@ -39,11 +40,17 @@ import { t } from '@/locales';
 import type { CrawlJob } from '@/types/knowledge';
 
 import { useAddWebsiteFlow } from '../hooks/useAddWebsiteFlow';
+import { useAllKnowledgeSources } from '../hooks/useAllKnowledgeSources';
 import { useCrawlJob } from '../hooks/useCrawlJob';
 import { useDiscoveredUrls } from '../hooks/useDiscoveredUrls';
 import { useExtractionProgress } from '../hooks/useExtractionProgress';
 
-type Props = Readonly<{ agentId: string; onCreated?: (sourceId: string) => void }>;
+type Props = Readonly<{
+  agentId: string;
+  /** Only needed to build the link to an already-existing duplicate source. */
+  agentTypeSlug: string;
+  onCreated?: (sourceId: string) => void;
+}>;
 
 /**
  * Above this, extraction is slow enough to be worth warning about up front —
@@ -409,11 +416,21 @@ function ExtractionSummary({
  * done. `useAddWebsiteFlow` owns the step machine; this component renders
  * whichever step is active and feeds job-completion callbacks back in.
  */
-export function AddWebsiteDialog({ agentId, onCreated }: Props) {
+export function AddWebsiteDialog({ agentId, agentTypeSlug, onCreated }: Props) {
   const [open, setOpen] = useState(false);
   const [confirmingClose, setConfirmingClose] = useState(false);
   const flow = useAddWebsiteFlow(agentId, onCreated);
   const isRunning = flow.step === 'discovering' || flow.step === 'extracting';
+  // `duplicateSourceId` is a `KnowledgeSource.id`, but the pages route is keyed
+  // on `WebsiteSource.id`. The org-wide list already carries both, so the
+  // mapping is a lookup against data that is loaded anyway, not a new request.
+  const { sources } = useAllKnowledgeSources();
+  const duplicateWebsiteSourceId = flow.duplicateSourceId
+    ? (sources.find((source) => source.id === flow.duplicateSourceId)?.website_source_id ?? null)
+    : null;
+  const duplicateSourceHref = duplicateWebsiteSourceId
+    ? `/agents/${agentTypeSlug}/knowledge/${duplicateWebsiteSourceId}`
+    : null;
   const extractionProgress = useExtractionProgress(
     flow.websiteSourceId,
     flow.step === 'extracting'
@@ -530,6 +547,21 @@ export function AddWebsiteDialog({ agentId, onCreated }: Props) {
                     />
                   </CollapsibleContent>
                 </Collapsible>
+
+                {/* The 409's own message already says the site is added; this
+                    is the part a toast cannot do, which is take the operator
+                    to it. Rendered only when the id resolves to a website
+                    source this org can actually open. */}
+                {duplicateSourceHref && (
+                  <p className="text-muted-foreground text-sm">
+                    <Link
+                      href={duplicateSourceHref}
+                      className="text-primary underline underline-offset-2 hover:no-underline"
+                    >
+                      {t.knowledge.addWebsite.viewExistingSource}
+                    </Link>
+                  </p>
+                )}
 
                 <Button type="submit" className="w-full" disabled={flow.isDiscovering}>
                   {t.knowledge.addWebsite.submit}
