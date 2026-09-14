@@ -169,7 +169,9 @@ export const knowledge = {
   addPdf: {
     title: 'Upload a PDF',
     description: 'The agent will read this document and learn from its content.',
-    fileLabel: 'File',
+    dropzoneHint: 'Drag a PDF here',
+    dropzoneActive: 'Drop to attach this PDF',
+    dropzoneWrongType: 'Only PDF files can be uploaded.',
     submit: 'Upload',
     uploading: 'Uploading…',
     duplicateSource: 'This exact PDF has already been uploaded as "{name}".',
@@ -178,7 +180,6 @@ export const knowledge = {
     rootUrlRequired: 'Enter a website URL.',
     rootUrlInvalid: 'Enter a valid URL.',
     nameRequired: 'Name is required.',
-    fileRequired: 'Choose a file to upload.',
     maxPagesRange: 'Enter a number between 1 and 1000.',
     maxDepthRange: 'Enter a number between 0 and 10.',
     pathListTooLong: 'You can add up to 20 paths.',

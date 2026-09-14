@@ -106,9 +106,12 @@ multipart; just don't force a JSON `Content-Type` header.
 ### Upload dialog and dropzone
 
 `UploadFileDialog` mirrors `CreateProjectDialog`'s controlled-`Dialog` shape. The
-dropzone (drag-and-drop plus a hidden `<input type="file">` for click-to-browse) is
-built from scratch in `ProjectFilesSection.tsx` — nothing like it existed elsewhere in
-the repo. Only the display-name field goes through RHF + Zod
+dropzone (drag-and-drop plus a hidden `<input type="file">` for click-to-browse) was
+built from scratch here when nothing like it existed elsewhere in the repo; it now
+lives in `src/components/common/Dropzone.tsx` and this section passes its own copy in
+as props. It had to move once the PDF knowledge-source upload needed the same control:
+this slice is the demo module, so `npm run strip-demo` would have taken a real
+feature's dropzone with it. Only the display-name field goes through RHF + Zod
 (`src/lib/schemas/projectFile.ts`); the picked `File` itself is plain `useState`, since
 it isn't a form value. A client-side max-size check is a courtesy only — the backend
 enforces the real limit.

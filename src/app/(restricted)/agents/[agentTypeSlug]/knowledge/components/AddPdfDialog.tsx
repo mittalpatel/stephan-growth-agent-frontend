@@ -1,8 +1,9 @@
 'use client';
 
-import { useRef, useState } from 'react';
-import { Upload } from 'lucide-react';
+import { useState } from 'react';
+import { AlertCircle, Upload } from 'lucide-react';
 
+import { Dropzone } from '@/components/common/Dropzone';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -22,8 +23,6 @@ type Props = Readonly<{ onCreated?: (sourceId: string) => void }>;
 export function AddPdfDialog({ onCreated }: Props) {
   const [open, setOpen] = useState(false);
   const [file, setFile] = useState<File | null>(null);
-  const [fileError, setFileError] = useState<string | null>(null);
-  const inputRef = useRef<HTMLInputElement>(null);
   const { upload, isUploading, duplicateSourceId } = useAddPdfSource(onCreated);
   // A PDF source has no detail route to link to (no `website_source_id`, no
   // pages view), so the duplicate is named rather than linked. The org-wide
@@ -34,17 +33,12 @@ export function AddPdfDialog({ onCreated }: Props) {
     ? (sources.find((source) => source.id === duplicateSourceId)?.display_name ?? null)
     : null;
 
-  const reset = () => {
-    setFile(null);
-    setFileError(null);
-    if (inputRef.current) inputRef.current.value = '';
-  };
+  const reset = () => setFile(null);
 
+  // The submit button is disabled without a file, so there is no
+  // "you forgot to choose one" state to report here.
   const submit = async () => {
-    if (!file) {
-      setFileError(t.knowledge.validation.fileRequired);
-      return;
-    }
+    if (!file) return;
     const ok = await upload(file);
     if (ok) {
       reset();
@@ -71,30 +65,28 @@ export function AddPdfDialog({ onCreated }: Props) {
           <DialogTitle>{t.knowledge.addPdf.title}</DialogTitle>
         </DialogHeader>
         <p className="text-muted-foreground text-sm">{t.knowledge.addPdf.description}</p>
-        <div className="space-y-2">
-          <label htmlFor="knowledge-pdf-file" className="mb-1.5 block text-sm font-medium">
-            {t.knowledge.addPdf.fileLabel}
-          </label>
-          <input
-            id="knowledge-pdf-file"
-            ref={inputRef}
-            type="file"
-            accept="application/pdf"
-            onChange={(event) => {
-              const selected = event.target.files?.[0] ?? null;
-              setFile(selected);
-              setFileError(null);
-            }}
-            className="border-input bg-background block w-full rounded-md border px-3 py-2 text-sm"
-          />
-          {fileError && <p className="text-destructive text-sm">{fileError}</p>}
-        </div>
+
+        <Dropzone
+          file={file}
+          accept="application/pdf,.pdf"
+          hint={t.knowledge.addPdf.dropzoneHint}
+          activeHint={t.knowledge.addPdf.dropzoneActive}
+          rejectedMessage={t.knowledge.addPdf.dropzoneWrongType}
+          disabled={isUploading}
+          onFileSelected={setFile}
+          onClear={reset}
+        />
+
         {duplicateSourceName && (
-          <p className="text-muted-foreground text-sm">
-            {format(t.knowledge.addPdf.duplicateSource, { name: duplicateSourceName })}
-          </p>
+          <div className="border-border bg-muted/40 flex items-start gap-2.5 rounded-lg border p-3">
+            <AlertCircle className="text-muted-foreground mt-0.5 size-4 shrink-0" aria-hidden />
+            <p className="text-muted-foreground text-sm">
+              {format(t.knowledge.addPdf.duplicateSource, { name: duplicateSourceName })}
+            </p>
+          </div>
         )}
-        <Button onClick={submit} disabled={isUploading} className="w-full">
+
+        <Button onClick={submit} disabled={isUploading || !file} className="w-full">
           {isUploading ? t.knowledge.addPdf.uploading : t.knowledge.addPdf.submit}
         </Button>
       </DialogContent>

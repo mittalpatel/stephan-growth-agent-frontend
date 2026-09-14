@@ -173,9 +173,8 @@ export const projects = {
       title: 'Upload file',
       nameLabel: 'Name',
       namePlaceholder: 'e.g. Q3 report',
-      dropzoneHint: 'Drag and drop a file here, or click to browse.',
-      dropzoneActive: 'Drop the file to attach it.',
-      selectedFile: 'Selected file',
+      dropzoneHint: 'Drag a file here',
+      dropzoneActive: 'Drop to attach it',
       submit: 'Upload',
     },
     validation: {

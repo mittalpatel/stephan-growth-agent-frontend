@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, useState } from 'react';
+import { useState } from 'react';
 import dynamic from 'next/dynamic';
 import { FormProvider, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -15,6 +15,7 @@ import {
   dataTableTd,
   dataTableTh,
 } from '@/components/common/DataTable';
+import { Dropzone } from '@/components/common/Dropzone';
 import { EmptyState } from '@/components/common/EmptyState';
 import { RHFTextField } from '@/components/common/form';
 import { Button } from '@/components/ui/button';
@@ -27,12 +28,11 @@ import {
 } from '@/components/ui/dialog';
 import { Skeleton } from '@/components/ui/skeleton';
 import { downloadBlob } from '@/lib/downloadBlob';
-import { format, formatDate } from '@/lib/i18n';
+import { format, formatDate, formatFileSize } from '@/lib/i18n';
 import {
   projectFileUploadSchema,
   type ProjectFileUploadFormValues,
 } from '@/lib/schemas/projectFile';
-import { cn } from '@/lib/utils';
 import { t } from '@/locales';
 import { projectFileDownloadEndpoint } from '@/services/files';
 import type { ProjectFile } from '@/types/file';
@@ -50,79 +50,6 @@ const PdfPreview = dynamic(() => import('./PdfPreview'), {
 
 /** Courtesy client-side check only — the backend enforces the real limit. */
 const MAX_CLIENT_UPLOAD_BYTES = 25 * 1024 * 1024;
-
-function formatFileSize(bytes: number): string {
-  if (bytes < 1024) return `${bytes} B`;
-  const units = ['KB', 'MB', 'GB'];
-  let value = bytes / 1024;
-  let unitIndex = 0;
-  while (value >= 1024 && unitIndex < units.length - 1) {
-    value /= 1024;
-    unitIndex += 1;
-  }
-  return `${value.toFixed(value < 10 ? 1 : 0)} ${units[unitIndex]}`;
-}
-
-/**
- * Drag-and-drop dropzone with a click-to-browse fallback. Nothing like this
- * existed anywhere in the repo, so it's built from scratch here rather than
- * reused from a shared primitive.
- */
-function Dropzone({
-  file,
-  onFileSelected,
-}: Readonly<{ file: File | null; onFileSelected: (file: File) => void }>) {
-  const [isDragging, setIsDragging] = useState(false);
-  const inputRef = useRef<HTMLInputElement>(null);
-
-  return (
-    <div
-      role="button"
-      tabIndex={0}
-      onClick={() => inputRef.current?.click()}
-      onKeyDown={(event) => {
-        if (event.key === 'Enter' || event.key === ' ') {
-          event.preventDefault();
-          inputRef.current?.click();
-        }
-      }}
-      onDragOver={(event) => {
-        event.preventDefault();
-        setIsDragging(true);
-      }}
-      onDragLeave={() => setIsDragging(false)}
-      onDrop={(event) => {
-        event.preventDefault();
-        setIsDragging(false);
-        const dropped = event.dataTransfer.files?.[0];
-        if (dropped) onFileSelected(dropped);
-      }}
-      className={cn(
-        'flex cursor-pointer flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed p-6 text-center transition-colors',
-        isDragging ? 'border-ring bg-accent' : 'border-border'
-      )}
-    >
-      <UploadCloud className="text-muted-foreground size-6" aria-hidden />
-      <p className="text-sm">
-        {isDragging ? t.projects.files.form.dropzoneActive : t.projects.files.form.dropzoneHint}
-      </p>
-      {file && (
-        <p className="text-muted-foreground text-xs">
-          {t.projects.files.form.selectedFile}: {file.name}
-        </p>
-      )}
-      <input
-        ref={inputRef}
-        type="file"
-        className="hidden"
-        onChange={(event) => {
-          const selected = event.target.files?.[0];
-          if (selected) onFileSelected(selected);
-        }}
-      />
-    </div>
-  );
-}
 
 function UploadFileDialog({
   upload,
@@ -194,7 +121,12 @@ function UploadFileDialog({
         </DialogHeader>
         <FormProvider {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            <Dropzone file={file} onFileSelected={handleFileSelected} />
+            <Dropzone
+              file={file}
+              onFileSelected={handleFileSelected}
+              hint={t.projects.files.form.dropzoneHint}
+              activeHint={t.projects.files.form.dropzoneActive}
+            />
             {fileError && <p className="text-destructive text-sm">{fileError}</p>}
             <RHFTextField<ProjectFileUploadFormValues>
               name="name"

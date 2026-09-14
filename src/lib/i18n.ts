@@ -88,6 +88,29 @@ export function formatNumber(value: number, options?: Intl.NumberFormatOptions):
   return numberFormatter(options).format(value);
 }
 
+const FILE_SIZE_UNITS = ['B', 'KB', 'MB', 'GB'] as const;
+
+/**
+ * A byte count as something a person can read at a glance.
+ *
+ * The unit suffixes are deliberately not translated: KB/MB/GB are the same
+ * symbols across the locales this app targets, and `Intl` has no unit for
+ * binary-prefixed bytes to defer to. The *number* still goes through
+ * `formatNumber`, so its decimal separator follows the locale.
+ */
+export function formatFileSize(bytes: number): string {
+  let value = bytes;
+  let unitIndex = 0;
+  while (value >= 1024 && unitIndex < FILE_SIZE_UNITS.length - 1) {
+    value /= 1024;
+    unitIndex += 1;
+  }
+  // One decimal below 10 (so "1.4 MB" keeps its precision), none above it
+  // (where "847 KB" reads better than "847.3 KB").
+  const maximumFractionDigits = unitIndex === 0 || value >= 10 ? 0 : 1;
+  return `${formatNumber(value, { maximumFractionDigits })} ${FILE_SIZE_UNITS[unitIndex]}`;
+}
+
 /**
  * Format money.
  *

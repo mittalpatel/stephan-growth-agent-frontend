@@ -185,6 +185,29 @@ The action matters: an empty state without one is a dead end. Distinguish "nothi
 exists yet" (action: create one) from "your filters matched nothing" (action: clear
 filters) — only the caller knows which, and the wrong one is actively misleading.
 
+## Dropzone
+
+Drag-and-drop file input with a click-to-browse fallback, a preview chip for the
+chosen file (name plus `formatFileSize`) and an optional clear button. Takes `file`
+and `onFileSelected` — it is deliberately uncontrolled beyond that, because a picked
+`File` is not a form value and does not belong in RHF.
+
+Two things it does that a hand-rolled one usually gets wrong, and the reasons to keep
+using this rather than writing another:
+
+- **`accept` is enforced on drop, not just in the picker.** A drag bypasses the file
+  dialog's filtering entirely, so without the check a wrong-type file is accepted
+  client-side and only rejected after the upload has left.
+- **`dragleave` is filtered by `relatedTarget`.** That event bubbles from every child,
+  so dragging across the icon or the label otherwise flips the highlight off and on.
+
+Copy defaults to `t.common.dropzone.*`; `hint`/`activeHint`/`rejectedMessage` override
+it where a feature has more specific wording ("Drag a PDF here").
+
+It lives here rather than in the feature that first needed it: the original was private
+to `ProjectFilesSection`, inside the `projects` demo slice, so `npm run strip-demo`
+would have deleted the copy a real feature depends on.
+
 ## ListPagination
 
 First/previous/numbered/next/last plus page size, with a separate compact mobile

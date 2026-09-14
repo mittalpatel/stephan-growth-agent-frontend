@@ -471,11 +471,27 @@ fetched, held in state, and thrown away.
 ## Add PDF flow
 
 `AddPdfDialog` + `useAddPdfSource.ts` — a plain `useState`-managed file
-input (not React Hook Form; see `ProjectFilesSection.tsx`'s `Dropzone` for
-the established precedent that file inputs are the one exception to the
-RHF+Zod rule) posting `multipart/form-data` to `POST /knowledge/pdfs/`
-(org-level). Takes an `onCreated` callback for the same narrowing reason as
-the website flow.
+selection (not React Hook Form; a picked `File` is not a form value, the same
+exception `ProjectFilesSection` established) posting `multipart/form-data` to
+`POST /knowledge/pdfs/` (org-level). Takes an `onCreated` callback for the
+same narrowing reason as the website flow.
+
+**Drag and drop (2026-09-14).** The dialog was a bare `<input type="file">`.
+It now uses the shared `Dropzone` (`src/components/common/Dropzone.tsx`,
+documented in `context/components.md`) with `accept="application/pdf,.pdf"`,
+which is enforced on drop as well as in the picker, so a dropped `.docx` is
+refused here rather than after the upload has left. The chosen file shows as
+a chip with its size and a clear button.
+
+That component is the one `ProjectFilesSection` had built privately; it moved
+to `components/common/` for this, because the `projects` slice is the demo
+module and `npm run strip-demo` would otherwise delete the dropzone this
+dialog depends on. `formatFileSize` moved to `src/lib/i18n.ts` for the same
+reason.
+
+Submit is disabled until a file is chosen, so there is no
+"you forgot to pick one" error state (`knowledge.validation.fileRequired` was
+removed with it).
 
 ### Duplicate PDF upload rejected (backend 2026-09-12, `pdf-pipeline-bugfixes`)
 

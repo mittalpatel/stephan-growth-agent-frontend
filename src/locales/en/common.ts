@@ -30,6 +30,13 @@ export const common = {
   table: 'Table',
   sortBy: 'Sort by',
   none: 'None',
+  dropzone: {
+    hint: 'Drag a file here',
+    active: 'Drop to attach',
+    browse: 'or click to browse',
+    clear: 'Remove this file',
+    wrongType: "That file type isn't supported.",
+  },
   selectRange: 'Select range',
   searchPlaceholder: 'Search…',
   navSearchPlaceholder: 'Search agents, conversations, leads…',
