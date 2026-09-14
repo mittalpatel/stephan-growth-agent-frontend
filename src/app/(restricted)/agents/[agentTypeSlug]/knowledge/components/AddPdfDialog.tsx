@@ -11,9 +11,11 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
+import { format } from '@/lib/i18n';
 import { t } from '@/locales';
 
 import { useAddPdfSource } from '../hooks/useAddPdfSource';
+import { useAllKnowledgeSources } from '../hooks/useAllKnowledgeSources';
 
 type Props = Readonly<{ onCreated?: (sourceId: string) => void }>;
 
@@ -22,7 +24,15 @@ export function AddPdfDialog({ onCreated }: Props) {
   const [file, setFile] = useState<File | null>(null);
   const [fileError, setFileError] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
-  const { upload, isUploading } = useAddPdfSource(onCreated);
+  const { upload, isUploading, duplicateSourceId } = useAddPdfSource(onCreated);
+  // A PDF source has no detail route to link to (no `website_source_id`, no
+  // pages view), so the duplicate is named rather than linked. The org-wide
+  // list is already loaded for the sources table, so this is a lookup, not a
+  // new request.
+  const { sources } = useAllKnowledgeSources();
+  const duplicateSourceName = duplicateSourceId
+    ? (sources.find((source) => source.id === duplicateSourceId)?.display_name ?? null)
+    : null;
 
   const reset = () => {
     setFile(null);
@@ -79,6 +89,11 @@ export function AddPdfDialog({ onCreated }: Props) {
           />
           {fileError && <p className="text-destructive text-sm">{fileError}</p>}
         </div>
+        {duplicateSourceName && (
+          <p className="text-muted-foreground text-sm">
+            {format(t.knowledge.addPdf.duplicateSource, { name: duplicateSourceName })}
+          </p>
+        )}
         <Button onClick={submit} disabled={isUploading} className="w-full">
           {isUploading ? t.knowledge.addPdf.uploading : t.knowledge.addPdf.submit}
         </Button>

@@ -172,6 +172,7 @@ export const knowledge = {
     fileLabel: 'File',
     submit: 'Upload',
     uploading: 'Uploading…',
+    duplicateSource: 'This exact PDF has already been uploaded as "{name}".',
   },
   validation: {
     rootUrlRequired: 'Enter a website URL.',

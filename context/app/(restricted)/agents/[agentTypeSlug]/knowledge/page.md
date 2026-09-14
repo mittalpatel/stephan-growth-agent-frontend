@@ -477,6 +477,62 @@ RHF+Zod rule) posting `multipart/form-data` to `POST /knowledge/pdfs/`
 (org-level). Takes an `onCreated` callback for the same narrowing reason as
 the website flow.
 
+### Duplicate PDF upload rejected (backend 2026-09-12, `pdf-pipeline-bugfixes`)
+
+`KnowledgeSourceService.create_pdf_source` now checks the file's checksum
+against every `PdfDocument` already in the organization and rejects a match
+with a 409, `errors.code: "duplicate_pdf_document"`,
+`errors.existing_source_id` (a `KnowledgeSource.id`) — same shape as the
+existing `duplicate_website_source` 409. Before this, re-uploading the
+identical file silently created a second, fully-duplicate source.
+
+`useAddPdfSource.ts` now captures `existing_source_id` into
+`duplicateSourceId` state the same way `useAddWebsiteFlow` does (`getErrorCode`
+
+- `getEnvelope`), reset at the start of every upload attempt. **Unlike the
+  website flow, `AddPdfDialog` cannot link to the existing source** — a PDF
+  source has no detail route (no `website_source_id`, no pages view) to send an
+  operator to. It instead resolves the id to a `display_name` via the
+  already-loaded `useAllKnowledgeSources()` list (same lookup pattern as the
+  website flow) and shows a plain named message
+  (`t.knowledge.addPdf.duplicateSource`), with no link.
+
+### Three new PDF processing failures — visible only as a bare "Failed" badge (backend 2026-09-12)
+
+`process_pdf` now fails distinctly for: no extractable text at all
+(`PDF_NO_EXTRACTABLE_TEXT`, e.g. a blank or unreadable scanned PDF),
+password-protected files (`PDF_PASSWORD_PROTECTED`), and files over the new
+500-page ceiling (`PDF_PAGE_LIMIT_EXCEEDED`). All three set
+`PdfDocument.error_message` and `KnowledgeSource.status = failed`, the same
+failure path every other PDF processing error already used.
+
+**Not visible on the frontend today, and not a wiring gap — a backend read
+gap**, the same shape as the B8 `scope_config` gap above: neither
+`KnowledgeSourceSerializer` nor `KnowledgeSourceListSerializer` exposes an
+`error_message` field for a `KnowledgeSource`/`PdfDocument` at all. Only
+`DiscoveredUrlSerializer` (website pages) carries `error_message`, which is
+why `KnowledgeSourcePagesView.tsx` can show a per-page failure reason and
+nothing shows one for a failed PDF source — `KnowledgeSourcesTable.tsx`
+renders `failed` as a bare `StatusBadge`, and the frontend's
+`KnowledgeSource`/`KnowledgeSourceListItem` types carry no `error_message`
+field to render even if the badge grew a tooltip. Flagged for the backend
+team: add `error_message` (null when not failed) to
+`KnowledgeSourceSerializer`/`KnowledgeSourceListSerializer`. Once available,
+the natural place to render it is next to the status badge in
+`KnowledgeSourcesTable.tsx`, mirroring the pattern already used for per-page
+failures.
+
+### Chat citation/fallback changes — confirmed no-op (backend 2026-09-12)
+
+The same branch changed `ChatRuntimeService.complete()` to detect a
+model-emitted fallback protocol token (`NO_ANSWER_IN_EVIDENCE`) instead of
+trusting the retrieval-score threshold alone, and to always include the
+top-scored retrieved chunk in persisted citations. Checked: citations render
+as a plain list (`source_url`/`source_title`/`excerpt`) with no `[n]`-marker
+parsing or citation-count assumptions anywhere in the chat/widget frontend
+code, and nothing inspects fallback detection beyond the unrelated
+`ConfidenceDecision` enum. No frontend change needed.
+
 ## Knowledge scope (narrowing)
 
 `KnowledgeTargetsPanel.tsx` + `useKnowledgeTargets.ts` +
