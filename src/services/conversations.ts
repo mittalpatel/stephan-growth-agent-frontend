@@ -10,6 +10,14 @@ import { buildListParams, type ListQuery } from './listParams';
 
 export const agentConversationsEndpoint = (agentId: string) =>
   `/api/v1/agents/${agentId}/conversations/`;
+/**
+ * Every conversation across every agent in the organization (backend
+ * 2026-09-14, `ConversationListView`). Same filter/sort contract as the
+ * agent-scoped listing above, just not narrowed to one agent — this is what
+ * makes an org-wide "which conversations need a human right now" queue one
+ * request instead of one per agent.
+ */
+export const CONVERSATIONS_ENDPOINT = '/api/v1/conversations/';
 export const agentAnalyticsSummaryEndpoint = (agentId: string) =>
   `/api/v1/agents/${agentId}/analytics/summary/`;
 export const conversationDetailEndpoint = (conversationId: string) =>
@@ -22,13 +30,25 @@ export const conversationDetailEndpoint = (conversationId: string) =>
  */
 export const conversationMessagesEndpoint = (conversationId: string) =>
   `/api/v1/conversations/${conversationId}/messages/`;
+/**
+ * A human operator's own reply into a conversation (backend 2026-09-14,
+ * `ConversationMessageSendView`, `conversation:manage`). Deliberately a
+ * different path from the `GET` above, which only needs `conversation:view`.
+ */
+export const conversationMessageSendEndpoint = (conversationId: string) =>
+  `/api/v1/conversations/${conversationId}/messages/send/`;
 export const conversationAssignEndpoint = (conversationId: string) =>
   `/api/v1/conversations/${conversationId}/assign/`;
 export const conversationGenerateFollowupEndpoint = (conversationId: string) =>
   `/api/v1/conversations/${conversationId}/generate-followup/`;
 
 export const CONVERSATIONS_LIST_KEY = 'conversations-list';
-export const conversationsListKey = (agentId: string) => [CONVERSATIONS_LIST_KEY, agentId];
+/** `null` is the org-wide listing, not a missing id, so it needs a cache slot
+ * of its own rather than collapsing into any one agent's. */
+export const conversationsListKey = (agentId: string | null) => [
+  CONVERSATIONS_LIST_KEY,
+  agentId ?? 'all-agents',
+];
 export const conversationDetailKey = (conversationId: string) => [
   'conversation-detail',
   conversationId,
@@ -54,11 +74,13 @@ export const analyticsSummaryKey = (agentId: string, range: string) => [
 export type ConversationListQuery = ListQuery;
 export const buildConversationListParams = buildListParams;
 
-export function conversationsListUrl(agentId: string, query: ConversationListQuery): string {
+/** `agentId: null` reads the org-wide listing instead of one agent's. */
+export function conversationsListUrl(agentId: string | null, query: ConversationListQuery): string {
   const search = new URLSearchParams(
     Object.entries(buildConversationListParams(query)).map(([key, value]) => [key, String(value)])
   );
-  return `${agentConversationsEndpoint(agentId)}?${search.toString()}`;
+  const base = agentId === null ? CONVERSATIONS_ENDPOINT : agentConversationsEndpoint(agentId);
+  return `${base}?${search.toString()}`;
 }
 
 /**

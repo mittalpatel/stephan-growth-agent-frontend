@@ -11,11 +11,24 @@ import {
   conversationGenerateFollowupEndpoint,
   conversationMessagesEndpoint,
   conversationMessagesKey,
+  conversationMessageSendEndpoint,
+  CONVERSATIONS_ENDPOINT,
   conversationsListKey,
+  conversationsListUrl,
 } from '../conversations';
 
 const AGENT_ID = '0c2f6a1e-1111-4a2b-8c3d-4e5f60718293';
 const CONVERSATION_ID = 'a1b2c3d4-2222-4a2b-8c3d-4e5f60718293';
+const LIST_QUERY = {
+  page: 1,
+  limit: 20,
+  search: [],
+  search_by: '',
+  sort: 'created_at',
+  sort_direction: 'desc' as const,
+  filter: [],
+  filter_by: '',
+};
 
 describe('conversation endpoints', () => {
   it('nests the list and analytics reads under the agent', () => {
@@ -50,6 +63,29 @@ describe('conversation endpoints', () => {
   // clamps silently rather than erroring.
   it('requests a transcript page no larger than the backend allows', () => {
     expect(CONVERSATION_MESSAGES_PAGE_SIZE).toBeLessThanOrEqual(100);
+  });
+
+  // The operator's own write path is a different route from the `GET` it sits
+  // next to, and needs a stronger permission, so posting to the read route
+  // would 405 rather than fail loudly at the point the mistake was made.
+  it('separates the operator send route from the message list route', () => {
+    expect(conversationMessageSendEndpoint(CONVERSATION_ID)).toBe(
+      `/api/v1/conversations/${CONVERSATION_ID}/messages/send/`
+    );
+    expect(conversationMessageSendEndpoint(CONVERSATION_ID)).not.toBe(
+      conversationMessagesEndpoint(CONVERSATION_ID)
+    );
+  });
+
+  // `null` means "every agent", which is a different read from any one
+  // agent's — collapsing the two would serve one agent's rows as the org-wide
+  // queue, or the reverse.
+  it('reads the org-wide list off its own route and cache slot', () => {
+    expect(conversationsListUrl(null, LIST_QUERY).startsWith(CONVERSATIONS_ENDPOINT)).toBe(true);
+    expect(
+      conversationsListUrl(AGENT_ID, LIST_QUERY).startsWith(agentConversationsEndpoint(AGENT_ID))
+    ).toBe(true);
+    expect(conversationsListKey(null)).not.toEqual(conversationsListKey(AGENT_ID));
   });
 
   it('builds distinct, id-scoped query keys', () => {

@@ -1,10 +1,11 @@
 export const conversations = {
   title: 'Conversations',
-  description: 'Every visitor conversation for the selected agent, in one place.',
+  description: 'Every visitor conversation across your agents, in one place.',
   agentPicker: {
     label: 'Agent',
     placeholder: 'Select an agent',
-    empty: 'No agents yet — create one to see its conversations here.',
+    allAgents: 'All agents',
+    empty: 'No agents yet. Create one to see its conversations here.',
   },
   status: {
     open: 'Open',
@@ -23,7 +24,7 @@ export const conversations = {
   },
   list: {
     errorTitle: "Couldn't load conversations",
-    errorDescription: 'Something went wrong fetching this agent’s conversations.',
+    errorDescription: 'Something went wrong fetching these conversations.',
     emptyTitle: 'No conversations yet',
     emptyDescription: 'Conversations appear here once visitors start chatting with this agent.',
     emptyFilteredTitle: 'No conversations match your filters',
@@ -45,12 +46,19 @@ export const conversations = {
     transcriptCount: 'Showing the latest {shown} of {total} messages.',
     transcriptError: 'The transcript could not be loaded.',
     noMessages: 'This conversation has no messages yet.',
+    operatorFallback: 'Support agent',
     confidence: {
       answered: 'Answered',
       clarify: 'Clarify',
       fallback: 'Fallback',
       handoff: 'Handoff',
     },
+  },
+  reply: {
+    label: 'Reply as a human',
+    placeholder: 'Type a reply to send to this visitor',
+    send: 'Send reply',
+    sending: 'Sending…',
   },
   toast: {
     assigned: 'Conversation assigned.',

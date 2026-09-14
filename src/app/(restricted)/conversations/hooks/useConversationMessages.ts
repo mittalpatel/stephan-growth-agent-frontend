@@ -10,6 +10,11 @@ import type { Message } from '@/types/conversation';
 
 type MessagePage = ApiResponse<Message[]>;
 
+/** Poll cadence while a conversation is in a handoff state. Matches the
+ * backend widget stream's own server-side poll interval, so an operator and
+ * the visitor see each other's messages on comparable delays. */
+const LIVE_REFETCH_MS = 5000;
+
 /**
  * The page to load when the operator asks for earlier messages: the one before
  * whichever page was loaded last, or `undefined` once page 1 has been reached.
@@ -50,7 +55,10 @@ export function flattenTranscript(pages: readonly MessagePage[]): Message[] {
  * render costs one request and never needs a count round trip to find the end.
  * "Next page" here therefore means the page *before* the one just loaded.
  */
-export function useConversationMessages(conversationId: string | null) {
+export function useConversationMessages(
+  conversationId: string | null,
+  { live = false }: { live?: boolean } = {}
+) {
   const query = useAuthInfiniteQuery<MessagePage, number | 'last'>(
     ['conversation-messages', conversationId ?? ''],
     (pageParam) =>
@@ -62,6 +70,14 @@ export function useConversationMessages(conversationId: string | null) {
       // first response is what tells us where we started.
       getNextPageParam: olderPageParam,
       enabled: Boolean(conversationId),
+      // While a human is actually handling this conversation, the operator is
+      // waiting on the visitor's next message with nothing to trigger a
+      // refetch. The visitor's own widget gets a real SSE stream; the operator
+      // side has no push channel yet (backend deferred it), so this polls
+      // instead, and only in the state where someone is sitting on the screen
+      // waiting. `refetchInterval` on an infinite query refetches every loaded
+      // page, which is what keeps an older page from going stale mid-handoff.
+      refetchInterval: live ? LIVE_REFETCH_MS : false,
     }
   );
 

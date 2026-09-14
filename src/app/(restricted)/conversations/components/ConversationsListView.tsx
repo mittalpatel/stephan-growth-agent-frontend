@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { AlertTriangle, Sparkles } from 'lucide-react';
+import { AlertTriangle, Headset, Sparkles } from 'lucide-react';
 
 import { useAgentOptions } from '@/app/(restricted)/hooks/useAgentOptions';
 import { useOrganization } from '@/app/(restricted)/context/OrganizationContext';
@@ -33,8 +33,17 @@ import { useConversationActions } from '../hooks/useConversationActions';
 import { useConversationDetail } from '../hooks/useConversationDetail';
 import { useConversationMessages } from '../hooks/useConversationMessages';
 import { useConversationsList } from '../hooks/useConversationsList';
+import { OperatorReplyComposer } from './OperatorReplyComposer';
 
 type OrganizationMember = { user_id: string; email: string; full_name: string };
+
+/** Radix `Select` cannot carry an empty-string value, so the "every agent"
+ * choice needs a sentinel of its own rather than reusing "nothing picked". */
+const ALL_AGENTS = 'all-agents';
+
+/** The two states where a human is expected to be reading this conversation
+ * right now, and so the two where the screen keeps itself current. */
+const HANDOFF_STATUSES: readonly ConversationStatus[] = ['handoff_requested', 'handoff_active'];
 
 const STATUS_TONE: Record<ConversationStatus, StatusTone> = {
   open: 'info',
@@ -52,9 +61,18 @@ const STATUS_TONE: Record<ConversationStatus, StatusTone> = {
  * messages are ordered oldest-first, the cap drops the *newest* turns on any
  * longer conversation. See `useConversationMessages`.
  */
-function ConversationTranscript({ conversationId }: Readonly<{ conversationId: string }>) {
+function ConversationTranscript({
+  conversationId,
+  live,
+}: Readonly<{ conversationId: string; live: boolean }>) {
   const { messages, total, isLoading, isError, refetch, hasOlder, loadOlder, isLoadingOlder } =
-    useConversationMessages(conversationId);
+    useConversationMessages(conversationId, { live });
+
+  // The backend persists an empty-content turn each time a visitor writes again
+  // while already waiting for a human: it keeps the transcript's turn count
+  // honest without re-sending the same "someone is coming" line to the visitor.
+  // There is nothing to read in one, so it renders as a blank bubble here.
+  const visible = messages.filter((m) => m.content.trim().length > 0);
 
   if (isLoading) {
     return (
@@ -77,7 +95,7 @@ function ConversationTranscript({ conversationId }: Readonly<{ conversationId: s
     );
   }
 
-  if (messages.length === 0) {
+  if (visible.length === 0) {
     return (
       <div className="flex flex-1 items-center justify-center px-5 py-5">
         <p className="text-muted-foreground text-sm">{t.conversations.detail.noMessages}</p>
@@ -98,69 +116,92 @@ function ConversationTranscript({ conversationId }: Readonly<{ conversationId: s
           </Button>
           <p className="text-muted-foreground text-[11px]">
             {format(t.conversations.detail.transcriptCount, {
-              shown: formatNumber(messages.length),
+              shown: formatNumber(visible.length),
               total: formatNumber(total),
             })}
           </p>
         </div>
       )}
-      {messages.map((m) => (
-        <div
-          key={m.id}
-          className={cn('flex', m.role === 'visitor' ? 'justify-end' : 'justify-start')}
-        >
+      {visible.map((m) =>
+        // A system turn is a state change (a handoff was requested, a human
+        // was notified), not something anyone said. Rendering it as a chat
+        // bubble implies an author it does not have.
+        m.role === 'system' ? (
+          <p key={m.id} className="text-muted-foreground px-4 text-center text-[11px]">
+            {m.content}
+          </p>
+        ) : (
           <div
-            className={cn(
-              'max-w-[80%] rounded-2xl px-4 py-2.5 text-sm leading-relaxed',
-              m.role === 'visitor'
-                ? 'bg-primary text-primary-foreground rounded-br-sm'
-                : 'bg-muted rounded-bl-sm'
-            )}
+            key={m.id}
+            className={cn('flex', m.role === 'visitor' ? 'justify-end' : 'justify-start')}
           >
-            {m.role === 'agent' && (
-              <div className="text-primary-strong mb-1 flex items-center gap-1.5 text-[11px] font-semibold">
-                <Sparkles className="size-[11px]" /> {t.conversations.detail.transcriptHeading}
-              </div>
-            )}
-            {/* Only the agent side is backend-composed markdown; a visitor's
-                own message is exactly what they typed, so it renders as plain
-                text rather than being parsed (and avoids `text-primary` links
-                landing on this bubble's `bg-primary` fill). */}
-            {m.role === 'agent' ? (
-              <Markdown>{m.content}</Markdown>
-            ) : (
-              <p className="whitespace-pre-wrap">{m.content}</p>
-            )}
-            {m.citations.length > 0 && (
-              <p
-                className={cn(
-                  'mt-1 text-[10px]',
-                  m.role === 'visitor' ? 'text-primary-foreground/60' : 'text-muted-foreground'
-                )}
-              >
-                {t.conversations.detail.citationsLabel}:{' '}
-                {m.citations.map((c, index) => (
-                  <span key={`${c.source_url}-${index}`}>
-                    {index > 0 && ', '}
-                    {c.source_url ? (
-                      <a
-                        href={c.source_url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="underline underline-offset-2 hover:no-underline"
-                      >
-                        {c.source_title}
-                      </a>
-                    ) : (
-                      c.source_title
-                    )}
-                  </span>
-                ))}
-              </p>
-            )}
+            <div
+              className={cn(
+                'max-w-[80%] rounded-2xl px-4 py-2.5 text-sm leading-relaxed',
+                m.role === 'visitor' && 'bg-primary text-primary-foreground rounded-br-sm',
+                m.role === 'agent' && 'bg-muted rounded-bl-sm',
+                // A human reply gets its own surface, not the AI's: "who am I
+                // reading, the bot or a colleague" is the question this whole
+                // screen exists to answer during a handoff.
+                m.role === 'operator' &&
+                  'bg-accent text-accent-foreground border-border border rounded-bl-sm'
+              )}
+            >
+              {m.role === 'agent' && (
+                <div className="text-primary-strong mb-1 flex items-center gap-1.5 text-[11px] font-semibold">
+                  <Sparkles className="size-[11px]" /> {t.conversations.detail.transcriptHeading}
+                </div>
+              )}
+              {m.role === 'operator' && (
+                <div className="text-muted-foreground mb-1 flex items-center gap-1.5 text-[11px] font-semibold">
+                  <Headset className="size-[11px]" />
+                  {/* `sent_by_email` is null on anything older than the backend
+                      change that started recording it, so the role stays the
+                      fallback label rather than showing an empty byline. */}
+                  {m.sent_by_email ?? t.conversations.detail.operatorFallback}
+                </div>
+              )}
+              {/* Only the agent side is backend-composed markdown; a visitor's
+                  own message is exactly what they typed, so it renders as plain
+                  text rather than being parsed (and avoids `text-primary` links
+                  landing on this bubble's `bg-primary` fill). An operator types
+                  into a plain textarea, so the same holds there. */}
+              {m.role === 'agent' ? (
+                <Markdown>{m.content}</Markdown>
+              ) : (
+                <p className="whitespace-pre-wrap">{m.content}</p>
+              )}
+              {m.citations.length > 0 && (
+                <p
+                  className={cn(
+                    'mt-1 text-[10px]',
+                    m.role === 'visitor' ? 'text-primary-foreground/60' : 'text-muted-foreground'
+                  )}
+                >
+                  {t.conversations.detail.citationsLabel}:{' '}
+                  {m.citations.map((c, index) => (
+                    <span key={`${c.source_url}-${index}`}>
+                      {index > 0 && ', '}
+                      {c.source_url ? (
+                        <a
+                          href={c.source_url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="underline underline-offset-2 hover:no-underline"
+                        >
+                          {c.source_title}
+                        </a>
+                      ) : (
+                        c.source_title
+                      )}
+                    </span>
+                  ))}
+                </p>
+              )}
+            </div>
           </div>
-        </div>
-      ))}
+        )
+      )}
     </div>
   );
 }
@@ -216,21 +257,21 @@ function GenerateFollowup({ conversationId }: Readonly<{ conversationId: string 
 }
 
 /**
- * Sprint 1 Phase 3: real conversations, wired to `GET
- * /agents/{id}/conversations/` and `GET /conversations/{id}/`. The backend
- * has no cross-agent conversations endpoint, so the standalone
- * `/conversations` page keeps an agent-picker up top and the sidebar keeps
- * one top-level "Conversations" nav item.
+ * Sprint 1 Phase 3: real conversations, wired to `GET /conversations/`,
+ * `GET /agents/{id}/conversations/` and `GET /conversations/{id}/`. The
+ * standalone page defaults to every agent's conversations (the org-wide
+ * queue) and narrows to one through the picker up top.
  *
  * Passing `agentId` pins it to one agent and drops both the page header and
  * the picker, which is how the agent detail page's Conversations tab reuses
  * it. There is deliberately only one implementation of this screen.
  *
- * Escalation resolve (plan Phase 3) is intentionally not built: the backend
- * exposes `POST /escalations/{id}/resolve/` but no read path returns an
- * escalation's id to the operator UI (`ConversationDetailSerializer` embeds
- * no escalations) — a real backend gap, documented in
- * `context/app/(restricted)/conversations/page.md`.
+ * Escalation resolve is still not built: the backend exposes
+ * `POST /escalations/{id}/resolve/` but no read path returns an escalation's
+ * id to the operator UI (`ConversationDetailSerializer` embeds no
+ * escalations) — a real backend gap, documented in
+ * `context/app/(restricted)/conversations/page.md`. It matters more now that
+ * resolving is what returns a conversation to the AI.
  */
 type Props = Readonly<{
   /** Pins the view to one agent, for the agent detail page's tab. */
@@ -241,17 +282,25 @@ export function ConversationsListView({ agentId: pinnedAgentId }: Props = {}) {
   const { agents, isLoading: agentsLoading } = useAgentOptions();
   const { can } = usePermissions();
   const canManage = can('conversation', 'manage');
-  const [selectedAgentId, setSelectedAgentId] = useState('');
-  // Defaults to the first agent once agents load, without an effect: the
-  // selection is derived, so there's nothing to synchronize back into state
-  // until the user actually picks a different agent.
-  const agentId = pinnedAgentId ?? (selectedAgentId || (agents[0]?.id ?? ''));
+  // Defaults to every agent, not the first one: the standalone page is the
+  // queue an operator watches to find conversations that need a human, and
+  // which agent produced one is not how they are triaged.
+  const [selectedAgentId, setSelectedAgentId] = useState(ALL_AGENTS);
+  const agentId = pinnedAgentId ?? (selectedAgentId === ALL_AGENTS ? null : selectedAgentId);
 
   const list = useConversationsList(agentId);
   const [selectedConversationId, setSelectedConversationId] = useState<string | null>(null);
   const activeId = selectedConversationId ?? list.conversations[0]?.id ?? null;
 
-  const { conversation, isLoading: detailLoading } = useConversationDetail(activeId);
+  // Read off the list row rather than the detail response, so polling is
+  // already on for the very first detail fetch instead of switching on one
+  // render later.
+  const activeStatus = list.conversations.find((c) => c.id === activeId)?.status;
+  const isLive = activeStatus !== undefined && HANDOFF_STATUSES.includes(activeStatus);
+
+  const { conversation, isLoading: detailLoading } = useConversationDetail(activeId, {
+    live: isLive,
+  });
 
   function renderList() {
     if (list.isLoading) {
@@ -326,7 +375,7 @@ export function ConversationsListView({ agentId: pinnedAgentId }: Props = {}) {
             {t.conversations.agentPicker.label}
           </label>
           <Select
-            value={agentId}
+            value={selectedAgentId}
             onValueChange={(value) => {
               setSelectedAgentId(value);
               setSelectedConversationId(null);
@@ -337,6 +386,7 @@ export function ConversationsListView({ agentId: pinnedAgentId }: Props = {}) {
               <SelectValue placeholder={t.conversations.agentPicker.placeholder} />
             </SelectTrigger>
             <SelectContent>
+              <SelectItem value={ALL_AGENTS}>{t.conversations.agentPicker.allAgents}</SelectItem>
               {agents.map((agent) => (
                 <SelectItem key={agent.id} value={agent.id}>
                   {agent.name}
@@ -403,7 +453,11 @@ export function ConversationsListView({ agentId: pinnedAgentId }: Props = {}) {
                   {/* Keyed on the conversation so switching rows discards the
                       previously accumulated transcript pages instead of
                       carrying them into the next conversation. */}
-                  <ConversationTranscript key={activeId} conversationId={activeId} />
+                  <ConversationTranscript key={activeId} conversationId={activeId} live={isLive} />
+                  {/* Replying is what actually takes a conversation over from
+                      the AI, so the composer sits with the transcript rather
+                      than among the side panel's per-conversation actions. */}
+                  {canManage && <OperatorReplyComposer key={activeId} conversationId={activeId} />}
                 </>
               )}
             </div>

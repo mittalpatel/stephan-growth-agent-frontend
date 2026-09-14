@@ -19,13 +19,16 @@ import type { ConversationListItem } from '@/types/conversation';
 const NAMESPACE = 'conversations';
 
 /**
- * One agent's conversations, as one flat bag of props — mirrors
- * `useKnowledgeSources`. No search field: `ConversationSelector` declares
- * none. The filter config is built from client-known enum values rather
- * than fetched, since `AgentConversationListView` never wires up
- * `?type=parameters` (see `src/services/conversations.ts`).
+ * Conversations as one flat bag of props — mirrors `useKnowledgeSources`.
+ * `agentId: null` reads every agent's conversations in the organization
+ * (`ConversationListView`, backend 2026-09-14) instead of one agent's; both
+ * take the same filter/sort params, so only the URL differs.
+ *
+ * No search field: `ConversationSelector` declares none. The filter config is
+ * built from client-known enum values rather than fetched, since neither list
+ * view wires up `?type=parameters` (see `src/services/conversations.ts`).
  */
-export function useConversationsList(agentId: string) {
+export function useConversationsList(agentId: string | null) {
   const {
     queryParams,
     setSort,
@@ -50,7 +53,9 @@ export function useConversationsList(agentId: string) {
   const listQuery = useAuthQuery<ApiResponse<ConversationListItem[]>>(
     [...conversationsListKey(agentId), buildConversationListParams(listQueryInput)],
     conversationsListUrl(agentId, listQueryInput),
-    { enabled: Boolean(agentId), placeholderData: (previous) => previous }
+    // `null` is a real, fetchable selection (every agent), so only an empty
+    // string — no agent picked yet while options are still loading — gates it.
+    { enabled: agentId !== '', placeholderData: (previous) => previous }
   );
 
   const conversations = listQuery.data?.data ?? [];

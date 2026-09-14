@@ -39,9 +39,13 @@ export type Message = {
   confidence_score: number | null;
   citations: Citation[];
   created_at: string;
+  /** Which human sent this. Non-null only for `role: 'operator'` — the role
+   * alone never said *which* operator replied (backend 2026-09-14). Never
+   * present on the public widget payloads, only this operator-facing one. */
+  sent_by_email: string | null;
 };
 
-/** Row shape from `GET /agents/{id}/conversations/`. */
+/** Row shape from `GET /agents/{id}/conversations/` and `GET /conversations/`. */
 export type ConversationListItem = {
   id: string;
   agent_id: string;
