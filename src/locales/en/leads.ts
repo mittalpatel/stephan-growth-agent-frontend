@@ -7,12 +7,19 @@ export const leads = {
     qualified: 'Qualified',
     disqualified: 'Disqualified',
   },
+  qualificationOutcome: {
+    qualified: 'Qualified',
+    partial: 'Partial',
+    unqualified: 'Unqualified',
+  },
   filters: {
     statusLabel: 'Status',
+    qualificationOutcomeLabel: 'Qualification',
   },
   table: {
     lead: 'Lead',
     status: 'Status',
+    qualification: 'Qualification',
     consent: 'Consent',
     lastContact: 'Captured',
   },
@@ -32,6 +39,14 @@ export const leads = {
     consentNotice: 'Consent notice version',
     fieldsHeading: 'Collected fields',
     fieldsEmpty: 'No additional fields were collected.',
+    qualificationLabel: 'Qualification',
+    qualificationHelp:
+      "Scored automatically from this agent's qualification rules, separately from the status you set above.",
+    qualificationHeading: 'Evaluation history',
+    qualificationEmpty:
+      'This lead has not been scored yet. Scoring runs when an agent with qualification rules captures a lead.',
+    scoreLabel: 'Score {score}',
+    missingFieldsLabel: 'Missing: {fields}',
     conversationHeading: 'Conversation',
     noConversation: 'No linked conversation.',
   },

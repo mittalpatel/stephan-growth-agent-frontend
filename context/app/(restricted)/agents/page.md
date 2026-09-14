@@ -351,11 +351,8 @@ of validation already tracked here.
   (`greeting`/`fallback_message`/`disclosure_text`, the three
   `AgentService.publish()` checks) repeated **per `enabled_languages`
   entry**, the full `theme_config`/`behavior_config` shape validated
-  server-side by `ThemeValidationService`, and `qualification_config`
-  as a raw JSON textarea (genuinely freeform on the backend, only validated
-  as "must be an object", so there's no fixed field set to build real inputs
-  for; a client-side parse failure blocks submit with an inline error before
-  ever reaching the network). `useAgentDraft` reads the draft via
+  server-side by `ThemeValidationService`, and the full
+  `qualification_config` rule set (see below). `useAgentDraft` reads the draft via
   `GET /agents/{id}/draft/` (backend 2026-09-07; previously this view was
   `PATCH`-only, and the hook worked around the missing `GET` with an
   empty-body `PATCH`, since `AgentService.update_draft()` is a no-op write
@@ -554,6 +551,54 @@ of validation already tracked here.
   crawled/model-generated text with no separate sanitizer). Links always get
   `target="_blank" rel="noopener noreferrer"`, since they point at citation
   sources, never this app's own routes.
+
+### Lead qualification rules (2026-09-14)
+
+`qualification_config` was a raw JSON textarea in the "Advanced (developer)"
+section until the backend gave it a real schema
+(`apps/agents/qualification_schema.py` + `ThemeValidationService
+.validate_qualification_config`, branch `lead-qualification-l1-02-2026-09-14`).
+It now has its own collapsed `DraftSection`, "Lead qualification", above
+Advanced, with four controls: trigger phrases (`RHFStringListField`), required
+fields (`RHFCheckboxGroupField`), weighted scoring rules
+(`RHFObjectListField`), and the two thresholds.
+
+It follows the same **flatten-on-load / reassemble-on-submit** boundary
+`theme_config`/`behavior_config` already use: `qualificationFieldsFromConfig()`
+splits the stored object into flat `qualification_*` form fields, and
+`buildQualificationConfigPayload()` puts it back. The form field names
+therefore do _not_ match the serializer's 1:1, which is the documented
+exception to the usual naming rule.
+
+Two things about that builder are load-bearing:
+
+- **Unknown keys are carried across a save** by spreading the loaded draft's
+  own config. `cooldown_minutes` and anything org-cascaded still pass through
+  the backend unvalidated, and the backend merges `qualification_config` by key
+  presence only among the keys actually sent. Without the spread, saving from
+  this form would silently drop them. Unlike `behavior_config`, they are not
+  parked in a visible raw-JSON field, since no operator hand-edits them.
+- **`scoring` is written all-or-nothing.** `QualificationService.evaluate()`
+  reads either threshold being absent as "no scoring configured" and forces
+  `unqualified` regardless of score, so a half-set `scoring` is a schema-legal
+  permanent no-op. The Zod schema rejects it client-side and the builder omits
+  the key entirely rather than sending `{}`.
+
+The client schema mirrors every backend rule, including the two that exist
+precisely because a legal-looking config silently did nothing: both-or-neither
+thresholds, and no duplicate `questions[].field` (which `evaluate()` would sum
+twice, scoring double the configured weight). Duplicates are reported on the
+offending row via a `path`, not once for the whole list.
+
+Backend errors still arrive keyed `qualification_config` —
+`_run_application_error_as_validation_error` flattens the nested `field="scoring"`
+away — so `bindQualificationError()` hand-binds that message onto
+`qualification_questions`, the same mutate-then-delete contract
+`bindContrastErrors()` uses so remaining errors still reach `applyApiError`.
+
+`QUALIFIABLE_LEAD_FIELDS` (`name`, `phone`, `interest_note`) is mirrored in
+`src/lib/constants/agentTheme.ts`. `email` is absent by design: every lead
+already has one, so scoring it would hand out free points to everybody.
 
 ## Nav and route registration
 

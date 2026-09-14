@@ -19,8 +19,9 @@ typography wasn't part of that feedback. One type scale, Tailwind defaults other
 ## RHF form primitives — `src/components/common/form/`
 
 `RHFTextField`, `RHFTextareaField`, `RHFSelectField`, `RHFSwitchField`, `RHFColorField`,
-`RHFStringListField`, plus `fieldStyles.ts` (`fieldInputCls`, `fieldLabelCls`,
-`fieldDescriptionCls`, `getRhfError`).
+`RHFStringListField`, `RHFObjectListField`, `RHFCheckboxGroupField`, plus
+`fieldStyles.ts` (`fieldInputCls`, `fieldLabelCls`, `fieldDescriptionCls`,
+`getRhfError`).
 
 Use these inside a `<FormProvider>` rather than wiring controlled inputs per form.
 When a field type is missing, add a primitive here instead of inlining a one-off —
@@ -34,6 +35,32 @@ the field actually changes. Distinct from the error message, which renders below
 input. Added for the agent theme/behavior config form (`AgentDraftTab.tsx`), where
 most fields' effect isn't obvious from the label alone; use it on any new field where
 the same is true, not reflexively on every field.
+
+### The three list/group fields
+
+Added 2026-09-14 for the agent qualification rule editor. They differ in what the
+bound field actually holds, which is the thing to check before reaching for one:
+
+| Field                   | Value shape                                      | Use for                         |
+| ----------------------- | ------------------------------------------------ | ------------------------------- |
+| `RHFStringListField`    | `{ value: string }[]`                            | A repeatable free-text list     |
+| `RHFObjectListField`    | the rows' real shape, e.g. `{ field, weight }[]` | A repeatable record             |
+| `RHFCheckboxGroupField` | `string[]`                                       | Any subset of a small fixed set |
+
+`RHFStringListField`'s `{ value }` wrapper is an artifact of `useFieldArray` needing
+each row to be an object, and callers convert at the read/submit boundary
+(`toRows`/`fromRows` in `useAgentDraftForm`). `RHFObjectListField` needs no such
+conversion, because its rows already are objects.
+
+`RHFObjectListField` takes `columns` of `{ key, label, type: 'select' | 'number' }`
+and renders per-cell errors under the offending cell, with list-level errors (too
+many rows, a duplicate across rows) once at the bottom. The column set is deliberately
+two types wide rather than a general table-editor abstraction: extend the union when a
+real third case appears, rather than guessing at one now.
+
+`RHFCheckboxGroupField` goes through `Controller`, not `register` — the value is an
+array assembled from several inputs, and Radix's checkbox is not a native input to
+bind to. Reach for `RHFSelectField` when exactly one value is allowed.
 
 ## FilterToolbar
 

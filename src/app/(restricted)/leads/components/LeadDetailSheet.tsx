@@ -17,12 +17,13 @@ import {
 } from '@/components/ui/select';
 import { StatusBadge } from '@/components/common/StatusBadge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { formatDate } from '@/lib/i18n';
+import { format, formatDate } from '@/lib/i18n';
 import { LEAD_STATUS_TRANSITIONS } from '@/services/leads';
 import { t } from '@/locales';
 import type { LeadStatus } from '@/types/lead';
 
 import { LEAD_STATUS_TONE } from '../leadStatusTone';
+import { QUALIFICATION_OUTCOME_TONE } from '../qualificationOutcomeTone';
 import { useLeadActions } from '../hooks/useLeadActions';
 import { useLeadDetail } from '../hooks/useLeadDetail';
 
@@ -80,6 +81,67 @@ export function LeadDetailSheet({ leadId, onOpenChange }: Props) {
                   label={t.leads.status[lead.status]}
                   tone={LEAD_STATUS_TONE[lead.status]}
                 />
+              )}
+            </div>
+
+            {/* The rules-computed tier, kept visually apart from the status
+                control above because both vocabularies contain "Qualified"
+                and they are not the same claim. `score` is a raw point
+                total: the serializer omits the `rule_snapshot` its weights
+                came from, so there is no denominator to show a percentage
+                against. */}
+            <div>
+              <p className="text-muted-foreground mb-1 text-xs font-semibold tracking-wider uppercase">
+                {t.leads.detail.qualificationLabel}
+              </p>
+              <StatusBadge
+                label={t.leads.qualificationOutcome[lead.qualification_outcome]}
+                tone={QUALIFICATION_OUTCOME_TONE[lead.qualification_outcome]}
+              />
+              <p className="text-muted-foreground mt-1.5 text-xs">
+                {t.leads.detail.qualificationHelp}
+              </p>
+            </div>
+
+            <div>
+              <p className="text-muted-foreground mb-2 text-xs font-semibold tracking-wider uppercase">
+                {t.leads.detail.qualificationHeading}
+              </p>
+              {lead.qualification_results.length === 0 ? (
+                <p className="text-muted-foreground text-sm">{t.leads.detail.qualificationEmpty}</p>
+              ) : (
+                <div className="flex flex-col gap-2">
+                  {/* The serializer exposes no id, so the key falls back to
+                      the timestamp plus position. Safe here: this list is
+                      append-only server-side and never reordered or filtered
+                      client-side. */}
+                  {lead.qualification_results.map((result, index) => (
+                    <div
+                      key={`${result.created_at}-${index}`}
+                      className="border-border flex flex-col gap-1 rounded-md border px-3 py-2"
+                    >
+                      <div className="flex items-center justify-between gap-2">
+                        <StatusBadge
+                          label={t.leads.qualificationOutcome[result.outcome]}
+                          tone={QUALIFICATION_OUTCOME_TONE[result.outcome]}
+                        />
+                        <span className="text-muted-foreground text-xs">
+                          {formatDate(result.created_at)}
+                        </span>
+                      </div>
+                      <p className="text-sm">
+                        {format(t.leads.detail.scoreLabel, { score: result.score })}
+                      </p>
+                      {result.missing_required_fields.length > 0 && (
+                        <p className="text-muted-foreground text-xs">
+                          {format(t.leads.detail.missingFieldsLabel, {
+                            fields: result.missing_required_fields.join(', '),
+                          })}
+                        </p>
+                      )}
+                    </div>
+                  ))}
+                </div>
               )}
             </div>
 

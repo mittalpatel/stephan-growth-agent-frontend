@@ -34,6 +34,16 @@ export function leadsListUrl(query: LeadListQuery): string {
 export const LEAD_STATUS_VALUES = ['new', 'contacted', 'qualified', 'disqualified'] as const;
 
 /**
+ * The `qualification_outcome` values `LeadSelector._FILTER_FIELDS` accepts,
+ * declared client-side for the same reason as `LEAD_STATUS_VALUES` above.
+ *
+ * Filterable but **not** sortable: `LeadSelector._SORT_FIELDS` is still
+ * `{created_at, status, email}`, so this must not be offered as a sort
+ * option.
+ */
+export const LEAD_QUALIFICATION_OUTCOME_VALUES = ['qualified', 'partial', 'unqualified'] as const;
+
+/**
  * `LeadStatus._TRANSITIONS` (`apps/leads/constants.py`) mirrored so the
  * status control only ever offers a legal next state. `new`/`contacted`
  * branch two ways; `qualified`/`disqualified` are terminal (empty list).

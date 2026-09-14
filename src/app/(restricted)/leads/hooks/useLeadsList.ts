@@ -8,6 +8,7 @@ import { ROW_LIMIT_OPTIONS } from '@/constants/data';
 import { t } from '@/locales';
 import {
   LEADS_LIST_KEY,
+  LEAD_QUALIFICATION_OUTCOME_VALUES,
   LEAD_STATUS_VALUES,
   buildLeadListParams,
   leadsListUrl,
@@ -67,6 +68,18 @@ export function useLeadsList(agentId?: string) {
         label: t.leads.filters.statusLabel,
         type: 'multi_select',
         options: LEAD_STATUS_VALUES.map((value) => ({ value, label: t.leads.status[value] })),
+      },
+      // Keys must match `LeadSelector._FILTER_FIELDS` exactly. No matching
+      // sort option: `_SORT_FIELDS` doesn't include this one, so offering it
+      // would send a sort the backend rejects.
+      {
+        key: 'qualification_outcome',
+        label: t.leads.filters.qualificationOutcomeLabel,
+        type: 'multi_select',
+        options: LEAD_QUALIFICATION_OUTCOME_VALUES.map((value) => ({
+          value,
+          label: t.leads.qualificationOutcome[value],
+        })),
       },
     ],
     []

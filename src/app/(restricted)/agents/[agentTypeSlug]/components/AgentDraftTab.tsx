@@ -10,12 +10,15 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import {
+  RHFCheckboxGroupField,
   RHFColorField,
+  RHFObjectListField,
   RHFSelectField,
   RHFStringListField,
   RHFSwitchField,
   RHFTextField,
   RHFTextareaField,
+  type ObjectListColumn,
   type SelectFieldOption,
 } from '@/components/common/form';
 import {
@@ -25,7 +28,14 @@ import {
 } from '@/components/common/form/fieldStyles';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useBeforeUnloadWarning } from '@/hooks/useBeforeUnloadWarning';
-import { CONTRAST_CHECKED_PAIRS, type ThemeColorKey } from '@/lib/constants/agentTheme';
+import {
+  CONTRAST_CHECKED_PAIRS,
+  MAX_QUALIFICATION_QUESTIONS,
+  MAX_QUESTION_WEIGHT,
+  MIN_QUESTION_WEIGHT,
+  QUALIFIABLE_LEAD_FIELDS,
+  type ThemeColorKey,
+} from '@/lib/constants/agentTheme';
 import { checkContrast, isValidHexColor } from '@/lib/contrast';
 import { format } from '@/lib/i18n';
 import { t } from '@/locales';
@@ -41,6 +51,32 @@ type Props = Readonly<{ agent: Agent; onDirtyChange?: (dirty: boolean) => void }
 function optionsFromMap(map: Record<string, string>): SelectFieldOption[] {
   return Object.entries(map).map(([value, label]) => ({ value, label }));
 }
+
+/** The three `Lead` fields a rule may reference, labelled. Built from the
+ * mirrored constant rather than hand-listed so it cannot drift from what the
+ * backend accepts. */
+const QUALIFIABLE_FIELD_OPTIONS: SelectFieldOption[] = QUALIFIABLE_LEAD_FIELDS.map((value) => ({
+  value,
+  label: t.agents.detail.draft.qualifiableField[value],
+}));
+
+const QUALIFICATION_QUESTION_COLUMNS: ObjectListColumn[] = [
+  {
+    key: 'field',
+    label: t.agents.detail.draft.qualificationFieldColumn,
+    type: 'select',
+    options: QUALIFIABLE_FIELD_OPTIONS,
+    className: 'flex-1',
+  },
+  {
+    key: 'weight',
+    label: t.agents.detail.draft.qualificationWeightColumn,
+    type: 'number',
+    min: MIN_QUESTION_WEIGHT,
+    max: MAX_QUESTION_WEIGHT,
+    className: 'w-24 shrink-0',
+  },
+];
 
 const THEME_COLOR_FIELD_KEYS = [
   'primary',
@@ -465,6 +501,56 @@ function DraftForm({
             </div>
           </DraftSection>
 
+          <DraftSection title={t.agents.detail.draft.qualificationHeading} defaultOpen={false}>
+            <p className="text-muted-foreground -mt-2 text-xs">
+              {t.agents.detail.draft.qualificationDescription}
+            </p>
+            <RHFStringListField<AgentDraftFormValues>
+              name="qualification_trigger_phrases"
+              label={t.agents.detail.draft.qualificationTriggerPhrasesLabel}
+              description={t.agents.detail.draft.qualificationTriggerPhrasesDescription}
+              itemPlaceholder={t.agents.detail.draft.qualificationTriggerPhrasePlaceholder}
+              addLabel={t.agents.detail.draft.addListItem}
+              removeLabel={t.agents.detail.draft.removeListItem}
+              disabled={!canManage}
+            />
+            <RHFCheckboxGroupField<AgentDraftFormValues>
+              name="qualification_required_fields"
+              label={t.agents.detail.draft.qualificationRequiredFieldsLabel}
+              description={t.agents.detail.draft.qualificationRequiredFieldsDescription}
+              options={QUALIFIABLE_FIELD_OPTIONS}
+              disabled={!canManage}
+            />
+            <RHFObjectListField<AgentDraftFormValues>
+              name="qualification_questions"
+              label={t.agents.detail.draft.qualificationQuestionsLabel}
+              description={t.agents.detail.draft.qualificationQuestionsDescription}
+              emptyLabel={t.agents.detail.draft.qualificationQuestionsEmpty}
+              columns={QUALIFICATION_QUESTION_COLUMNS}
+              emptyRow={{ field: QUALIFIABLE_LEAD_FIELDS[0], weight: MIN_QUESTION_WEIGHT }}
+              addLabel={t.agents.detail.draft.qualificationAddQuestion}
+              removeLabel={t.agents.detail.draft.qualificationRemoveQuestion}
+              maxItems={MAX_QUALIFICATION_QUESTIONS}
+              disabled={!canManage}
+            />
+            <div className="grid gap-4 sm:grid-cols-2">
+              <RHFTextField<AgentDraftFormValues>
+                name="qualification_qualified_threshold"
+                type="number"
+                label={t.agents.detail.draft.qualificationQualifiedThresholdLabel}
+                description={t.agents.detail.draft.qualificationQualifiedThresholdDescription}
+                disabled={!canManage}
+              />
+              <RHFTextField<AgentDraftFormValues>
+                name="qualification_partial_threshold"
+                type="number"
+                label={t.agents.detail.draft.qualificationPartialThresholdLabel}
+                description={t.agents.detail.draft.qualificationPartialThresholdDescription}
+                disabled={!canManage}
+              />
+            </div>
+          </DraftSection>
+
           <DraftSection title={t.agents.detail.draft.advancedHeading} defaultOpen={false}>
             <p className="text-muted-foreground -mt-2 text-xs">
               {t.agents.detail.draft.advancedDescription}
@@ -492,15 +578,6 @@ function DraftForm({
               name="behavior_config_advanced"
               label={t.agents.detail.draft.behaviorConfigAdvancedLabel}
               description={t.agents.detail.draft.behaviorConfigAdvancedDescription}
-              placeholder={t.agents.detail.draft.configPlaceholder}
-              disabled={!canManage}
-              rows={4}
-              className="font-mono text-xs"
-            />
-            <RHFTextareaField<AgentDraftFormValues>
-              name="qualification_config"
-              label={t.agents.detail.draft.qualificationConfigLabel}
-              description={t.agents.detail.draft.qualificationConfigDescription}
               placeholder={t.agents.detail.draft.configPlaceholder}
               disabled={!canManage}
               rows={4}

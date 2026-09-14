@@ -83,6 +83,42 @@ export type BehaviorConfig = {
   prohibited_claims?: string[];
 };
 
+/** The `Lead` fields a qualification rule may reference. Mirrors
+ * `apps.agents.qualification_schema.QUALIFIABLE_LEAD_FIELDS` (no `email`,
+ * which every lead already has). */
+export type QualifiableLeadField = 'name' | 'phone' | 'interest_note';
+
+/**
+ * Shape of `AgentVersion.qualification_config`'s named, validated keys (see
+ * `apps/agents/qualification_schema.py` and `ThemeValidationService
+ * .validate_qualification_config`, added 2026-09-14). Every key is optional,
+ * and an agent version with none of them set never qualifies a lead above
+ * `unqualified` rather than passing everyone.
+ *
+ * Scoring is a flat weighted-points list, not a decision tree, and is
+ * deliberately rule-based rather than LLM-scored (the client's scope puts AI
+ * lead scoring in Level 2).
+ *
+ * The index signature is load-bearing: `cooldown_minutes` and any
+ * org-cascaded key still pass through the backend unvalidated, so a form
+ * that reassembles this object must carry unrecognized keys across a save
+ * instead of dropping them.
+ */
+export type QualificationConfig = {
+  /** Gates `suggest_lead_capture`: when set, the agent only offers capture
+   * after a visitor message matches one of these. Unset means unconditional. */
+  trigger_phrases?: string[];
+  /** Any of these still blank forces `unqualified`, whatever the score. */
+  required_fields?: QualifiableLeadField[];
+  /** Each present field adds its `weight` to the lead's score. A field may
+   * appear at most once. */
+  questions?: { field: QualifiableLeadField; weight: number }[];
+  /** Both thresholds or neither: with only one set the backend scores every
+   * lead `unqualified` regardless. */
+  scoring?: { qualified_threshold?: number; partial_threshold?: number };
+  [key: string]: unknown;
+};
+
 /**
  * Row shape from `GET /api/v1/agents/types/` and the `agent_type` embed on
  * `AgentListItem`/`Agent`. Platform-wide catalog, not tenant data — see
@@ -149,7 +185,7 @@ export type AgentVersionDetail = {
   behavior_config: BehaviorConfig & Record<string, unknown>;
   localized_text: Record<string, LocalizedText>;
   theme_config: ThemeConfig & Record<string, unknown>;
-  qualification_config: Record<string, unknown>;
+  qualification_config: QualificationConfig;
   knowledge_index_version: string | null;
   published_at: string | null;
   created_at: string;
@@ -174,7 +210,7 @@ export type AgentDraftUpdateInput = Partial<{
   behavior_config: BehaviorConfig & Record<string, unknown>;
   localized_text: Record<string, LocalizedText>;
   theme_config: ThemeConfig & Record<string, unknown>;
-  qualification_config: Record<string, unknown>;
+  qualification_config: QualificationConfig;
 }>;
 
 /** Body for `POST /agents/{id}/rollback/`. */

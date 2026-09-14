@@ -6,4 +6,6 @@ export { RHFSelectField, type SelectFieldOption } from './RHFSelectField';
 export { RHFSwitchField } from './RHFSwitchField';
 export { RHFColorField } from './RHFColorField';
 export { RHFStringListField } from './RHFStringListField';
+export { RHFObjectListField, type ObjectListColumn } from './RHFObjectListField';
+export { RHFCheckboxGroupField } from './RHFCheckboxGroupField';
 export { fieldInputCls, fieldLabelCls, getRhfError } from './fieldStyles';

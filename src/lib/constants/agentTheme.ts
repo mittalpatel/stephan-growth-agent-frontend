@@ -91,3 +91,24 @@ export const CONTRAST_CHECKED_PAIRS: ReadonlyArray<readonly [ThemeColorKey, Them
   ['error', 'background'],
   ['error', 'surface'],
 ];
+
+/**
+ * `apps.agents.qualification_schema.QUALIFIABLE_LEAD_FIELDS` — the only
+ * `Lead` fields a qualification rule may reference.
+ *
+ * `email` is deliberately absent: it is already unconditionally required to
+ * capture a lead at all, so every lead has one and scoring it would hand out
+ * free points to everybody. The backend enforces this twice, at config-save
+ * time and again inside `QualificationService.evaluate()`, so an option added
+ * here that isn't on that list is rejected, not merely ignored.
+ */
+export const QUALIFIABLE_LEAD_FIELDS = ['name', 'phone', 'interest_note'] as const;
+
+// `apps.agents.qualification_schema` — mirrored exactly. Unlike the UI-only
+// ceilings above, the backend rejects anything outside these bounds, so
+// these are the real contract rather than a courtesy guard.
+export const MAX_QUALIFICATION_QUESTIONS = 20;
+export const MIN_QUESTION_WEIGHT = 1;
+export const MAX_QUESTION_WEIGHT = 100;
+export const MIN_QUALIFICATION_THRESHOLD = 0;
+export const MAX_QUALIFICATION_THRESHOLD = 100;

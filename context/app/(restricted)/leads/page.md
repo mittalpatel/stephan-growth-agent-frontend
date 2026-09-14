@@ -59,3 +59,39 @@ underlying `MotionListItem` now forwards `onClick` too, see
 `components.md`) opens `LeadDetailSheet`, showing the lead's collected
 fields and its linked conversation's status/date (not a link into the
 conversations page — that page has no per-conversation deep link yet).
+
+## Qualification outcome (2026-09-14)
+
+The backend's L1-02 rule-based qualification engine (backend branch
+`lead-qualification-l1-02-2026-09-14`) adds a system-computed tier alongside the
+operator-set status. Both surfaces read it:
+
+- **List**: `qualification_outcome` on every row, a `StatusBadge` column after
+  Status, plus a `qualification_outcome` multi-select filter in the toolbar.
+  `unqualified` is toned `neutral`, not `danger` — it is the default for every
+  lead captured by an agent with no rules configured, so styling it as a failure
+  would paint most of the table red and say nothing.
+- **Detail**: the current tier, then `qualification_results`, the append-only
+  evaluation history (`{outcome, score, missing_required_fields, created_at}`,
+  newest first). A returning visitor who fills in a previously-blank field within
+  the capture cooldown is re-evaluated and gets a _new_ row rather than
+  overwriting the last, so this genuinely reads as history.
+
+**Status and outcome are different claims and are rendered apart on purpose.**
+`status` is the operator's workflow state set by hand; `qualification_outcome` is
+the rules' own judgment against a specific `AgentVersion.qualification_config`.
+Both vocabularies contain "Qualified". Never substitute one for the other.
+
+`score` renders as a **raw point total, never a percentage.**
+`QualificationResultSerializer` deliberately omits the `rule_snapshot` the weights
+were summed from, so there is no denominator available. (Separately, the backend's
+own schema docstring calls thresholds "percentages of the summed weight ceiling"
+while `QualificationService.evaluate()` compares the raw sum — flagged to the
+backend team, unresolved as of this sync.)
+
+Filter keys must match `LeadSelector._FILTER_FIELDS`. Note the asymmetry:
+`qualification_outcome` is **filterable but not sortable** (`_SORT_FIELDS` is
+still `{created_at, status, email}`), so it must not be added to `sortOptions`.
+Filters stay client-declared here because `LeadListView` still has no
+`?type=parameters` branch, even though `LeadSelector.build_parameters_config()`
+now builds one.

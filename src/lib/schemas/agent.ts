@@ -4,9 +4,15 @@ import {
   APPROVED_FONT_FAMILIES,
   MAX_HISTORY_MESSAGES_CEILING,
   MAX_MODERATION_CATEGORIES,
+  MAX_QUALIFICATION_QUESTIONS,
+  MAX_QUALIFICATION_THRESHOLD,
+  MAX_QUESTION_WEIGHT,
   MAX_RETRIEVAL_CONTEXT_TURNS,
   MAX_SUGGESTED_QUESTION_LENGTH,
   MAX_SUGGESTED_QUESTIONS,
+  MIN_QUALIFICATION_THRESHOLD,
+  MIN_QUESTION_WEIGHT,
+  QUALIFIABLE_LEAD_FIELDS,
   UNSUPPORTED_LANGUAGE_BEHAVIORS,
   WIDGET_LAUNCHER_SHAPES,
   WIDGET_MODES,
@@ -139,93 +145,158 @@ const jsonObjectField = (invalidMessage: string) =>
  * for these are bound by hand in the submit handler, not through
  * `applyApiError`'s automatic name matching).
  *
- * `behavior_config_advanced`/`qualification_config` stay raw JSON: as of
- * 2026-09-09 the runtime-consumed behavior keys (`groundedness_threshold`,
+ * `behavior_config_advanced` is the last raw-JSON field. As of 2026-09-09
+ * the runtime-consumed behavior keys (`groundedness_threshold`,
  * `retrieval_context_turns`, `max_history_messages`,
- * `moderation_self_harm_categories`, `unsupported_language_behavior`) are
- * real, validated fields below, not part of this JSON blob any more — only
- * `qualification_config` and any org-cascaded/unrecognized key (e.g.
- * `voice.tone`) still have no fixed shape worth building
- * real inputs for.
+ * `moderation_self_harm_categories`, `unsupported_language_behavior`) became
+ * real validated fields below, and as of 2026-09-14 `qualification_config`
+ * did too, once the backend gave it a full schema. What is left in the blob
+ * is only the org-cascaded/unrecognized keys (e.g. `voice.tone`), which by
+ * definition have no fixed shape to build inputs for.
  */
-export const agentDraftUpdateSchema = z.object({
-  instructions: z.string(),
-  disclosure_enabled: z.boolean(),
-  localized_text: z.record(z.string(), localizedTextEntrySchema),
-  /** Blank means "fall back to Agent.name" server-side — distinct from a
-   * whitespace-only string, which `AgentVersionUpdateSerializer
-   * .validate_display_name` rejects rather than silently storing a name
-   * nobody would recognize. */
-  display_name: z.string().refine((value) => value === '' || value.trim().length > 0, {
-    message: t.agents.detail.draft.displayNameBlank,
-  }),
+export const agentDraftUpdateSchema = z
+  .object({
+    instructions: z.string(),
+    disclosure_enabled: z.boolean(),
+    localized_text: z.record(z.string(), localizedTextEntrySchema),
+    /** Blank means "fall back to Agent.name" server-side — distinct from a
+     * whitespace-only string, which `AgentVersionUpdateSerializer
+     * .validate_display_name` rejects rather than silently storing a name
+     * nobody would recognize. */
+    display_name: z.string().refine((value) => value === '' || value.trim().length > 0, {
+      message: t.agents.detail.draft.displayNameBlank,
+    }),
 
-  // theme_config.colors.*
-  color_primary: optionalHexColor(),
-  color_secondary: optionalHexColor(),
-  color_background: optionalHexColor(),
-  color_surface: optionalHexColor(),
-  color_text: optionalHexColor(),
-  color_success: optionalHexColor(),
-  color_warning: optionalHexColor(),
-  color_error: optionalHexColor(),
-  // theme_config.typography.font_family
-  typography_font_family: optionalEnum(APPROVED_FONT_FAMILIES),
-  // theme_config.widget.*
-  widget_position: optionalEnum(WIDGET_POSITIONS),
-  widget_launcher_shape: optionalEnum(WIDGET_LAUNCHER_SHAPES),
-  widget_mode: optionalEnum(WIDGET_MODES),
-  // theme_config.logo.*
-  logo_logo_url: z.string(),
-  logo_favicon_url: z.string(),
+    // theme_config.colors.*
+    color_primary: optionalHexColor(),
+    color_secondary: optionalHexColor(),
+    color_background: optionalHexColor(),
+    color_surface: optionalHexColor(),
+    color_text: optionalHexColor(),
+    color_success: optionalHexColor(),
+    color_warning: optionalHexColor(),
+    color_error: optionalHexColor(),
+    // theme_config.typography.font_family
+    typography_font_family: optionalEnum(APPROVED_FONT_FAMILIES),
+    // theme_config.widget.*
+    widget_position: optionalEnum(WIDGET_POSITIONS),
+    widget_launcher_shape: optionalEnum(WIDGET_LAUNCHER_SHAPES),
+    widget_mode: optionalEnum(WIDGET_MODES),
+    // theme_config.logo.*
+    logo_logo_url: z.string(),
+    logo_favicon_url: z.string(),
 
-  // behavior_config.* — the runtime-consumed keys ThemeValidationService
-  // validates as of 2026-09-09 (`apps.runtime.services.chat_runtime_service`).
-  // Sanity ceilings on the two integer fields and the category list are
-  // client-only guards; the backend enforces no upper bound, only a `>= 1`
-  // floor on the integers.
-  groundedness_threshold: optionalNumber(0, 1, t.agents.detail.draft.groundednessThresholdRange),
-  retrieval_context_turns: optionalNumber(
-    1,
-    MAX_RETRIEVAL_CONTEXT_TURNS,
-    t.agents.detail.draft.retrievalContextTurnsRange
-  ),
-  max_history_messages: optionalNumber(
-    1,
-    MAX_HISTORY_MESSAGES_CEILING,
-    t.agents.detail.draft.maxHistoryMessagesRange
-  ),
-  moderation_self_harm_categories: stringListField().max(
-    MAX_MODERATION_CATEGORIES,
-    t.agents.validation.listTooLong
-  ),
-  unsupported_language_behavior: optionalEnum(UNSUPPORTED_LANGUAGE_BEHAVIORS),
-  // behavior_config.suggested_questions / .prohibited_claims
-  suggested_questions: stringListField(MAX_SUGGESTED_QUESTION_LENGTH).max(
-    MAX_SUGGESTED_QUESTIONS,
-    t.agents.detail.draft.suggestedQuestionsTooMany
-  ),
-  prohibited_claims: stringListField(),
+    // behavior_config.* — the runtime-consumed keys ThemeValidationService
+    // validates as of 2026-09-09 (`apps.runtime.services.chat_runtime_service`).
+    // Sanity ceilings on the two integer fields and the category list are
+    // client-only guards; the backend enforces no upper bound, only a `>= 1`
+    // floor on the integers.
+    groundedness_threshold: optionalNumber(0, 1, t.agents.detail.draft.groundednessThresholdRange),
+    retrieval_context_turns: optionalNumber(
+      1,
+      MAX_RETRIEVAL_CONTEXT_TURNS,
+      t.agents.detail.draft.retrievalContextTurnsRange
+    ),
+    max_history_messages: optionalNumber(
+      1,
+      MAX_HISTORY_MESSAGES_CEILING,
+      t.agents.detail.draft.maxHistoryMessagesRange
+    ),
+    moderation_self_harm_categories: stringListField().max(
+      MAX_MODERATION_CATEGORIES,
+      t.agents.validation.listTooLong
+    ),
+    unsupported_language_behavior: optionalEnum(UNSUPPORTED_LANGUAGE_BEHAVIORS),
+    // behavior_config.suggested_questions / .prohibited_claims
+    suggested_questions: stringListField(MAX_SUGGESTED_QUESTION_LENGTH).max(
+      MAX_SUGGESTED_QUESTIONS,
+      t.agents.detail.draft.suggestedQuestionsTooMany
+    ),
+    prohibited_claims: stringListField(),
 
-  behavior_config_advanced: jsonObjectField(t.agents.detail.draft.configMustBeObject),
-  qualification_config: jsonObjectField(t.agents.detail.draft.configMustBeObject).superRefine(
-    (value, ctx) => {
-      // Mirrors `AgentVersionUpdateSerializer.validate_qualification_config`'s
-      // `trigger_phrases` guard: a list of non-blank strings, when present.
-      // An explicit `null` counts as absent, exactly as the backend's
-      // `value.get("trigger_phrases") is not None` check does.
-      const triggerPhrases = value.trigger_phrases;
-      if (
-        triggerPhrases !== undefined &&
-        triggerPhrases !== null &&
-        (!Array.isArray(triggerPhrases) ||
-          !triggerPhrases.every((phrase) => typeof phrase === 'string' && phrase.trim().length > 0))
-      ) {
-        ctx.addIssue({ code: 'custom', message: t.agents.detail.draft.triggerPhraseInvalid });
-      }
+    behavior_config_advanced: jsonObjectField(t.agents.detail.draft.configMustBeObject),
+
+    // qualification_config.* — flattened into typed fields the same way
+    // theme/behavior are, now that `ThemeValidationService
+    // .validate_qualification_config` gives the blob a real schema (backend
+    // branch `lead-qualification-l1-02-2026-09-14`). See
+    // `useAgentDraftForm.ts` for the reassembly back into the nested body.
+    qualification_trigger_phrases: stringListField(),
+    qualification_required_fields: z.array(z.enum(QUALIFIABLE_LEAD_FIELDS)),
+    qualification_questions: z
+      .array(
+        z.object({
+          field: z.enum(QUALIFIABLE_LEAD_FIELDS, {
+            message: t.agents.detail.draft.qualificationFieldInvalid,
+          }),
+          // The backend rejects a bool and any non-integer outright, so a
+          // fractional weight must fail here rather than being rounded into
+          // something the operator didn't type.
+          weight: z.coerce
+            .number({ message: t.agents.detail.draft.qualificationWeightRange })
+            .int(t.agents.detail.draft.qualificationWeightRange)
+            .min(MIN_QUESTION_WEIGHT, t.agents.detail.draft.qualificationWeightRange)
+            .max(MAX_QUESTION_WEIGHT, t.agents.detail.draft.qualificationWeightRange),
+        })
+      )
+      .max(MAX_QUALIFICATION_QUESTIONS, t.agents.detail.draft.qualificationTooManyQuestions)
+      .superRefine((questions, ctx) => {
+        // `QualificationService.evaluate()` sums every entry independently, so
+        // the same field twice scores double its configured weight. The
+        // backend rejects it; catching it here points at the offending row
+        // instead of returning one message for the whole list.
+        const seen = new Set<string>();
+        questions.forEach((question, index) => {
+          if (seen.has(question.field)) {
+            ctx.addIssue({
+              code: 'custom',
+              message: t.agents.detail.draft.qualificationFieldDuplicated,
+              path: [index, 'field'],
+            });
+          }
+          seen.add(question.field);
+        });
+      }),
+    qualification_qualified_threshold: optionalNumber(
+      MIN_QUALIFICATION_THRESHOLD,
+      MAX_QUALIFICATION_THRESHOLD,
+      t.agents.detail.draft.qualificationThresholdRange
+    ),
+    qualification_partial_threshold: optionalNumber(
+      MIN_QUALIFICATION_THRESHOLD,
+      MAX_QUALIFICATION_THRESHOLD,
+      t.agents.detail.draft.qualificationThresholdRange
+    ),
+  })
+  .superRefine((values, ctx) => {
+    // Both thresholds or neither. The backend added this rule because a config
+    // with only one set is schema-legal but a permanent no-op: `evaluate()`
+    // reads either being absent as "no scoring configured" and forces
+    // `unqualified` no matter what the lead scores. Silently saving one is
+    // worse than refusing it.
+    const qualified = values.qualification_qualified_threshold;
+    const partial = values.qualification_partial_threshold;
+    const hasQualified = qualified !== '' && qualified !== undefined;
+    const hasPartial = partial !== '' && partial !== undefined;
+
+    if (hasQualified !== hasPartial) {
+      ctx.addIssue({
+        code: 'custom',
+        message: t.agents.detail.draft.qualificationThresholdsIncomplete,
+        path: [
+          hasQualified ? 'qualification_partial_threshold' : 'qualification_qualified_threshold',
+        ],
+      });
+      return;
     }
-  ),
-});
+    if (hasQualified && hasPartial && Number(partial) > Number(qualified)) {
+      ctx.addIssue({
+        code: 'custom',
+        message: t.agents.detail.draft.qualificationThresholdOrder,
+        path: ['qualification_partial_threshold'],
+      });
+    }
+  });
 
 // `behavior_config_advanced`/`qualification_config` are `z.string().transform(...)`,
 // so the schema's input type (what RHF actually holds while the user types)

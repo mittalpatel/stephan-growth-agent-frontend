@@ -28,6 +28,7 @@ import type {
   AgentVersionDetail,
   BehaviorConfig,
   LocalizedText,
+  QualificationConfig,
   ThemeConfig,
 } from '@/types/agent';
 import type { ApiResponse } from '@/types/api';
@@ -235,6 +236,68 @@ function buildBehaviorConfigPayload(
   };
 }
 
+/** Splits a stored `qualification_config` into this form's flat fields.
+ * Unrecognized keys (`cooldown_minutes`, anything org-cascaded) are not
+ * represented in the form at all — unlike `behavior_config`, which parks
+ * them in a raw-JSON field, they are carried across a save straight from the
+ * loaded draft by `buildQualificationConfigPayload`. One less textarea for a
+ * key no operator edits by hand. */
+function qualificationFieldsFromConfig(qualification: QualificationConfig) {
+  const scoring = qualification.scoring ?? {};
+  return {
+    qualification_trigger_phrases: toRows(qualification.trigger_phrases),
+    qualification_required_fields: qualification.required_fields ?? [],
+    qualification_questions: qualification.questions ?? [],
+    qualification_qualified_threshold: scoring.qualified_threshold ?? '',
+    qualification_partial_threshold: scoring.partial_threshold ?? '',
+  };
+}
+
+/**
+ * Reassembles the flat qualification fields into the nested shape
+ * `ThemeValidationService.validate_qualification_config` validates.
+ *
+ * `stored` is spread in first so keys the form doesn't model survive the
+ * round trip. Without it, saving the draft from this form would silently
+ * drop an agent's `cooldown_minutes` — the backend merges `qualification_config`
+ * by key presence, but only among the keys actually sent.
+ *
+ * Each key is omitted rather than sent empty when unset, matching
+ * `buildThemeConfigPayload`'s rule. `scoring` in particular must be all or
+ * nothing: sending one threshold is a config the backend rejects, and
+ * sending `{}` would read as "scoring configured" while scoring nobody.
+ */
+function buildQualificationConfigPayload(
+  values: AgentDraftSubmitValues,
+  stored: QualificationConfig
+): QualificationConfig {
+  // Same shape as `behaviorFieldsFromConfig`: strip the keys the form owns,
+  // keep whatever else was stored.
+  const rest = { ...stored };
+  delete rest.trigger_phrases;
+  delete rest.required_fields;
+  delete rest.questions;
+  delete rest.scoring;
+
+  const qualified = values.qualification_qualified_threshold;
+  const partial = values.qualification_partial_threshold;
+  const hasThresholds =
+    qualified !== '' && qualified !== undefined && partial !== '' && partial !== undefined;
+
+  return {
+    ...rest,
+    trigger_phrases: fromRows(values.qualification_trigger_phrases),
+    required_fields: values.qualification_required_fields,
+    questions: values.qualification_questions,
+    ...(hasThresholds && {
+      scoring: {
+        qualified_threshold: Number(qualified),
+        partial_threshold: Number(partial),
+      },
+    }),
+  };
+}
+
 /**
  * A contrast-check failure comes back as `errors.theme_config` shaped as
  * `{ [colorKey]: { ratio, passes_aa_normal_text, suggested_fallback } }` —
@@ -282,6 +345,39 @@ function bindContrastErrors(
 }
 
 /**
+ * `validate_qualification_config` raises against nested keys (`scoring`,
+ * `questions`), but `_run_application_error_as_validation_error` flattens
+ * every one of them onto the `qualification_config` serializer field. This
+ * form no longer has a field by that name, so the message would otherwise
+ * vanish into a toast.
+ *
+ * Bound onto `qualification_questions`: the schema here mirrors every rule
+ * the backend checks, so anything that still comes back is either a rule
+ * added server-side since, or one of the `questions` cases whose bounds
+ * (`MAX_QUALIFICATION_QUESTIONS`, the weight range) are the likeliest to
+ * drift. Same mutate-then-delete contract as `bindContrastErrors` so the
+ * remaining errors still reach `applyApiError`.
+ */
+function bindQualificationError(
+  error: unknown,
+  setError: UseFormSetError<AgentDraftFormValues>
+): void {
+  if (!(error instanceof AxiosError)) return;
+  const data = error.response?.data as { errors?: Record<string, unknown> } | undefined;
+  if (!data?.errors) return;
+  const detail = data.errors.qualification_config;
+  // `ApplicationError.errors` can be a structured payload rather than a
+  // message. Leave anything that isn't readable text alone, so it falls
+  // through to the generic error toast instead of rendering as
+  // "[object Object]" under a field.
+  const parts = Array.isArray(detail) ? detail : [detail];
+  const message = parts.filter((item) => typeof item === 'string').join(' ');
+  if (!message) return;
+  setError('qualification_questions', { message });
+  delete data.errors.qualification_config;
+}
+
+/**
  * Editing the full draft config: instructions, disclosure, `display_name`
  * (the widget-facing bot name, added 2026-09-09, replacing the removed
  * `notes` field), every `enabled_languages` entry's required localized
@@ -289,10 +385,12 @@ function bindContrastErrors(
  * validated server-side by `ThemeValidationService` — including, as of
  * 2026-09-09, the runtime-consumed behavior keys (`groundedness_threshold`,
  * `retrieval_context_turns`, `max_history_messages`,
- * `moderation_self_harm_categories`, `unsupported_language_behavior`).
- * `qualification_config` and any unrecognized/org-cascaded behavior key
- * stay raw JSON (see `behaviorFieldsFromConfig`'s docstring on why those
- * stay freeform).
+ * `moderation_self_harm_categories`, `unsupported_language_behavior`), and,
+ * as of 2026-09-14, the full `qualification_config` rule set. Only
+ * unrecognized/org-cascaded behavior keys stay raw JSON (see
+ * `behaviorFieldsFromConfig`'s docstring on why those stay freeform);
+ * `qualification_config`'s equivalents are carried through untouched by
+ * `buildQualificationConfigPayload` rather than being exposed at all.
  */
 export function useAgentDraftForm(
   agentId: string,
@@ -320,7 +418,7 @@ export function useAgentDraftForm(
       localized_text: buildLocalizedTextDefaults(enabledLanguages, {}),
       ...themeFieldsFromConfig({}),
       ...behaviorFieldsFromConfig({}),
-      qualification_config: '{}',
+      ...qualificationFieldsFromConfig({}),
     },
   });
 
@@ -335,7 +433,7 @@ export function useAgentDraftForm(
       localized_text: buildLocalizedTextDefaults(enabledLanguages, draft.localized_text),
       ...themeFieldsFromConfig(draft.theme_config),
       ...behaviorFieldsFromConfig(draft.behavior_config),
-      qualification_config: JSON.stringify(draft.qualification_config ?? {}, null, 2),
+      ...qualificationFieldsFromConfig(draft.qualification_config ?? {}),
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [draft, enabledLanguages.join(',')]);
@@ -367,6 +465,10 @@ export function useAgentDraftForm(
   const submit = form.handleSubmit(async (values: AgentDraftSubmitValues) => {
     const theme_config = buildThemeConfigPayload(values);
     const behavior_config = buildBehaviorConfigPayload(values);
+    const qualification_config = buildQualificationConfigPayload(
+      values,
+      draft?.qualification_config ?? {}
+    );
 
     try {
       await mutateAsync({
@@ -379,7 +481,7 @@ export function useAgentDraftForm(
           localized_text: values.localized_text,
           theme_config,
           behavior_config,
-          qualification_config: values.qualification_config,
+          qualification_config,
         },
       });
       toast.success(t.agents.toast.draftSaved);
@@ -392,14 +494,10 @@ export function useAgentDraftForm(
       void queryClient.invalidateQueries({ queryKey: agentDraftKey(agentId) });
     } catch (error) {
       bindContrastErrors(error, values, form.setError);
+      bindQualificationError(error, form.setError);
       applyApiError<AgentDraftFormValues>(error, {
         setError: form.setError,
-        fields: [
-          'instructions',
-          'display_name',
-          'behavior_config_advanced',
-          'qualification_config',
-        ],
+        fields: ['instructions', 'display_name', 'behavior_config_advanced'],
       });
     }
   });

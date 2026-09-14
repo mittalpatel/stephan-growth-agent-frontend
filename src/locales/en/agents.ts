@@ -426,12 +426,45 @@ export const agents = {
       behaviorConfigAdvancedLabel: 'Advanced behavior config (JSON)',
       behaviorConfigAdvancedDescription:
         'Any other behavior setting not covered above, such as an organization-wide voice tone cascaded from your brand settings.',
-      qualificationConfigLabel: 'Lead qualification config (JSON)',
-      qualificationConfigDescription:
-        'Advanced JSON controlling how this agent detects and qualifies leads, such as trigger_phrases.',
       configPlaceholder: '{}',
       configMustBeObject: 'Enter a valid JSON object, e.g. {}',
-      triggerPhraseInvalid: '"trigger_phrases" must be a list of non-empty strings.',
+
+      qualificationHeading: 'Lead qualification',
+      qualificationDescription:
+        'Rules that decide whether a captured lead counts as qualified, partial, or unqualified. Leave everything blank and every lead stays unqualified.',
+      qualificationTriggerPhrasesLabel: 'Trigger phrases',
+      qualificationTriggerPhrasesDescription:
+        'The agent only offers to collect contact details after a visitor message contains one of these. Add none and it can offer at any point.',
+      qualificationTriggerPhrasePlaceholder: 'request a quote',
+      qualificationRequiredFieldsLabel: 'Required fields',
+      qualificationRequiredFieldsDescription:
+        'A lead missing any of these stays unqualified no matter how it scores. Email is always collected, so it is not listed here.',
+      qualificationQuestionsLabel: 'Scoring',
+      qualificationQuestionsDescription:
+        'Points a lead earns for each detail it provides. Each field can be listed once.',
+      qualificationQuestionsEmpty: 'No scoring rules yet. Every lead will stay unqualified.',
+      qualificationFieldColumn: 'Field',
+      qualificationWeightColumn: 'Points',
+      qualificationAddQuestion: 'Add rule',
+      qualificationRemoveQuestion: 'Remove rule',
+      qualificationQualifiedThresholdLabel: 'Qualified at',
+      qualificationQualifiedThresholdDescription: 'Points a lead needs to count as qualified.',
+      qualificationPartialThresholdLabel: 'Partial at',
+      qualificationPartialThresholdDescription:
+        'Points a lead needs to count as partial. Must be at or below the qualified score.',
+      /** Keyed by `QualifiableLeadField`. */
+      qualifiableField: {
+        name: 'Name',
+        phone: 'Phone',
+        interest_note: 'Interest note',
+      },
+      qualificationFieldInvalid: 'Choose one of the listed fields.',
+      qualificationFieldDuplicated: 'This field is already scored above.',
+      qualificationWeightRange: 'Enter a whole number between 1 and 100.',
+      qualificationThresholdRange: 'Enter a whole number between 0 and 100.',
+      qualificationTooManyQuestions: 'You can add up to 20 scoring rules.',
+      qualificationThresholdsIncomplete: 'Set both scores, or leave both blank.',
+      qualificationThresholdOrder: 'The partial score cannot be higher than the qualified score.',
       save: 'Save draft',
       saving: 'Saving…',
       unsavedChanges: 'You have unsaved changes.',

@@ -22,6 +22,7 @@ import { formatDate } from '@/lib/i18n';
 import { t } from '@/locales';
 
 import { LEAD_STATUS_TONE } from '../leadStatusTone';
+import { QUALIFICATION_OUTCOME_TONE } from '../qualificationOutcomeTone';
 import { useLeadsList } from '../hooks/useLeadsList';
 import { LeadDetailSheet } from './LeadDetailSheet';
 
@@ -86,11 +87,12 @@ export function LeadsListView({ agentId }: Props = {}) {
     }
 
     return (
-      <DataTable minWidth={640}>
+      <DataTable minWidth={760}>
         <thead>
           <tr className={dataTableHeadRow}>
             <th className={dataTableTh}>{t.leads.table.lead}</th>
             <th className={dataTableTh}>{t.leads.table.status}</th>
+            <th className={`${dataTableTh} hidden md:table-cell`}>{t.leads.table.qualification}</th>
             <th className={`${dataTableTh} hidden md:table-cell`}>{t.leads.table.consent}</th>
             <th className={`${dataTableTh} hidden md:table-cell`}>{t.leads.table.lastContact}</th>
           </tr>
@@ -106,6 +108,12 @@ export function LeadsListView({ agentId }: Props = {}) {
                 <StatusBadge
                   label={t.leads.status[lead.status]}
                   tone={LEAD_STATUS_TONE[lead.status]}
+                />
+              </td>
+              <td className={`${dataTableTd} hidden md:table-cell`}>
+                <StatusBadge
+                  label={t.leads.qualificationOutcome[lead.qualification_outcome]}
+                  tone={QUALIFICATION_OUTCOME_TONE[lead.qualification_outcome]}
                 />
               </td>
               <td className={`${dataTableTd} text-muted-foreground hidden text-sm md:table-cell`}>
