@@ -710,3 +710,32 @@ people open this tab for.
   because the hook's page size is fixed. A plain previous/next pager replaces it.
 - The row overflow menu button in `KnowledgeSourcesTable` now has an
   `aria-label` naming the source.
+
+## Page picker redesign (2026-09-15)
+
+The add-website review step moved out of `AddWebsiteDialog.tsx` into
+`components/DiscoveredUrlsReview.tsx`, with its view state (search, the
+All/Selected/Not selected tab, section shortcuts, derived rows) in
+`hooks/useDiscoveredUrlsReview.ts`. Selection still goes through
+`useDiscoveredUrls`, unchanged.
+
+- The dialog rendered at ~384px on desktop: `DialogContent`'s own
+  `sm:max-w-sm` beat the passed `max-w-2xl`. It now passes `sm:max-w-2xl`,
+  caps height at 90vh and scrolls, with the Extract button pinned to the bottom.
+- "Select all"/"Deselect all" buttons became one checkbox header row scoped to
+  the rows on screen ("Select all shown (n)" when narrowed).
+- The site origin shows once in the header ("Found on …") instead of under every
+  row; a row shows its origin only when it differs. The root path reads
+  "Home page".
+- Rows whose address matches an earlier one after ignoring scheme, `www.` and a
+  trailing slash get a "Duplicate" badge, and a notice offers "Skip duplicates"
+  (deselects them; rows are never hidden or removed client-side).
+- Section chips (first path segment with 3+ pages, top 8) set the search to
+  `/segment/`; clicking the active chip clears it.
+- The remove button is a trash icon revealed on row hover/focus at `sm+`
+  (always visible on touch widths).
+- "Add a page that was not found" is collapsed by default (open when discovery
+  found nothing) and is now RHF + Zod (`discoveredUrlAddSchema`), so a malformed
+  address is rejected inline instead of posted.
+- Loading is a skeleton shaped like the list; a failed read shows a retry;
+  `isTruncated` shows how many of the server's pages are listed.

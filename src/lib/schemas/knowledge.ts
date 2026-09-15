@@ -51,6 +51,17 @@ export const websiteDiscoverSchema = z.object({
 export type WebsiteDiscoverFormValues = z.input<typeof websiteDiscoverSchema>;
 export type WebsiteDiscoverSubmitValues = z.output<typeof websiteDiscoverSchema>;
 
+/** One entry of `DiscoveredUrlBulkActionSerializer.add`. */
+export const discoveredUrlAddSchema = z.object({
+  url: z
+    .string()
+    .trim()
+    .min(1, t.knowledge.validation.rootUrlRequired)
+    .url(t.knowledge.validation.rootUrlInvalid),
+});
+
+export type DiscoveredUrlAddFormValues = z.infer<typeof discoveredUrlAddSchema>;
+
 /** Mirrors `KnowledgeSourceWriteSerializer`. */
 export const knowledgeSourceRenameSchema = z.object({
   display_name: z.string().trim().min(1, t.knowledge.validation.nameRequired).max(200),

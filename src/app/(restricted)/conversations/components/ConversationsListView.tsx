@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { AlertTriangle, Headset, Sparkles, UserRound } from 'lucide-react';
 
@@ -51,7 +51,9 @@ const HANDOFF_STATUSES: readonly ConversationStatus[] = ['handoff_requested', 'h
 
 const STATUS_TONE: Record<ConversationStatus, StatusTone> = {
   open: 'info',
-  handoff_requested: 'warning',
+  // One tone per status so the queue scans at a glance: a visitor waiting on a
+  // human is the most urgent row, a human already replying is in progress.
+  handoff_requested: 'danger',
   handoff_active: 'warning',
   resolved: 'success',
   abandoned: 'neutral',
@@ -77,6 +79,17 @@ function ConversationTranscript({
   // honest without re-sending the same "someone is coming" line to the visitor.
   // There is nothing to read in one, so it renders as a blank bubble here.
   const visible = messages.filter((m) => m.content.trim().length > 0);
+
+  // Follow new turns only while the reader is already at the bottom, so
+  // someone scrolled up reading history is not yanked away. Loading older
+  // pages leaves the newest id unchanged and so never scrolls.
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const pinnedToBottom = useRef(true);
+  const newestId = visible.at(-1)?.id;
+  useEffect(() => {
+    const node = scrollRef.current;
+    if (node && pinnedToBottom.current) node.scrollTop = node.scrollHeight;
+  }, [newestId]);
 
   if (isLoading) {
     return (
@@ -108,7 +121,14 @@ function ConversationTranscript({
   }
 
   return (
-    <div className="flex flex-1 flex-col gap-4 overflow-y-auto px-5 py-5">
+    <div
+      ref={scrollRef}
+      onScroll={(event) => {
+        const node = event.currentTarget;
+        pinnedToBottom.current = node.scrollHeight - node.scrollTop - node.clientHeight < 80;
+      }}
+      className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto overscroll-contain px-5 py-5 [scrollbar-color:var(--border)_transparent] scrollbar-gutter-stable scrollbar-thin"
+    >
       {/* Older turns load upward, so the control that fetches them belongs at
           the top of the scroll region, above the oldest message on screen. */}
       {hasOlder && (
@@ -449,10 +469,12 @@ export function ConversationsListView({ agentId: pinnedAgentId }: Props = {}) {
             showDateRange={false}
           />
 
-          <div className="border-border bg-card grid h-[640px] overflow-hidden rounded-2xl border lg:grid-cols-[300px_1fr_280px]">
-            <div className="border-border overflow-y-auto border-r">{renderList()}</div>
+          <div className="border-border bg-card grid h-[min(760px,calc(100dvh-10rem))] min-h-130 overflow-hidden rounded-2xl border lg:grid-cols-[300px_1fr_280px] lg:grid-rows-[minmax(0,1fr)]">
+            <div className="border-border min-h-0 overflow-y-auto border-r scrollbar-thin">
+              {renderList()}
+            </div>
 
-            <div className="flex min-w-0 flex-col">
+            <div className="flex min-h-0 min-w-0 flex-col">
               {!activeId || detailLoading ? (
                 <div className="flex flex-1 items-center justify-center p-8">
                   <p className="text-muted-foreground text-sm">
@@ -466,7 +488,7 @@ export function ConversationsListView({ agentId: pinnedAgentId }: Props = {}) {
                     // right: the operator's first question is "what state is
                     // this in", and the badge used to sit apart from it,
                     // wedged in beside the buttons.
-                    <div className="border-border flex flex-wrap items-start justify-between gap-3 border-b px-5 py-4">
+                    <div className="border-border flex shrink-0 flex-wrap items-start justify-between gap-3 border-b px-5 py-4">
                       <div className="min-w-0 space-y-1">
                         <div className="flex flex-wrap items-center gap-2">
                           <h2 className="font-semibold">{t.conversations.detail.title}</h2>

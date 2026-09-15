@@ -68,7 +68,7 @@ export function OperatorReplyComposer({
 
   if (isClosed && !keepDraft) {
     return (
-      <div className="border-border text-muted-foreground flex items-center justify-center gap-2 border-t px-5 py-4 text-xs">
+      <div className="border-border shrink-0 text-muted-foreground flex items-center justify-center gap-2 border-t px-5 py-4 text-xs">
         <Lock className="size-3.5" aria-hidden />
         {t.conversations.reply.closedDescription}
       </div>
@@ -91,7 +91,7 @@ export function OperatorReplyComposer({
       <form
         onSubmit={onSubmit}
         onInput={onTyping}
-        className="border-border flex flex-col gap-2 border-t px-5 py-4"
+        className="border-border shrink-0 flex flex-col gap-2 border-t px-5 py-4"
       >
         {keepDraft && (
           <p className="text-muted-foreground flex items-center gap-2 text-xs">
@@ -157,7 +157,7 @@ function TakeOverPrompt({ status, assignedOperatorEmail, isClaiming, onClaim }: 
   const Icon = urgent ? Headset : UserRound;
 
   return (
-    <div className="border-border border-t p-4">
+    <div className="border-border shrink-0 border-t p-4">
       <div
         className={cn(
           'flex flex-wrap items-center gap-3 rounded-xl border p-3.5',

@@ -230,3 +230,20 @@ endpoint only queues the work rather than running it synchronously.
 types are deleted — the mock's `intent`/`score`/`company` fields have no
 backend equivalent (`Conversation` has no lead-scoring concept; that lives
 on `Lead`, a separate resource). `PreviewBanner` is gone from this page.
+
+## Transcript scrolling (2026-09-15)
+
+The three-column box is `h-[min(760px,calc(100dvh-10rem))]` with
+`lg:grid-rows-[minmax(0,1fr)]`, and the middle column is `min-h-0` with a
+`shrink-0` header and composer. Without those height floors the transcript grew
+past the box and `overflow-hidden` clipped the composer instead of the messages
+scrolling. The transcript is the only scroll region (thin scrollbar, stable
+gutter) and follows new turns only while the reader is within 80px of the
+bottom; loading older pages never moves it.
+
+## Status colours (2026-09-15)
+
+`STATUS_TONE` gives every status its own `StatusBadge` tone: `open` info (blue),
+`handoff_requested` danger (red, a visitor is waiting on a human),
+`handoff_active` warning (amber, a human is handling it), `resolved` success
+(green), `abandoned` neutral (grey). The two handoff states used to share amber.
