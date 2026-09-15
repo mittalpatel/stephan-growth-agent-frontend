@@ -42,10 +42,10 @@ export const conversationAssignEndpoint = (conversationId: string) =>
 export const conversationGenerateFollowupEndpoint = (conversationId: string) =>
   `/api/v1/conversations/${conversationId}/generate-followup/`;
 /**
- * Explicit control transfer between the AI and a human (requested of the
- * backend 2026-09-15, not yet shipped). Claim assigns the caller and moves the
- * conversation to `handoff_active`; release returns it to `open`; resolve
- * closes it. Each returns the full updated conversation.
+ * Explicit control transfer between the AI and a human (backend 2026-09-15).
+ * Claim assigns the caller and moves the conversation to `handoff_active`;
+ * release returns it to `open`; resolve closes it. Each returns the full
+ * updated conversation.
  */
 export const conversationHandoffClaimEndpoint = (conversationId: string) =>
   `/api/v1/conversations/${conversationId}/handoff/claim/`;

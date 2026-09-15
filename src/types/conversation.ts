@@ -1,12 +1,6 @@
 /**
  * Conversation DTOs — mirrors `apps/conversations/api/v1/serializers/conversations.py`
  * field for field. Names match the backend exactly (`snake_case`).
- *
- * `Escalation` is intentionally not modeled beyond its enum values: the
- * backend never returns escalation rows to the operator UI (no list/detail
- * endpoint reads them — only `POST /escalations/{id}/resolve/`, which needs
- * an id this app has no way to discover). See
- * `context/app/(restricted)/conversations/page.md` for the gap writeup.
  */
 
 /** Mirrors `ConversationStatus` in `apps/conversations/constants.py`. */
@@ -22,6 +16,23 @@ export type MessageRole = 'visitor' | 'agent' | 'operator' | 'system';
 
 /** Mirrors `ConfidenceDecision` in `apps/conversations/constants.py`. */
 export type ConfidenceDecision = 'answered' | 'clarify' | 'fallback' | 'handoff';
+
+/** Mirrors `EscalationReason` in `apps/conversations/constants.py`. */
+export type EscalationReason = 'low_confidence' | 'explicit_request' | 'operator_initiated';
+
+/** `POST /escalations/{id}/resolve/` response shape (backend 2026-09-15). */
+export type Escalation = {
+  id: string;
+  reason: EscalationReason;
+  created_at: string;
+};
+
+/**
+ * `ConversationDetailSerializer.escalations` row (backend 2026-09-15) — the
+ * full per-conversation history, unlike `active_escalation` below which only
+ * ever shows the current unresolved one.
+ */
+export type EscalationHistoryEntry = Escalation & { resolved_at: string | null };
 
 export type Citation = {
   id: string;
@@ -53,6 +64,9 @@ export type ConversationListItem = {
   language: string;
   assigned_operator_id: string | null;
   assigned_operator_email: string | null;
+  /** The current unresolved escalation, if any (backend 2026-09-15). `null`
+   * once resolved or if the conversation was never escalated. */
+  active_escalation: Escalation | null;
   created_at: string;
   updated_at: string;
 };
@@ -61,6 +75,9 @@ export type ConversationListItem = {
 export type Conversation = ConversationListItem & {
   summary: string;
   messages: Message[];
+  /** Every escalation this conversation has ever had, resolved or not
+   * (backend 2026-09-15) — "why was this handed to a human" at handoff time. */
+  escalations: EscalationHistoryEntry[];
 };
 
 /** `GET /agents/{id}/analytics/summary/?range=7d|30d|90d`. */

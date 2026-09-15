@@ -154,11 +154,11 @@ live. Polling every row's status continuously is a bigger commitment than
 this phase justifies, and the org-wide `?status=handoff_requested` filter is
 the cheaper way to find them.
 
-## Explicit handoff: claim, release, resolve (2026-09-15, awaiting backend)
+## Explicit handoff: claim, release, resolve (2026-09-15)
 
-**Branch `conversation-handoff-2026-09-15` must not merge until the backend
-ships the endpoints and socket events below.** Until then claim/release/resolve
-404 and the socket simply never pushes these types.
+Shipped on the backend in `fix/lead-qualification-review-findings-2026-09-14`
+(commit `74c6bfc`) — endpoints, socket events, and the escalation history read
+path below are all live.
 
 Taking a conversation over used to happen only as a side effect of the first
 operator reply, and nothing could hand it back: `EscalationService.resolve()`
@@ -202,9 +202,11 @@ departure and expires presence on a ~60s TTL, so a stale "is viewing" after a
 crashed tab clears itself; that is accepted, not a client bug. Presence shows
 other operators only.
 
-Still missing from the backend and requested: a read path for escalations
-(`reason` in particular), either on `ConversationDetailSerializer` or as
-`GET /conversations/{id}/escalations/`.
+**Escalation history.** `ConversationDetailSerializer.escalations` now
+returns every escalation this conversation has had (`{id, reason, created_at,
+resolved_at}`), and `active_escalation` on the list/detail row surfaces the
+current unresolved one — see `types/conversation.ts`. The UI does not yet
+surface the reason anywhere; that is a frontend follow-up, not a backend gap.
 
 ## Assign operator
 
