@@ -690,3 +690,23 @@ agent at all" level, matching how the agent detail page's Draft/Publish tabs
 are already gated at the component level despite sharing one route. Finer
 `knowledge:{view,manage,execute}` checks live in the components above via
 `usePermissions().can()`.
+
+## Layout and panel pass (2026-09-15)
+
+Order is now health tiles, then the shared **Sources** section (heading, shared
+notice and the add buttons in one row, then toolbar and table), then
+`KnowledgeTargetsPanel` and `IndexVersionsPanel` side by side on large screens.
+Sources come before the two per-agent refinements because managing them is what
+people open this tab for.
+
+- `KnowledgeHealthPanel` renders four stat tiles; with no sources the score reads
+  "Not yet" with a hint instead of a bare dash.
+- `KnowledgeTargetsPanel`'s two modes are selectable cards with a one-line
+  consequence each, a "{selected} of {total} selected" count, and Save/Discard
+  that only appear once something changed.
+- `IndexVersionsPanel` is a labelled table (version, status, chunks, built) using
+  the previously unused `t.knowledge.index.columns`, with a real error state and
+  retry. It dropped `ListPagination`: its page-size menu was wired to a no-op,
+  because the hook's page size is fixed. A plain previous/next pager replaces it.
+- The row overflow menu button in `KnowledgeSourcesTable` now has an
+  `aria-label` naming the source.

@@ -1,11 +1,12 @@
 'use client';
 
-import { ChevronDown } from 'lucide-react';
+import { ChevronDown, PencilLine } from 'lucide-react';
 import { useEffect, type ReactNode } from 'react';
 import { FormProvider, useFormContext, useWatch } from 'react-hook-form';
 import { toast } from 'sonner';
 
 import { usePermissions } from '@/app/(restricted)/context/PermissionsContext';
+import { EmptyState } from '@/components/common/EmptyState';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
@@ -133,7 +134,7 @@ function ColorContrastNotice({
     <p className="text-error mt-1 text-xs">
       {format(t.agents.detail.draft.contrastFailing, {
         ratio: failing.ratio.toFixed(2),
-        against: failing.bgKey,
+        against: t.agents.detail.draft[`color${capitalize(failing.bgKey)}Label`],
       })}
       {failing.suggestedFallback && (
         <>
@@ -198,19 +199,28 @@ function capitalize<S extends string>(value: S): Capitalize<S> {
  */
 function DraftSection({
   title,
+  description,
   defaultOpen,
   children,
-}: Readonly<{ title: string; defaultOpen: boolean; children: ReactNode }>) {
+}: Readonly<{ title: string; description?: string; defaultOpen: boolean; children: ReactNode }>) {
   return (
-    <Collapsible defaultOpen={defaultOpen} className="border-border space-y-4 border-t pt-4">
-      <CollapsibleTrigger className="group flex w-full items-center justify-between text-left">
-        <h3 className="text-sm font-semibold">{title}</h3>
+    <Collapsible
+      defaultOpen={defaultOpen}
+      className="border-border bg-card rounded-xl border px-5 py-4"
+    >
+      <CollapsibleTrigger className="group flex w-full items-center justify-between gap-3 text-left">
+        <span className="min-w-0">
+          <span className="block text-sm font-semibold">{title}</span>
+          {description && (
+            <span className="text-muted-foreground mt-0.5 block text-xs">{description}</span>
+          )}
+        </span>
         <ChevronDown
           className="text-muted-foreground size-4 shrink-0 transition-transform group-data-[state=open]:rotate-180"
           aria-hidden
         />
       </CollapsibleTrigger>
-      <CollapsibleContent className="space-y-6">{children}</CollapsibleContent>
+      <CollapsibleContent className="mt-5 space-y-6">{children}</CollapsibleContent>
     </Collapsible>
   );
 }
@@ -263,41 +273,51 @@ function DraftForm({
             {t.agents.detail.draft.livePreviewNote}
           </p>
 
-          <div>
-            <label className={fieldLabelCls} htmlFor="instructions">
-              {t.agents.detail.draft.instructionsLabel}
-            </label>
-            <p className={fieldDescriptionCls}>{t.agents.detail.draft.instructionsDescription}</p>
-            <textarea
-              id="instructions"
-              rows={6}
-              placeholder={t.agents.detail.draft.instructionsPlaceholder}
+          <DraftSection
+            title={t.agents.detail.draft.basicsHeading}
+            description={t.agents.detail.draft.basicsDescription}
+            defaultOpen
+          >
+            <div>
+              <label className={fieldLabelCls} htmlFor="instructions">
+                {t.agents.detail.draft.instructionsLabel}
+              </label>
+              <p className={fieldDescriptionCls}>{t.agents.detail.draft.instructionsDescription}</p>
+              <textarea
+                id="instructions"
+                rows={6}
+                placeholder={t.agents.detail.draft.instructionsPlaceholder}
+                disabled={!canManage}
+                {...register('instructions')}
+                className={fieldInputCls}
+              />
+            </div>
+
+            <RHFTextField<AgentDraftFormValues>
+              name="display_name"
+              label={t.agents.detail.draft.displayNameLabel}
+              description={t.agents.detail.draft.displayNameDescription}
+              placeholder={agent.name}
               disabled={!canManage}
-              {...register('instructions')}
-              className={fieldInputCls}
             />
-          </div>
 
-          <RHFTextField<AgentDraftFormValues>
-            name="display_name"
-            label={t.agents.detail.draft.displayNameLabel}
-            description={t.agents.detail.draft.displayNameDescription}
-            placeholder={agent.name}
-            disabled={!canManage}
-          />
-
-          <RHFSwitchField<AgentDraftFormValues>
-            name="disclosure_enabled"
-            label={t.agents.detail.draft.disclosureEnabledLabel}
-            description={t.agents.detail.draft.disclosureEnabledDescription}
-            disabled={!canManage}
-          />
+            <RHFSwitchField<AgentDraftFormValues>
+              name="disclosure_enabled"
+              label={t.agents.detail.draft.disclosureEnabledLabel}
+              description={t.agents.detail.draft.disclosureEnabledDescription}
+              disabled={!canManage}
+            />
+          </DraftSection>
 
           {agent.enabled_languages.map((lang) => (
-            <div key={lang} className="border-border space-y-4 border-t pt-4">
-              <h3 className="text-sm font-semibold">
-                {format(t.agents.detail.draft.localizedTextTitle, { language: lang })}
-              </h3>
+            <DraftSection
+              key={lang}
+              title={format(t.agents.detail.draft.localizedTextTitle, {
+                language: lang.toUpperCase(),
+              })}
+              description={t.agents.detail.draft.localizedTextDescription}
+              defaultOpen
+            >
               <RHFTextField<AgentDraftFormValues>
                 name={`localized_text.${lang}.greeting`}
                 label={t.agents.detail.draft.greetingLabel}
@@ -354,7 +374,7 @@ function DraftForm({
                   className={fieldInputCls}
                 />
               </div>
-            </div>
+            </DraftSection>
           ))}
 
           <DraftSection title={t.agents.detail.draft.themeTitle} defaultOpen>
@@ -388,7 +408,7 @@ function DraftForm({
                 label={t.agents.detail.draft.typographyFontFamilyLabel}
                 description={t.agents.detail.draft.typographyFontFamilyDescription}
                 options={optionsFromMap(t.agents.detail.draft.typographyFontFamilyOptions)}
-                placeholder="—"
+                placeholder={t.agents.detail.draft.useDefault}
                 disabled={!canManage}
               />
             </div>
@@ -403,7 +423,7 @@ function DraftForm({
                   label={t.agents.detail.draft.widgetPositionLabel}
                   description={t.agents.detail.draft.widgetPositionDescription}
                   options={optionsFromMap(t.agents.detail.draft.widgetPositionOptions)}
-                  placeholder="—"
+                  placeholder={t.agents.detail.draft.useDefault}
                   disabled={!canManage}
                 />
                 <RHFSelectField<AgentDraftFormValues>
@@ -411,7 +431,7 @@ function DraftForm({
                   label={t.agents.detail.draft.widgetLauncherShapeLabel}
                   description={t.agents.detail.draft.widgetLauncherShapeDescription}
                   options={optionsFromMap(t.agents.detail.draft.widgetLauncherShapeOptions)}
-                  placeholder="—"
+                  placeholder={t.agents.detail.draft.useDefault}
                   disabled={!canManage}
                 />
                 <RHFSelectField<AgentDraftFormValues>
@@ -419,7 +439,7 @@ function DraftForm({
                   label={t.agents.detail.draft.widgetModeLabel}
                   description={t.agents.detail.draft.widgetModeDescription}
                   options={optionsFromMap(t.agents.detail.draft.widgetModeOptions)}
-                  placeholder="—"
+                  placeholder={t.agents.detail.draft.useDefault}
                   disabled={!canManage}
                 />
               </div>
@@ -467,7 +487,7 @@ function DraftForm({
                   label={t.agents.detail.draft.unsupportedLanguageBehaviorLabel}
                   description={t.agents.detail.draft.unsupportedLanguageBehaviorDescription}
                   options={optionsFromMap(t.agents.detail.draft.unsupportedLanguageBehaviorOptions)}
-                  placeholder="—"
+                  placeholder={t.agents.detail.draft.useDefault}
                   disabled={!canManage}
                 />
                 <RHFTextField<AgentDraftFormValues>
@@ -585,16 +605,23 @@ function DraftForm({
             />
           </DraftSection>
 
+          {/* Sticky, because the form is long: an edit to the instructions at
+              the top used to mean scrolling past every section to find Save. */}
           {canManage && (
-            <div>
-              <div className="flex items-center gap-3">
-                <Button type="submit" disabled={isPending || hasContrastFailure}>
+            <div className="border-border bg-card sticky bottom-0 z-10 -mx-4 border-t px-4 py-3">
+              <div className="flex flex-wrap items-center gap-3">
+                <Button type="submit" disabled={isPending || hasContrastFailure || !isDirty}>
                   {isPending ? t.agents.detail.draft.saving : t.agents.detail.draft.save}
                 </Button>
                 {isDirty && !isPending && (
-                  <p className="text-muted-foreground text-xs">
-                    {t.agents.detail.draft.unsavedChanges}
-                  </p>
+                  <>
+                    <Button type="button" variant="ghost" onClick={() => form.reset()}>
+                      {t.agents.detail.draft.discardChanges}
+                    </Button>
+                    <p className="text-muted-foreground text-xs">
+                      {t.agents.detail.draft.unsavedChanges}
+                    </p>
+                  </>
                 )}
               </div>
               {hasContrastFailure && (
@@ -625,36 +652,44 @@ export function AgentDraftTab({ agent, onDirtyChange }: Props) {
     }
   };
 
+  function renderBody() {
+    if (isLoading) {
+      return (
+        <div className="space-y-3">
+          <Skeleton className="h-10 w-full" />
+          <Skeleton className="h-40 w-full rounded-xl" />
+          <Skeleton className="h-32 w-full rounded-xl" />
+          <Skeleton className="h-14 w-full rounded-xl" />
+        </div>
+      );
+    }
+    if (isNotFound || !draft) {
+      return (
+        <EmptyState
+          icon={PencilLine}
+          title={t.agents.detail.draft.noDraftYet}
+          action={
+            canManage ? (
+              <Button onClick={handleStartEditing} disabled={isCreatingDraft}>
+                {t.agents.detail.draft.startEditing}
+              </Button>
+            ) : undefined
+          }
+        />
+      );
+    }
+    return (
+      <DraftForm agent={agent} draft={draft} canManage={canManage} onDirtyChange={onDirtyChange} />
+    );
+  }
+
   return (
     <Card>
       <CardHeader>
         <CardTitle>{t.agents.detail.draft.title}</CardTitle>
         <p className="text-muted-foreground text-sm">{t.agents.detail.draft.description}</p>
       </CardHeader>
-      <CardContent>
-        {isLoading ? (
-          <div className="space-y-3">
-            <Skeleton className="h-24 w-full" />
-            <Skeleton className="h-9 w-40" />
-          </div>
-        ) : isNotFound || !draft ? (
-          <div className="space-y-3">
-            <p className="text-muted-foreground text-sm">{t.agents.detail.draft.noDraftYet}</p>
-            {canManage && (
-              <Button onClick={handleStartEditing} disabled={isCreatingDraft}>
-                {t.agents.detail.draft.startEditing}
-              </Button>
-            )}
-          </div>
-        ) : (
-          <DraftForm
-            agent={agent}
-            draft={draft}
-            canManage={canManage}
-            onDirtyChange={onDirtyChange}
-          />
-        )}
-      </CardContent>
+      <CardContent>{renderBody()}</CardContent>
     </Card>
   );
 }

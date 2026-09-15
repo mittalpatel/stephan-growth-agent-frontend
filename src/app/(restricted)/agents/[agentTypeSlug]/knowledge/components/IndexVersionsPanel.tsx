@@ -1,16 +1,15 @@
 'use client';
 
+import { Database } from 'lucide-react';
+
 import { usePermissions } from '@/app/(restricted)/context/PermissionsContext';
-import { EmptyState } from '@/components/common/EmptyState';
-import { ListPagination } from '@/components/common/ListPagination';
 import { StatusBadge, type StatusTone } from '@/components/common/StatusBadge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
-import { format, formatDate } from '@/lib/i18n';
+import { format, formatDateTime, formatNumber } from '@/lib/i18n';
 import { t } from '@/locales';
 import type { IndexVersionStatus } from '@/types/knowledge';
-import { ROW_LIMIT_OPTIONS } from '@/constants/data';
 
 import { useIndexVersions } from '../hooks/useIndexVersions';
 
@@ -20,77 +19,136 @@ const STATUS_TONE: Record<IndexVersionStatus, StatusTone> = {
   failed: 'danger',
 };
 
+const copy = t.knowledge.index;
+
 type Props = Readonly<{ agentId: string }>;
 
 export function IndexVersionsPanel({ agentId }: Props) {
   const { can } = usePermissions();
   const canBuild = can('knowledge', 'execute');
-  const { versions, isLoading, currentPage, totalPages, onPageChange, buildIndex, isBuilding } =
-    useIndexVersions(agentId);
+  const {
+    versions,
+    isLoading,
+    isError,
+    refetch,
+    currentPage,
+    totalPages,
+    onPageChange,
+    buildIndex,
+    isBuilding,
+  } = useIndexVersions(agentId);
 
   function renderBody() {
     if (isLoading) {
       return (
         <div className="space-y-2">
-          <Skeleton className="h-8 w-full" />
-          <Skeleton className="h-8 w-full" />
+          {[0, 1, 2].map((row) => (
+            <Skeleton key={row} className="h-10 w-full" />
+          ))}
+        </div>
+      );
+    }
+
+    if (isError) {
+      return (
+        <div className="flex items-center justify-between gap-3">
+          <p className="text-muted-foreground text-sm">{copy.error}</p>
+          <Button variant="outline" size="sm" onClick={() => void refetch()}>
+            {t.buttons.tryAgain}
+          </Button>
         </div>
       );
     }
 
     if (versions.length === 0) {
-      return <EmptyState title={t.knowledge.index.empty} />;
+      return (
+        <div className="border-border flex flex-col items-center gap-2 rounded-lg border border-dashed px-4 py-8 text-center">
+          <Database className="text-muted-foreground size-5" aria-hidden />
+          <p className="text-sm font-medium">{copy.empty}</p>
+          <p className="text-muted-foreground max-w-sm text-xs">{copy.emptyDescription}</p>
+        </div>
+      );
     }
 
     return (
-      <div className="space-y-2">
-        {versions.map((version) => (
-          <div
-            key={version.id}
-            className="border-border flex items-center justify-between rounded-md border px-3 py-2 text-sm"
-          >
-            <span className="font-medium">
-              {format(t.knowledge.index.versionLabel, { number: version.version_number })}
-            </span>
-            <StatusBadge
-              label={t.knowledge.index.status[version.status]}
-              tone={STATUS_TONE[version.status]}
-            />
-            <span className="text-muted-foreground">{version.chunk_count}</span>
-            <span className="text-muted-foreground">
-              {version.built_at ? formatDate(version.built_at) : '–'}
-            </span>
-          </div>
-        ))}
+      <div className="border-border overflow-x-auto rounded-lg border">
+        <table className="w-full text-sm">
+          <thead className="bg-muted/50 text-muted-foreground text-left text-xs">
+            <tr>
+              <th className="px-3 py-2 font-medium">{copy.columns.version}</th>
+              <th className="px-3 py-2 font-medium">{copy.columns.status}</th>
+              <th className="px-3 py-2 text-right font-medium">{copy.columns.chunkCount}</th>
+              <th className="hidden px-3 py-2 font-medium sm:table-cell">{copy.columns.builtAt}</th>
+            </tr>
+          </thead>
+          <tbody className="divide-border divide-y">
+            {versions.map((version) => (
+              <tr key={version.id}>
+                <td className="px-3 py-2 font-medium">
+                  {format(copy.versionLabel, { number: version.version_number })}
+                </td>
+                <td className="px-3 py-2">
+                  <StatusBadge
+                    label={copy.status[version.status]}
+                    tone={STATUS_TONE[version.status]}
+                  />
+                </td>
+                <td className="px-3 py-2 text-right font-mono tabular-nums">
+                  {formatNumber(version.chunk_count)}
+                </td>
+                <td className="text-muted-foreground hidden px-3 py-2 sm:table-cell">
+                  {version.built_at ? formatDateTime(version.built_at) : copy.notBuilt}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </div>
     );
   }
 
   return (
     <Card>
-      <CardHeader className="flex flex-row items-center justify-between gap-4 space-y-0">
-        <div>
-          <CardTitle>{t.knowledge.index.title}</CardTitle>
-          <p className="text-muted-foreground mt-1 text-sm">{t.knowledge.index.description}</p>
+      <CardHeader className="flex flex-row flex-wrap items-start justify-between gap-4 space-y-0">
+        <div className="min-w-0">
+          <CardTitle>{copy.title}</CardTitle>
+          <p className="text-muted-foreground mt-1 text-sm">{copy.description}</p>
         </div>
         {canBuild && (
-          <Button onClick={() => buildIndex()} disabled={isBuilding} variant="outline">
-            {isBuilding ? t.knowledge.index.building : t.knowledge.index.buildAction}
+          <Button onClick={() => buildIndex()} disabled={isBuilding} variant="outline" size="sm">
+            {isBuilding ? copy.building : copy.buildAction}
           </Button>
         )}
       </CardHeader>
-      <CardContent className="space-y-4">
+      <CardContent className="space-y-3">
         {renderBody()}
 
+        {/* Page size is fixed by the hook, so this is a plain pager rather
+            than `ListPagination`, whose page-size menu would do nothing. */}
         {totalPages > 1 && (
-          <ListPagination
-            currentPage={currentPage}
-            totalPages={totalPages}
-            limit={ROW_LIMIT_OPTIONS[0]}
-            limitOptions={ROW_LIMIT_OPTIONS}
-            onPageChange={onPageChange}
-            onLimitChange={() => {}}
-          />
+          <div className="flex items-center justify-between gap-2">
+            <p className="text-muted-foreground text-xs">
+              {format(t.pagination.pageOf, { current: currentPage, total: totalPages })}
+            </p>
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={currentPage <= 1}
+                onClick={() => onPageChange(currentPage - 1)}
+              >
+                {t.pagination.previous}
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={currentPage >= totalPages}
+                onClick={() => onPageChange(currentPage + 1)}
+              >
+                {t.pagination.next}
+              </Button>
+            </div>
+          </div>
         )}
       </CardContent>
     </Card>

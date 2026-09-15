@@ -23,6 +23,7 @@ export const knowledge = {
     sourceTypeLabel: 'Type',
   },
   list: {
+    sectionTitle: 'Sources',
     searchPlaceholder: 'Search sources',
     errorTitle: 'Could not load knowledge sources',
     errorDescription: 'Something went wrong while loading these sources. Please try again.',
@@ -41,6 +42,7 @@ export const knowledge = {
     reprocess: 'Reprocess',
     recrawl: 'Recrawl',
     viewPages: 'View pages',
+    moreActions: 'More actions for {name}',
     recrawlSelected: 'Recrawl selected pages',
     disable: 'Disable',
     enable: 'Enable',
@@ -189,7 +191,12 @@ export const knowledge = {
     description:
       'Choose which of the shared sources this agent answers from. This affects what its next index build covers.',
     modeAll: 'All shared sources, including ones added later',
+    modeAllDescription: 'Recommended. New sources are picked up automatically.',
     modeSelected: 'Only the sources I select',
+    modeSelectedDescription: 'Sources added later are left out until you tick them here.',
+    selectedCount: '{selected} of {total} selected',
+    saveChanges: 'Save scope',
+    discard: 'Discard',
     noSources: 'There are no shared sources to select yet.',
     truncated: 'Showing the first {shown} of {total} sources.',
     saved: 'Knowledge scope updated.',
@@ -257,6 +264,8 @@ export const knowledge = {
     sources: 'Sources',
     indexedChunks: 'Indexed chunks',
     lastUpdated: 'Last updated',
+    notAvailable: 'Not yet',
+    noSourcesHint: 'Add a source to get a score',
   },
   index: {
     title: 'Search index',
@@ -276,6 +285,10 @@ export const knowledge = {
       failed: 'Failed',
     },
     empty: 'No index has been built yet.',
+    emptyDescription:
+      'An index is built automatically after sources finish processing, or you can build one now.',
+    error: 'Index builds could not be loaded.',
+    notBuilt: 'Not built',
     toast: {
       buildStarted: 'Index build started.',
     },

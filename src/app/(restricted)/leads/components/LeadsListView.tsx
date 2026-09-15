@@ -101,8 +101,10 @@ export function LeadsListView({ agentId }: Props = {}) {
           {list.leads.map((lead) => (
             <DataTableRow key={lead.id} onClick={() => setSelectedId(lead.id)}>
               <td className={`${dataTableTd} font-medium`}>
+                {/* The email is the fallback title, so it is not repeated
+                    underneath when there is no name. */}
                 <p>{lead.name || lead.email}</p>
-                <p className="text-muted-foreground text-xs">{lead.email}</p>
+                {lead.name && <p className="text-muted-foreground text-xs">{lead.email}</p>}
               </td>
               <td className={dataTableTd}>
                 <StatusBadge
