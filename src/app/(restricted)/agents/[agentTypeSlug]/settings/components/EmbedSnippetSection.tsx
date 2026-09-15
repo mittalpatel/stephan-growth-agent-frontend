@@ -42,6 +42,11 @@ export function EmbedSnippetSection({ agentId }: Props) {
           <div>
             <h2 className="font-display text-lg font-bold">{copy.title}</h2>
             <p className="text-foreground mt-1 text-sm font-semibold">{copy.description}</p>
+            <ol className="text-foreground mt-2 list-decimal space-y-1 pl-4 text-sm font-semibold">
+              {copy.steps.map((step) => (
+                <li key={step}>{step}</li>
+              ))}
+            </ol>
           </div>
           {canManage && (
             <Button

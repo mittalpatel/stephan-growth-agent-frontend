@@ -561,8 +561,13 @@ export const agents = {
     },
     embed: {
       title: 'Get your embed code',
-      description:
-        'Generate a ready-to-paste script tag with its own credential built in. Paste it just before the closing </body> tag on your site. It only works on a domain you added above.',
+      description: 'Follow these steps to add the chat widget to your site.',
+      steps: [
+        'Click "Generate embed code" below. It creates a ready-to-paste script tag with its own credential built in.',
+        "Copy the snippet right away. It contains a secret key that's only shown once.",
+        'Paste the snippet just before the closing </body> tag on your site.',
+        'It only works on a domain you added above.',
+      ],
       generate: 'Generate embed code',
       loadError: 'Could not generate embed code.',
       warning:
