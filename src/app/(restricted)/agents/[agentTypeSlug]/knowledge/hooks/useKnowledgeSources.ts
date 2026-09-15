@@ -21,6 +21,9 @@ import type { KnowledgeSourceListItem } from '@/types/knowledge';
 /** URL namespace. Every param is written as `knowledge_page`, `knowledge_sort`, … */
 const NAMESPACE = 'knowledge';
 
+const POLL_INTERVAL_MS = 5000;
+const ACTIVE_STATUSES = new Set(['pending', 'processing']);
+
 /**
  * The organization's shared knowledge sources, as one flat bag of props —
  * mirrors `useAgentsList`. Org-wide, not per-agent: every agent's knowledge
@@ -62,7 +65,17 @@ export function useKnowledgeSources() {
   const listQuery = useAuthQuery<ApiResponse<KnowledgeSourceListItem[]>>(
     [...knowledgeSourcesListKey(), buildKnowledgeSourceListParams(listQueryInput)],
     knowledgeSourcesListUrl(listQueryInput),
-    { placeholderData: (previous) => previous }
+    {
+      placeholderData: (previous) => previous,
+      // A freshly uploaded/crawled source sits in `pending`/`processing`
+      // while extraction runs in the background. Poll only while at least
+      // one row is still in flight, so the badge flips to `ready`/`failed`
+      // on its own instead of needing a manual refresh.
+      refetchInterval: (query) => {
+        const rows = query.state.data?.data ?? [];
+        return rows.some((row) => ACTIVE_STATUSES.has(row.status)) ? POLL_INTERVAL_MS : false;
+      },
+    }
   );
 
   const sources = listQuery.data?.data ?? [];

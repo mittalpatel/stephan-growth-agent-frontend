@@ -77,6 +77,16 @@ reprocess (`knowledge:execute`), recrawl (`knowledge:execute`) and delete
 `useKnowledgeSourceActions.ts` owns the rename/reprocess/delete/recrawl
 mutations, each invalidating the source list on success.
 
+**List polling (2026-09-15)**: `useKnowledgeSources`'s list query now sets
+`refetchInterval` to poll every 5s while any row's `status` is `pending` or
+`processing`, and `false` once every row has settled to `ready`/`failed`/
+`disabled`. Before this, a freshly uploaded PDF (or a source mid-extraction)
+stayed showing `pending` until the operator manually refreshed the page,
+since nothing was invalidating the list in the background the way the
+add-website flow's own dialogs do for their own polling steps. Same pattern
+as `useIndexVersions`'s auto-refresh below, computed from `status` instead
+of `versions[0].status`.
+
 **"View pages" is promoted out of the overflow menu (2026-09-10)** and no
 longer requires `knowledge:execute`. It was the only route to what a crawl
 actually fetched, and behind a three-dot menu it read as there being no
