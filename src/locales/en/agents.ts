@@ -508,6 +508,9 @@ export const agents = {
       },
       citationsLabel: 'Citations',
       noCitations: 'No citations.',
+      /** Appended after a PDF citation's `source_title` when `page_number`
+       * is set — a website citation has no page number. */
+      citationPage: 'p. {page}',
     },
     notFound: {
       title: 'Agent not found',

@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Markdown } from '@/components/common/Markdown';
 import { StatusBadge } from '@/components/common/StatusBadge';
 import { fieldInputCls } from '@/components/common/form/fieldStyles';
+import { format } from '@/lib/i18n';
 import { t } from '@/locales';
 import type { Agent } from '@/types/agent';
 
@@ -71,7 +72,21 @@ export function AgentTestTab({ agent }: Props) {
                 <ul className="space-y-2">
                   {result.citations.map((citation, index) => (
                     <li key={`${citation.source_url}-${index}`} className="text-xs">
-                      <p className="font-medium">{citation.source_title}</p>
+                      <p className="font-medium">
+                        {citation.source_title}
+                        {/* A PDF source has no `source_url` but does carry a
+                            `page_number`; a website source is the reverse. */}
+                        {citation.page_number !== null && (
+                          <span className="text-muted-foreground font-normal">
+                            {' '}
+                            (
+                            {format(t.agents.detail.test.citationPage, {
+                              page: citation.page_number,
+                            })}
+                            )
+                          </span>
+                        )}
+                      </p>
                       <Markdown className="text-muted-foreground">{citation.excerpt}</Markdown>
                     </li>
                   ))}

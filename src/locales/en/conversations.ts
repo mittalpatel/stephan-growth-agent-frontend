@@ -41,6 +41,10 @@ export const conversations = {
     assign: 'Assign',
     generateFollowup: 'Generate follow-up',
     citationsLabel: 'Sources',
+    /** Appended after a PDF citation's `source_title` when `page_number` is
+     * set — a website citation has no page number, so this is the visible
+     * difference between the two kinds of source. */
+    citationPage: 'p. {page}',
     loadOlder: 'Load earlier messages',
     loadingOlder: 'Loading…',
     transcriptCount: 'Showing the latest {shown} of {total} messages.',

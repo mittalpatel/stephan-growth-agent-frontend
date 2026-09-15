@@ -194,6 +194,13 @@ function ConversationTranscript({
                       ) : (
                         c.source_title
                       )}
+                      {/* A PDF source has no `source_url` (no per-page route to
+                          link to) but does carry `page_number`; a website
+                          source is the reverse. Showing the page number here
+                          is the one way a PDF citation says which part of the
+                          document it came from. */}
+                      {c.page_number !== null &&
+                        ` (${format(t.conversations.detail.citationPage, { page: c.page_number })})`}
                     </span>
                   ))}
                 </p>
