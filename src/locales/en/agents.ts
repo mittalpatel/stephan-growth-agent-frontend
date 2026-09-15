@@ -562,7 +562,7 @@ export const agents = {
     embed: {
       title: 'Get your embed code',
       description:
-        'Generates a ready-to-paste script tag with its own credential built in — this is the only step needed to create one. Paste the result just before the closing </body> tag on your site. It only works on a domain you added above.',
+        'Generate a ready-to-paste script tag with its own credential built in. Paste it just before the closing </body> tag on your site. It only works on a domain you added above.',
       generate: 'Generate embed code',
       loadError: 'Could not generate embed code.',
       warning:

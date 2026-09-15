@@ -41,7 +41,7 @@ export function EmbedSnippetSection({ agentId }: Props) {
         <div className="flex items-start justify-between gap-3">
           <div>
             <h2 className="font-display text-lg font-bold">{copy.title}</h2>
-            <p className="text-muted-foreground mt-1 text-sm">{copy.description}</p>
+            <p className="text-foreground mt-1 text-sm font-semibold">{copy.description}</p>
           </div>
           {canManage && (
             <Button
