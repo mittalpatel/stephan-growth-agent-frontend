@@ -459,12 +459,23 @@ export function ConversationsListView({ agentId: pinnedAgentId }: Props = {}) {
                   </div>
                   {/* Keyed on the conversation so switching rows discards the
                       previously accumulated transcript pages instead of
-                      carrying them into the next conversation. */}
-                  <ConversationTranscript key={activeId} conversationId={activeId} live={isLive} />
+                      carrying them into the next conversation. Suffixed
+                      per-component since these two are siblings in the same
+                      fragment: React keys only need to be unique among
+                      siblings, not per element type, so both bare on
+                      `activeId` collided the moment a conversation was
+                      selected. */}
+                  <ConversationTranscript
+                    key={`transcript-${activeId}`}
+                    conversationId={activeId}
+                    live={isLive}
+                  />
                   {/* Replying is what actually takes a conversation over from
                       the AI, so the composer sits with the transcript rather
                       than among the side panel's per-conversation actions. */}
-                  {canManage && <OperatorReplyComposer key={activeId} conversationId={activeId} />}
+                  {canManage && (
+                    <OperatorReplyComposer key={`composer-${activeId}`} conversationId={activeId} />
+                  )}
                 </>
               )}
             </div>
