@@ -41,6 +41,18 @@ export const conversationAssignEndpoint = (conversationId: string) =>
   `/api/v1/conversations/${conversationId}/assign/`;
 export const conversationGenerateFollowupEndpoint = (conversationId: string) =>
   `/api/v1/conversations/${conversationId}/generate-followup/`;
+/**
+ * Explicit control transfer between the AI and a human (requested of the
+ * backend 2026-09-15, not yet shipped). Claim assigns the caller and moves the
+ * conversation to `handoff_active`; release returns it to `open`; resolve
+ * closes it. Each returns the full updated conversation.
+ */
+export const conversationHandoffClaimEndpoint = (conversationId: string) =>
+  `/api/v1/conversations/${conversationId}/handoff/claim/`;
+export const conversationHandoffReleaseEndpoint = (conversationId: string) =>
+  `/api/v1/conversations/${conversationId}/handoff/release/`;
+export const conversationResolveEndpoint = (conversationId: string) =>
+  `/api/v1/conversations/${conversationId}/resolve/`;
 
 export const CONVERSATIONS_LIST_KEY = 'conversations-list';
 /** `null` is the org-wide listing, not a missing id, so it needs a cache slot
@@ -57,6 +69,11 @@ export const conversationMessagesKey = (conversationId: string, page: number) =>
   'conversation-messages',
   conversationId,
   page,
+];
+/** Every loaded transcript page for one conversation, for invalidation. */
+export const conversationMessagesPrefixKey = (conversationId: string) => [
+  'conversation-messages',
+  conversationId,
 ];
 
 /**

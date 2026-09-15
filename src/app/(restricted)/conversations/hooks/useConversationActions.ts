@@ -12,6 +12,7 @@ import {
   conversationDetailKey,
   conversationGenerateFollowupEndpoint,
   conversationMessageSendEndpoint,
+  conversationMessagesPrefixKey,
 } from '@/services/conversations';
 import type { ApiResponse } from '@/types/api';
 import type { Conversation, Message } from '@/types/conversation';
@@ -45,7 +46,9 @@ export function useConversationActions(conversationId: string) {
       // because a first reply flips `handoff_requested` to `handoff_active`
       // server-side; the list, because that same status is a column and a
       // filter on it.
-      void queryClient.invalidateQueries({ queryKey: ['conversation-messages', conversationId] });
+      void queryClient.invalidateQueries({
+        queryKey: conversationMessagesPrefixKey(conversationId),
+      });
       void queryClient.invalidateQueries({ queryKey: conversationDetailKey(conversationId) });
       void queryClient.invalidateQueries({ queryKey: [CONVERSATIONS_LIST_KEY] });
     },

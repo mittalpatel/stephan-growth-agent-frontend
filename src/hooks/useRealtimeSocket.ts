@@ -1,11 +1,24 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, type RefObject } from 'react';
 import { signOut } from 'next-auth/react';
 import { useQueryClient } from '@tanstack/react-query';
 
 import axiosAuth, { SAME_ORIGIN_ROUTE } from '@/client/axiosAuth';
 import { useBrowserNotifications, type PushedNotification } from '@/hooks/useBrowserNotifications';
+import type { RealtimeEvent } from '@/types/realtime';
+
+const FANNED_OUT_TYPES: ReadonlySet<string> = new Set<RealtimeEvent['type']>([
+  'conversation_message',
+  'conversation_status_changed',
+  'conversation_presence',
+]);
+
+type Options = Readonly<{
+  /** Points at the open socket, and only while it is open, so `send` can reach it. */
+  socketRef: RefObject<WebSocket | null>;
+  listenersRef: RefObject<Set<(event: RealtimeEvent) => void>>;
+}>;
 
 /**
  * Live push for two things that used to require a poll or a manual refresh
@@ -18,11 +31,12 @@ import { useBrowserNotifications, type PushedNotification } from '@/hooks/useBro
  * websockets, a proxy that doesn't upgrade, a channel-layer outage on the
  * backend) — this hook never throws and never blocks rendering.
  *
- * Mounted once from `LayoutWrapper`, not from the Active Sessions page, so a
- * revocation is discovered on *any* open authenticated page, not only while
- * that one page happens to be open.
+ * Mounted once, through `RealtimeProvider` in `LayoutWrapper`, not from the
+ * Active Sessions page, so a revocation is discovered on *any* open
+ * authenticated page, not only while that one page happens to be open. The
+ * provider owns the refs that let deeper components send and subscribe.
  */
-export function useRealtimeSocket() {
+export function useRealtimeSocket({ socketRef, listenersRef }: Options) {
   const queryClient = useQueryClient();
   const { notify } = useBrowserNotifications();
 
@@ -72,8 +86,12 @@ export function useRealtimeSocket() {
       // this isn't opening up anything new.
       socket = new WebSocket(`${backendWsUrl()}?ticket=${encodeURIComponent(ticket)}`);
 
-      socket.onopen = () => {
+      const opened = socket;
+      opened.onopen = () => {
         retryDelayMs = 1_000;
+        // Published only from a live, non-cancelled run, which keeps the
+        // Strict Mode guarantee above: a cleaned-up run never owns the ref.
+        if (!cancelled) socketRef.current = opened;
       };
 
       socket.onmessage = (event) => {
@@ -112,10 +130,17 @@ export function useRealtimeSocket() {
           // that only fires when the user granted permission and is looking
           // at another tab.
           if (message.notification) notifyRef.current(message.notification);
+          return;
+        }
+
+        if (message.type && FANNED_OUT_TYPES.has(message.type)) {
+          const pushed = message as RealtimeEvent;
+          listenersRef.current.forEach((listener) => listener(pushed));
         }
       };
 
       socket.onclose = () => {
+        if (socketRef.current === opened) socketRef.current = null;
         if (!cancelled) scheduleRetry();
       };
       socket.onerror = () => socket?.close();
@@ -132,9 +157,10 @@ export function useRealtimeSocket() {
     return () => {
       cancelled = true;
       if (retryTimer) clearTimeout(retryTimer);
+      if (socket && socketRef.current === socket) socketRef.current = null;
       socket?.close();
     };
-  }, [queryClient]);
+  }, [queryClient, socketRef, listenersRef]);
 }
 
 /** `NEXT_PUBLIC_BACKEND_API`, with its http(s) scheme swapped for ws(s). */

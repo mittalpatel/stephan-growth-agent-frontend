@@ -251,6 +251,17 @@ Used through `useConfirm()` from `ConfirmProvider`, not rendered directly. Label
 default to `t.buttons`; `destructive` switches the action button to the danger
 variant.
 
+## RealtimeProvider
+
+`src/providers/RealtimeProvider.tsx`, mounted by `LayoutWrapper`. Owns the single
+realtime socket (connection logic stays in `src/hooks/useRealtimeSocket.ts`) and
+exposes `useRealtime()` → `{ send, subscribe }`. `send` is best effort: a no-op unless
+the socket is open, never throws. `subscribe(listener)` returns its unsubscribe and
+receives only the event types in `src/types/realtime.ts`; unknown types are dropped so
+the backend can ship new ones first. `session_revoked` and `notification` are still
+handled inside the hook, not through subscribers, because they must fire regardless.
+Do not open a second socket for a feature; subscribe here instead.
+
 ## RestrictedBreadcrumb
 
 Derives crumbs from the pathname. A UUID segment is resolved to a record name through

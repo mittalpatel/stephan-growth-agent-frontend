@@ -140,9 +140,13 @@ stream's own server-side poll interval). It is on **only** while the selected
 conversation is in one of the two handoff states, which is the only time
 someone is sitting on this screen waiting for a reply. Both are polled
 together on purpose: a transcript that advances under a stale status badge is
-worse than either being stale alone. `live` is read off the list row rather
-than the detail response, so polling is on for the first detail fetch instead
-of switching on a render later.
+worse than either being stale alone. The status driving `live` comes from the
+cached detail once it exists (claim/release patch that cache directly while
+the list row can be seconds stale), falling back to the list row so polling is
+on for the first detail fetch.
+
+Since 2026-09-15 the poll is the **backstop**, not the delivery path: see
+"Explicit handoff" below for the socket pushes.
 
 The list itself is deliberately **not** polled. That is the boundary: a
 conversation newly escalating shows up on the next list fetch or refresh, not
@@ -150,27 +154,64 @@ live. Polling every row's status continuously is a bigger commitment than
 this phase justifies, and the org-wide `?status=handoff_requested` filter is
 the cheaper way to find them.
 
-## Assign operator, but still no escalation resolve
+## Explicit handoff: claim, release, resolve (2026-09-15, awaiting backend)
+
+**Branch `conversation-handoff-2026-09-15` must not merge until the backend
+ships the endpoints and socket events below.** Until then claim/release/resolve
+404 and the socket simply never pushes these types.
+
+Taking a conversation over used to happen only as a side effect of the first
+operator reply, and nothing could hand it back: `EscalationService.resolve()`
+is what returns a conversation to `open`, but no read path exposes an
+escalation id, so a conversation sat in `handoff_active` with the AI silent
+indefinitely. The fix is explicit transitions between the statuses that
+already existed (no new statuses):
+
+| Call (`conversation:manage`)                | Transition                                                     | Notes                                                                                      |
+| ------------------------------------------- | -------------------------------------------------------------- | ------------------------------------------------------------------------------------------ |
+| `POST /conversations/{id}/handoff/claim/`   | `open`/`handoff_requested`/`handoff_active` → `handoff_active` | Assigns the caller. No lock: claiming a colleague's conversation is a legitimate takeover. |
+| `POST /conversations/{id}/handoff/release/` | `handoff_active` → `open`                                      | AI resumes. Assignment is kept.                                                            |
+| `POST /conversations/{id}/resolve/`         | any active → `resolved`                                        | Closed.                                                                                    |
+
+Each returns the full conversation; `useConversationHandoff` writes it into
+the detail cache and invalidates the list. No `onMutate` optimism, so an
+in-flight 5s poll cannot flip the badge back for a cycle.
+
+**Composer.** `OperatorReplyComposer` unlocks only when the status is
+`handoff_active` **and** it is assigned to the signed-in user, which is server
+state, not a local toggle. Otherwise it shows a take-over button (naming the
+colleague when someone else holds it); on `resolved`/`abandoned` it shows a
+closed line instead. A dirty draft is never unmounted by a status push: it
+stays on screen with submit disabled. The composer's `key` is the
+conversation only, never its status, for the same reason.
+
+**Header.** "Return to AI" (only in `handoff_active`) and "Resolve" (any
+active status) sit beside the status badge in
+`ConversationHandoffControls.tsx`, both behind `useConfirm()`.
+
+**Realtime and presence.** `useConversationRealtime(activeId)` subscribes
+through `RealtimeProvider` (see `context/components.md`). Pushes:
+`conversation_message` invalidates the list, plus the transcript only for the
+open conversation; `conversation_status_changed` patches the detail's
+`status`/`assigned_operator_email`, then invalidates the list;
+`conversation_presence` stays in local state and never enters React Query.
+Outbound it sends `viewing` on open, `typing` at most every 3s while typing
+(back to `viewing` after 5s idle), a 25s heartbeat, and `left` on row switch,
+unmount, tab hide, and `beforeunload`. The backend treats a dropped socket as
+departure and expires presence on a ~60s TTL, so a stale "is viewing" after a
+crashed tab clears itself; that is accepted, not a client bug. Presence shows
+other operators only.
+
+Still missing from the backend and requested: a read path for escalations
+(`reason` in particular), either on `ConversationDetailSerializer` or as
+`GET /conversations/{id}/escalations/`.
+
+## Assign operator
 
 `conversation:manage` unlocks an "assign operator" control in the side panel
 (`POST /conversations/{id}/assign/`, operator list from
-`organizationMembersEndpoint`). Escalation resolve (`POST
-/escalations/{id}/resolve/`) is **still not built**:
-`ConversationDetailSerializer` never embeds a conversation's escalations, and
-there is no other read path that returns an escalation id to this UI. A
-`handoff_requested`/`handoff_active` conversation is visible via its status
-badge, but there is currently no way for an operator to discover _which_
-escalation record to resolve, or its `reason`, from the frontend.
-
-**This gap got more expensive on 2026-09-14.** `EscalationService.resolve()`
-now also returns the conversation to `open`, which is the only way a
-conversation goes back under AI control. So the missing read path is no
-longer just a missing admin convenience: an operator can take a conversation
-over from this UI but has no way to hand it back, and it stays in
-`handoff_active` with the AI silent indefinitely. Re-flagged for the backend
-team, unchanged in substance: the fix is either an `escalations` field on
-`ConversationDetailSerializer` or a `GET /conversations/{id}/escalations/`
-read.
+`organizationMembersEndpoint`). It routes a conversation to a colleague and
+does not change status; taking a conversation over yourself is claim, above.
 
 ## Generate follow-up (Sprint-1 gap closure)
 

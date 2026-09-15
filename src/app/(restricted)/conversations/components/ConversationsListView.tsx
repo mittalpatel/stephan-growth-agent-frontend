@@ -1,7 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import { AlertTriangle, Headset, Sparkles } from 'lucide-react';
+import { useQueryClient } from '@tanstack/react-query';
+import { AlertTriangle, Headset, Sparkles, UserRound } from 'lucide-react';
 
 import { useAgentOptions } from '@/app/(restricted)/hooks/useAgentOptions';
 import { useOrganization } from '@/app/(restricted)/context/OrganizationContext';
@@ -22,17 +23,20 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Skeleton } from '@/components/ui/skeleton';
-import { format, formatDate, formatNumber } from '@/lib/i18n';
+import { format, formatDate, formatDateTime, formatNumber } from '@/lib/i18n';
 import { cn } from '@/lib/utils';
 import { t } from '@/locales';
+import { conversationDetailKey } from '@/services/conversations';
 import { organizationMembersEndpoint, organizationMembersKey } from '@/services/organizations';
 import type { ApiResponse } from '@/types/api';
-import type { ConversationStatus } from '@/types/conversation';
+import type { Conversation, ConversationStatus } from '@/types/conversation';
 
 import { useConversationActions } from '../hooks/useConversationActions';
 import { useConversationDetail } from '../hooks/useConversationDetail';
 import { useConversationMessages } from '../hooks/useConversationMessages';
+import { useConversationRealtime } from '../hooks/useConversationRealtime';
 import { useConversationsList } from '../hooks/useConversationsList';
+import { ConversationHandoffControls, ConversationPresence } from './ConversationHandoffControls';
 import { OperatorReplyComposer } from './OperatorReplyComposer';
 
 type OrganizationMember = { user_id: string; email: string; full_name: string };
@@ -127,9 +131,11 @@ function ConversationTranscript({
         // was notified), not something anyone said. Rendering it as a chat
         // bubble implies an author it does not have.
         m.role === 'system' ? (
-          <p key={m.id} className="text-muted-foreground px-4 text-center text-[11px]">
-            {m.content}
-          </p>
+          <div key={m.id} className="flex items-center gap-3 px-2" role="note">
+            <span className="bg-border h-px flex-1" aria-hidden />
+            <p className="text-muted-foreground max-w-[75%] text-center text-[11px]">{m.content}</p>
+            <span className="bg-border h-px flex-1" aria-hidden />
+          </div>
         ) : (
           <div
             key={m.id}
@@ -149,7 +155,7 @@ function ConversationTranscript({
             >
               {m.role === 'agent' && (
                 <div className="text-primary-strong mb-1 flex items-center gap-1.5 text-[11px] font-semibold">
-                  <Sparkles className="size-[11px]" /> {t.conversations.detail.transcriptHeading}
+                  <Sparkles className="size-[11px]" aria-hidden /> {t.conversations.detail.aiLabel}
                 </div>
               )}
               {m.role === 'operator' && (
@@ -225,25 +231,30 @@ function AssignOperator({ conversationId }: Readonly<{ conversationId: string }>
   const [operatorId, setOperatorId] = useState<string>('');
 
   return (
-    <div className="flex flex-col gap-2">
-      <p className="text-muted-foreground text-[11px]">{t.conversations.detail.assignOperator}</p>
-      <div className="flex gap-2">
-        <Select value={operatorId} onValueChange={setOperatorId}>
-          <SelectTrigger className="w-full">
-            <SelectValue placeholder={t.conversations.detail.assignPlaceholder} />
-          </SelectTrigger>
-          <SelectContent>
-            {members.map((member) => (
-              <SelectItem key={member.user_id} value={member.user_id}>
-                {member.full_name || member.email}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-        <Button size="sm" disabled={!operatorId || isAssigning} onClick={() => assign(operatorId)}>
-          {t.conversations.detail.assign}
-        </Button>
-      </div>
+    // Stacked, not side by side: a 280px column cannot fit a select and a
+    // button in one row, which pushed "Assign" out of view behind a scrollbar.
+    <div className="flex min-w-0 flex-col gap-2">
+      <label className="text-xs font-medium">{t.conversations.detail.assignOperator}</label>
+      <Select value={operatorId} onValueChange={setOperatorId}>
+        <SelectTrigger className="w-full min-w-0">
+          <SelectValue placeholder={t.conversations.detail.assignPlaceholder} />
+        </SelectTrigger>
+        <SelectContent>
+          {members.map((member) => (
+            <SelectItem key={member.user_id} value={member.user_id}>
+              {member.full_name || member.email}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+      <Button
+        size="sm"
+        className="w-full"
+        disabled={!operatorId || isAssigning}
+        onClick={() => assign(operatorId)}
+      >
+        {t.conversations.detail.assign}
+      </Button>
     </div>
   );
 }
@@ -255,9 +266,11 @@ function GenerateFollowup({ conversationId }: Readonly<{ conversationId: string 
     <Button
       variant="outline"
       size="sm"
+      className="w-full"
       disabled={isGeneratingFollowup}
       onClick={() => generateFollowup()}
     >
+      <Sparkles className="size-4" aria-hidden />
       {t.conversations.detail.generateFollowup}
     </Button>
   );
@@ -273,12 +286,10 @@ function GenerateFollowup({ conversationId }: Readonly<{ conversationId: string 
  * the picker, which is how the agent detail page's Conversations tab reuses
  * it. There is deliberately only one implementation of this screen.
  *
- * Escalation resolve is still not built: the backend exposes
- * `POST /escalations/{id}/resolve/` but no read path returns an escalation's
- * id to the operator UI (`ConversationDetailSerializer` embeds no
- * escalations) — a real backend gap, documented in
- * `context/app/(restricted)/conversations/page.md`. It matters more now that
- * resolving is what returns a conversation to the AI.
+ * Control between the AI and a human moves through explicit claim, release
+ * and resolve calls (`useConversationHandoff`), with live pushes and operator
+ * presence from `useConversationRealtime`. See
+ * `context/app/(restricted)/conversations/page.md`.
  */
 type Props = Readonly<{
   /** Pins the view to one agent, for the agent detail page's tab. */
@@ -299,15 +310,22 @@ export function ConversationsListView({ agentId: pinnedAgentId }: Props = {}) {
   const [selectedConversationId, setSelectedConversationId] = useState<string | null>(null);
   const activeId = selectedConversationId ?? list.conversations[0]?.id ?? null;
 
-  // Read off the list row rather than the detail response, so polling is
-  // already on for the very first detail fetch instead of switching on one
-  // render later.
-  const activeStatus = list.conversations.find((c) => c.id === activeId)?.status;
+  // The cached detail wins once it exists, since claim/release patch it
+  // directly while the list row can be seconds stale; the list row covers the
+  // first fetch so polling is already on for it. Reading the cache here stays
+  // current because `useConversationDetail` below re-renders on every change.
+  const queryClient = useQueryClient();
+  const cachedDetail = activeId
+    ? queryClient.getQueryData<ApiResponse<Conversation>>(conversationDetailKey(activeId))
+    : undefined;
+  const activeStatus =
+    cachedDetail?.data.status ?? list.conversations.find((c) => c.id === activeId)?.status;
   const isLive = activeStatus !== undefined && HANDOFF_STATUSES.includes(activeStatus);
 
   const { conversation, isLoading: detailLoading } = useConversationDetail(activeId, {
     live: isLive,
   });
+  const { otherViewers, notifyTyping } = useConversationRealtime(activeId);
 
   function renderList() {
     if (list.isLoading) {
@@ -443,20 +461,48 @@ export function ConversationsListView({ agentId: pinnedAgentId }: Props = {}) {
                 </div>
               ) : (
                 <>
-                  <div className="border-border flex items-center justify-between border-b px-5 py-4">
-                    <div>
-                      <p className="font-semibold">
-                        {conversation?.assigned_operator_email ?? t.conversations.detail.unassigned}
-                      </p>
-                      <p className="text-muted-foreground text-xs">{conversation?.language}</p>
+                  {conversation && (
+                    // Title and status together on the left, actions on the
+                    // right: the operator's first question is "what state is
+                    // this in", and the badge used to sit apart from it,
+                    // wedged in beside the buttons.
+                    <div className="border-border flex flex-wrap items-start justify-between gap-3 border-b px-5 py-4">
+                      <div className="min-w-0 space-y-1">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <h2 className="font-semibold">{t.conversations.detail.title}</h2>
+                          <StatusBadge
+                            label={t.conversations.status[conversation.status]}
+                            tone={STATUS_TONE[conversation.status]}
+                          />
+                          {conversation.language && (
+                            <span className="border-border text-muted-foreground rounded border px-1.5 text-[10px] font-medium uppercase">
+                              {conversation.language}
+                            </span>
+                          )}
+                        </div>
+                        <p className="text-muted-foreground text-xs">
+                          {format(t.conversations.detail.startedAt, {
+                            date: formatDateTime(conversation.created_at),
+                          })}
+                        </p>
+                        <p className="text-muted-foreground flex items-center gap-1.5 text-xs">
+                          <UserRound className="size-3.5" aria-hidden />
+                          {conversation.assigned_operator_email
+                            ? format(t.conversations.detail.handledBy, {
+                                email: conversation.assigned_operator_email,
+                              })
+                            : t.conversations.detail.notAssigned}
+                        </p>
+                        <ConversationPresence viewers={otherViewers} />
+                      </div>
+                      {canManage && (
+                        <ConversationHandoffControls
+                          conversationId={conversation.id}
+                          status={conversation.status}
+                        />
+                      )}
                     </div>
-                    {conversation && (
-                      <StatusBadge
-                        label={t.conversations.status[conversation.status]}
-                        tone={STATUS_TONE[conversation.status]}
-                      />
-                    )}
-                  </div>
+                  )}
                   {/* Keyed on the conversation so switching rows discards the
                       previously accumulated transcript pages instead of
                       carrying them into the next conversation. Suffixed
@@ -470,33 +516,46 @@ export function ConversationsListView({ agentId: pinnedAgentId }: Props = {}) {
                     conversationId={activeId}
                     live={isLive}
                   />
-                  {/* Replying is what actually takes a conversation over from
-                      the AI, so the composer sits with the transcript rather
-                      than among the side panel's per-conversation actions. */}
+                  {/* Keyed on the conversation only, never its status: a claim
+                      changes status, and remounting then would wipe a draft. */}
                   {canManage && conversation && (
                     <OperatorReplyComposer
                       key={`composer-${activeId}`}
                       conversationId={activeId}
                       status={conversation.status}
+                      assignedOperatorEmail={conversation.assigned_operator_email}
+                      onTyping={notifyTyping}
                     />
                   )}
                 </>
               )}
             </div>
 
-            <div className="border-border flex flex-col gap-5 overflow-y-auto border-l p-5">
+            <div className="border-border flex min-w-0 flex-col gap-6 overflow-x-hidden overflow-y-auto border-l p-5">
               {conversation && (
                 <>
-                  <div>
-                    <p className="text-muted-foreground mb-2 text-xs font-semibold tracking-wider uppercase">
+                  <section>
+                    <h3 className="text-muted-foreground mb-2 text-xs font-semibold tracking-wider uppercase">
                       {t.conversations.detail.summaryHeading}
-                    </p>
-                    <p className="text-sm">
+                    </h3>
+                    <p
+                      className={cn(
+                        'text-sm',
+                        !conversation.summary && 'text-muted-foreground italic'
+                      )}
+                    >
                       {conversation.summary || t.conversations.detail.noSummary}
                     </p>
-                  </div>
-                  {canManage && <AssignOperator conversationId={conversation.id} />}
-                  {canManage && <GenerateFollowup conversationId={conversation.id} />}
+                  </section>
+                  {canManage && (
+                    <section className="border-border flex flex-col gap-4 border-t pt-5">
+                      <h3 className="text-muted-foreground text-xs font-semibold tracking-wider uppercase">
+                        {t.conversations.detail.actionsHeading}
+                      </h3>
+                      <AssignOperator conversationId={conversation.id} />
+                      <GenerateFollowup conversationId={conversation.id} />
+                    </section>
+                  )}
                 </>
               )}
             </div>
