@@ -473,8 +473,12 @@ export function ConversationsListView({ agentId: pinnedAgentId }: Props = {}) {
                   {/* Replying is what actually takes a conversation over from
                       the AI, so the composer sits with the transcript rather
                       than among the side panel's per-conversation actions. */}
-                  {canManage && (
-                    <OperatorReplyComposer key={`composer-${activeId}`} conversationId={activeId} />
+                  {canManage && conversation && (
+                    <OperatorReplyComposer
+                      key={`composer-${activeId}`}
+                      conversationId={activeId}
+                      status={conversation.status}
+                    />
                   )}
                 </>
               )}

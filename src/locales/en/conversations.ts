@@ -63,6 +63,8 @@ export const conversations = {
     placeholder: 'Type a reply to send to this visitor',
     send: 'Send reply',
     sending: 'Sending…',
+    takeOver: 'Take over conversation',
+    takeOverDescription: 'Sending a reply hands this conversation over from the AI.',
   },
   toast: {
     assigned: 'Conversation assigned.',
