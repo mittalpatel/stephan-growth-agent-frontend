@@ -1,6 +1,27 @@
 import { describe, it, expect } from 'vitest';
 
-import { format, formatCurrency, formatDate, formatDuration, formatNumber, plural } from '../i18n';
+import {
+  format,
+  formatCurrency,
+  formatDate,
+  formatDuration,
+  formatNumber,
+  formatTime,
+  plural,
+} from '../i18n';
+
+describe('formatTime', () => {
+  it('returns the fallback for a missing or unparseable value', () => {
+    expect(formatTime(null)).toBe('—');
+    expect(formatTime('not-a-date')).toBe('—');
+  });
+
+  it('formats the time of day without the date', () => {
+    const formatted = formatTime('2026-01-15T10:30:00Z');
+    expect(formatted).toMatch(/\d{1,2}:\d{2}/);
+    expect(formatted).not.toMatch(/Jan|2026/);
+  });
+});
 
 describe('format', () => {
   it('substitutes named placeholders', () => {

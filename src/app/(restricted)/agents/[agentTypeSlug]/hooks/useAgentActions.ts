@@ -6,8 +6,10 @@ import { toast } from 'sonner';
 import { useAuthMutation } from '@/hooks/useAuthMutation';
 import { getAxiosError, getErrorCode } from '@/lib/helper';
 import {
+  agentByTypeKey,
   agentDetailEndpoint,
   agentDetailKey,
+  agentDraftKey,
   AGENTS_LIST_KEY,
   agentPublishEndpoint,
   agentRollbackEndpoint,
@@ -18,10 +20,10 @@ import { t } from '@/locales';
 
 /**
  * The mutations an agent's detail page needs beyond viewing it: edit,
- * publish, rollback. Each invalidates the detail cache (and the list, where
- * the change is visible there too) rather than writing an optimistic
- * update — these are low-frequency, high-stakes actions where a confirmed
- * server read is worth the extra round trip.
+ * publish, rollback. Each writes the server's confirmed response into the
+ * detail caches (see `applyAgent`) rather than an optimistic update — these
+ * are low-frequency, high-stakes actions, so the cache only ever holds what
+ * the server actually returned.
  *
  * No `remove`: the backend removed `DELETE /agents/{id}/` entirely
  * (2026-09-07) — an organization's agents are a fixed, auto-provisioned
@@ -39,22 +41,31 @@ import { t } from '@/locales';
 export function useAgentActions(agentId: string) {
   const queryClient = useQueryClient();
 
-  const invalidate = () => {
-    void queryClient.invalidateQueries({ queryKey: agentDetailKey(agentId) });
+  /* The agent page reads `agentByTypeKey(slug)`, not `agentDetailKey(id)`, so
+     invalidating only the id key left the Publish tab showing the previous live
+     version. Every one of these endpoints answers with the full updated agent
+     (`AgentSerializer`), so it is written into both keys instead of refetched:
+     a refetch of the by-type endpoint could also land on a server-side cache
+     entry the write has not cleared yet. The draft is invalidated because a
+     publish consumes it. */
+  const applyAgent = (response: ApiResponse<Agent>) => {
+    queryClient.setQueryData(agentDetailKey(agentId), response);
+    queryClient.setQueryData(agentByTypeKey(response.data.agent_type.slug), response);
+    void queryClient.invalidateQueries({ queryKey: agentDraftKey(agentId) });
     void queryClient.invalidateQueries({ queryKey: [AGENTS_LIST_KEY] });
   };
 
   const updateMutation = useAuthMutation<ApiResponse<Agent>, AgentUpdateInput>({
-    onSuccess: () => {
+    onSuccess: (response) => {
       toast.success(t.agents.toast.updated);
-      invalidate();
+      applyAgent(response);
     },
   });
 
   const publishMutation = useAuthMutation<ApiResponse<Agent>, undefined>({
-    onSuccess: () => {
+    onSuccess: (response) => {
       toast.success(t.agents.toast.published);
-      invalidate();
+      applyAgent(response);
     },
     // `no_draft` and `disclosure_cannot_be_disabled` get dedicated copy since
     // they're reachable, expected states, not surprise failures. Everything
@@ -74,9 +85,9 @@ export function useAgentActions(agentId: string) {
   });
 
   const rollbackMutation = useAuthMutation<ApiResponse<Agent>, AgentRollbackInput>({
-    onSuccess: () => {
+    onSuccess: (response) => {
       toast.success(t.agents.toast.rolledBack);
-      invalidate();
+      applyAgent(response);
     },
     onError: (error) => toast.error(getAxiosError(error)),
   });

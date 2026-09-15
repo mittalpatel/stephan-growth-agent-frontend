@@ -8,10 +8,14 @@ import { agentTestAskEndpoint } from '@/services/agents';
 import type { AgentTestAskResult } from '@/types/agent';
 import type { ApiResponse } from '@/types/api';
 
+/** `askedAt` is when the question was sent; `answeredAt` when the reply arrived.
+ * The endpoint returns no timestamp of its own, so both are recorded here. */
+type TurnBase = { id: number; question: string; askedAt: Date };
+
 export type TestTurn =
-  | { id: number; question: string; status: 'pending' }
-  | { id: number; question: string; status: 'done'; result: AgentTestAskResult }
-  | { id: number; question: string; status: 'error'; errorMessage: string };
+  | (TurnBase & { status: 'pending' })
+  | (TurnBase & { status: 'done'; result: AgentTestAskResult; answeredAt: Date })
+  | (TurnBase & { status: 'error'; errorMessage: string });
 
 /**
  * A session of questions against `POST /agents/{id}/draft/test/`.
@@ -29,22 +33,25 @@ export function useAgentTestAsk(agentId: string) {
   >();
 
   const run = useCallback(
-    async (id: number, question: string) => {
+    async (id: number, question: string, askedAt: Date) => {
       try {
         const response = await mutateAsync({
           url: agentTestAskEndpoint(agentId),
           body: { question },
         });
+        const answeredAt = new Date();
         setTurns((all) =>
           all.map((turn) =>
-            turn.id === id ? { id, question, status: 'done', result: response.data } : turn
+            turn.id === id
+              ? { id, question, askedAt, status: 'done', result: response.data, answeredAt }
+              : turn
           )
         );
       } catch (error) {
         setTurns((all) =>
           all.map((turn) =>
             turn.id === id
-              ? { id, question, status: 'error', errorMessage: getAxiosError(error) }
+              ? { id, question, askedAt, status: 'error', errorMessage: getAxiosError(error) }
               : turn
           )
         );
@@ -56,8 +63,9 @@ export function useAgentTestAsk(agentId: string) {
   const ask = useCallback(
     async (question: string) => {
       const id = nextId.current++;
-      setTurns((all) => [...all, { id, question, status: 'pending' }]);
-      await run(id, question);
+      const askedAt = new Date();
+      setTurns((all) => [...all, { id, question, askedAt, status: 'pending' }]);
+      await run(id, question, askedAt);
     },
     [run]
   );
@@ -66,12 +74,16 @@ export function useAgentTestAsk(agentId: string) {
     async (id: number) => {
       const turn = turns.find((candidate) => candidate.id === id);
       if (!turn) return;
+      // A retry sends the question again, so it gets a fresh sent time.
+      const askedAt = new Date();
       setTurns((all) =>
         all.map((candidate) =>
-          candidate.id === id ? { id, question: turn.question, status: 'pending' } : candidate
+          candidate.id === id
+            ? { id, question: turn.question, askedAt, status: 'pending' }
+            : candidate
         )
       );
-      await run(id, turn.question);
+      await run(id, turn.question, askedAt);
     },
     [turns, run]
   );

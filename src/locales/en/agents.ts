@@ -451,17 +451,18 @@ export const agents = {
         'A lead missing any of these stays unqualified no matter how it scores. Email is always collected, so it is not listed here.',
       qualificationQuestionsLabel: 'Scoring',
       qualificationQuestionsDescription:
-        'Points a lead earns for each detail it provides. Each field can be listed once.',
+        'Points a lead earns for each detail it provides. Each field can be listed once. A lead is scored as the share of all these points it earns, from 0 to 100.',
       qualificationQuestionsEmpty: 'No scoring rules yet. Every lead will stay unqualified.',
       qualificationFieldColumn: 'Field',
       qualificationWeightColumn: 'Points',
       qualificationAddQuestion: 'Add rule',
       qualificationRemoveQuestion: 'Remove rule',
       qualificationQualifiedThresholdLabel: 'Qualified at',
-      qualificationQualifiedThresholdDescription: 'Points a lead needs to count as qualified.',
+      qualificationQualifiedThresholdDescription:
+        'Percentage of the total points a lead needs to count as qualified.',
       qualificationPartialThresholdLabel: 'Partial at',
       qualificationPartialThresholdDescription:
-        'Points a lead needs to count as partial. Must be at or below the qualified score.',
+        'Percentage of the total points a lead needs to count as partial. Must be at or below the qualified score.',
       /** Keyed by `QualifiableLeadField`. */
       qualifiableField: {
         name: 'Name',

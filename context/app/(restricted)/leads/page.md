@@ -84,10 +84,15 @@ Both vocabularies contain "Qualified". Never substitute one for the other.
 
 `score` renders as a **raw point total, never a percentage.**
 `QualificationResultSerializer` deliberately omits the `rule_snapshot` the weights
-were summed from, so there is no denominator available. (Separately, the backend's
-own schema docstring calls thresholds "percentages of the summed weight ceiling"
-while `QualificationService.evaluate()` compares the raw sum — flagged to the
-backend team, unresolved as of this sync.)
+were summed from, so there is no denominator available. Thresholds, however, are
+compared against the score **as a percentage of the total configured weight**
+(`QualificationService.evaluate()`, confirmed live 2026-09-15: weights 30+30,
+"Qualified at" 100, a lead with both fields scored 60 and was Qualified). The
+Draft tab's threshold copy says "percentage of the total points" for that reason.
+
+Known backend gap (2026-09-15, reported): when a returning visitor adds name,
+phone or interest within the cooldown, the values merge onto the lead but no
+`LeadField` purpose row is written, so "Collected fields" lists only `email`.
 
 Filter keys must match `LeadSelector._FILTER_FIELDS`. Note the asymmetry:
 `qualification_outcome` is **filterable but not sortable** (`_SORT_FIELDS` is

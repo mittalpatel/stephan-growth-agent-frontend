@@ -19,7 +19,8 @@ export const agentDetailEndpoint = (id: string) => `${AGENTS_ENDPOINT}${id}/`;
  * agent of, which is every type the backend hasn't shipped yet.
  */
 export const agentByTypeEndpoint = (slug: string) => `${AGENTS_ENDPOINT}by-type/${slug}/`;
-export const agentByTypeKey = (slug: string) => ['agent-by-type', slug];
+export const AGENT_BY_TYPE_KEY = 'agent-by-type';
+export const agentByTypeKey = (slug: string) => [AGENT_BY_TYPE_KEY, slug];
 
 /**
  * The platform-wide agent-type catalog (`GET`, `AgentTypeListView`) — not

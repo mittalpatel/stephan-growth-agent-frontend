@@ -146,6 +146,17 @@ model-generated text with no separate sanitizer step. Links always render
 with `target="_blank" rel="noopener noreferrer"`, since this content only
 ever links to citation sources, not this app's own routes.
 
+## MessageTime
+
+`src/components/common/MessageTime.tsx` (added 2026-09-15). The send time
+under a chat bubble: time of day via `formatTime()`, full date and time in
+`title` and `dateTime`. The caller passes the text colour because it depends on
+the bubble's fill. Used by the conversation transcript (`created_at` on every
+visitor, AI, operator and system message) and the agent Test tab (`askedAt` /
+`answeredAt`, recorded client-side since the test endpoint returns no
+timestamp). Not shown in `WidgetPreview`, which mirrors the live `widget.js`,
+and that bundle shows no times.
+
 ## PreviewBanner
 
 `src/components/common/PreviewBanner.tsx`. Takes one already-translated `note`.

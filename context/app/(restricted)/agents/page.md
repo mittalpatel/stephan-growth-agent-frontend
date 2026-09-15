@@ -256,6 +256,29 @@ step can tick while the underlying pages are still unextracted. Per-page truth
 lives in the knowledge tab's pages panel, which labels that state "Not
 extracted yet".
 
+### Publish tab stale after publish/rollback (2026-09-15)
+
+`useAgentActions` used to invalidate only `agentDetailKey(id)`, but this page
+reads `agentByTypeKey(slug)` (`useAgentDetail`), so after a publish the Publish
+tab kept showing the old live version and a draft that no longer existed. Update,
+publish and rollback now write their response (the full `AgentSerializer` body)
+into both keys and invalidate the draft and the list. Writing rather than
+refetching also avoids a backend bug found in the same live test: `publish()`/
+`rollback()` never clear the by-type server cache, so a plain reload can still
+show the old version until the backend fix lands (reported to the backend team).
+
+### Active tab lives in the URL (2026-09-15)
+
+The active tab was a bare `useState('overview')`, so refreshing the page or
+sharing the URL always landed back on Overview. It now reads/writes `?tab=` via
+`useSearchParams`/`useRouter().replace` (not `push`, so switching tabs doesn't
+grow the Back-button history) instead of local state. `isAgentTab` validates
+the raw param against the fixed `AGENT_TABS` list, and `isTabVisible` further
+checks it against this viewer's `conversations`/`prospects`/`knowledge` gates —
+either failing falls back to Overview rather than mounting a tab with no
+`TabsContent`, which covers a stale bookmark, a typo, or a link shared by
+someone with broader permissions than the person opening it.
+
 ### Unsaved draft changes (2026-09-10)
 
 Radix unmounts inactive `TabsContent`, so switching away from Draft destroyed

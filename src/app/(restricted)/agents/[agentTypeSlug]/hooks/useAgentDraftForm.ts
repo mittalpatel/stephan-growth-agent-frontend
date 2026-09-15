@@ -13,6 +13,7 @@ import { applyApiError } from '@/lib/apiError';
 import { checkContrast } from '@/lib/contrast';
 import { format } from '@/lib/i18n';
 import {
+  AGENT_BY_TYPE_KEY,
   agentDraftEndpoint,
   agentDraftKey,
   agentThemeDefaultsEndpoint,
@@ -492,6 +493,10 @@ export function useAgentDraftForm(
       // can hand back the identical object and never re-run the reset effect.
       form.reset(form.getValues());
       void queryClient.invalidateQueries({ queryKey: agentDraftKey(agentId) });
+      // The agent's `draft_version` summary (Publish tab, setup checklist)
+      // lives on the by-type query, not the draft one, so it needs its own
+      // refetch or Publish keeps reporting "No unpublished changes".
+      void queryClient.invalidateQueries({ queryKey: [AGENT_BY_TYPE_KEY] });
     } catch (error) {
       bindContrastErrors(error, values, form.setError);
       bindQualificationError(error, form.setError);

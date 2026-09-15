@@ -11,6 +11,7 @@ import { EmptyState } from '@/components/common/EmptyState';
 import { FilterToolbar } from '@/components/common/FilterToolbar';
 import { ListPagination } from '@/components/common/ListPagination';
 import { Markdown } from '@/components/common/Markdown';
+import { MessageTime } from '@/components/common/MessageTime';
 import { PageHeader } from '@/components/common/PageHeader';
 import { StatusBadge, type StatusTone } from '@/components/common/StatusBadge';
 import { useAuthQuery } from '@/hooks/useAuthQuery';
@@ -153,7 +154,10 @@ function ConversationTranscript({
         m.role === 'system' ? (
           <div key={m.id} className="flex items-center gap-3 px-2" role="note">
             <span className="bg-border h-px flex-1" aria-hidden />
-            <p className="text-muted-foreground max-w-[75%] text-center text-[11px]">{m.content}</p>
+            <p className="text-muted-foreground max-w-[75%] text-center text-[11px]">
+              {m.content}
+              <MessageTime value={m.created_at} className="mt-0.5 text-center" />
+            </p>
             <span className="bg-border h-px flex-1" aria-hidden />
           </div>
         ) : (
@@ -231,6 +235,12 @@ function ConversationTranscript({
                   ))}
                 </p>
               )}
+              <MessageTime
+                value={m.created_at}
+                className={
+                  m.role === 'visitor' ? 'text-primary-foreground/70' : 'text-muted-foreground'
+                }
+              />
             </div>
           </div>
         )

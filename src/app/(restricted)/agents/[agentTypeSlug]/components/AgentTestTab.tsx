@@ -18,6 +18,7 @@ import {
 import { usePermissions } from '@/app/(restricted)/context/PermissionsContext';
 import { EmptyState } from '@/components/common/EmptyState';
 import { Markdown } from '@/components/common/Markdown';
+import { MessageTime } from '@/components/common/MessageTime';
 import { StatusBadge, type StatusTone } from '@/components/common/StatusBadge';
 import { RHFTextareaField } from '@/components/common/form';
 import { Button } from '@/components/ui/button';
@@ -295,6 +296,7 @@ function TurnView({
             {copy.youLabel}
           </p>
           <p className="whitespace-pre-wrap">{turn.question}</p>
+          <MessageTime value={turn.askedAt} className="text-primary-foreground/70" />
         </div>
       </div>
 
@@ -321,12 +323,15 @@ function TurnView({
         </div>
       )}
 
-      {turn.status === 'done' && <AnswerView result={turn.result} />}
+      {turn.status === 'done' && <AnswerView result={turn.result} answeredAt={turn.answeredAt} />}
     </div>
   );
 }
 
-function AnswerView({ result }: Readonly<{ result: AgentTestAskResult }>) {
+function AnswerView({
+  result,
+  answeredAt,
+}: Readonly<{ result: AgentTestAskResult; answeredAt: Date }>) {
   const decision = result.confidence_decision;
   return (
     <AgentBubble label={copy.agentLabel}>
@@ -358,6 +363,7 @@ function AnswerView({ result }: Readonly<{ result: AgentTestAskResult }>) {
           </CollapsibleContent>
         </Collapsible>
       )}
+      <MessageTime value={answeredAt} className="text-muted-foreground" />
     </AgentBubble>
   );
 }

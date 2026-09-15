@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { AlertTriangle, ArrowLeft, ArrowUpCircle, Bot, Settings2 } from 'lucide-react';
 
 import { usePermissions } from '@/app/(restricted)/context/PermissionsContext';
@@ -65,13 +66,46 @@ type Props = Readonly<{ agentTypeSlug: string }>;
  * rollback, test-ask against the draft) and are kept alongside the reference's
  * own tabs rather than dropped to match it.
  */
+const AGENT_TABS = [
+  'overview',
+  'conversations',
+  'prospects',
+  'knowledge',
+  'settings',
+  'draft',
+  'publish',
+  'test',
+] as const;
+type AgentTab = (typeof AGENT_TABS)[number];
+
+function isAgentTab(value: string | null): value is AgentTab {
+  return AGENT_TABS.includes(value as AgentTab);
+}
+
 export function AgentDetailView({ agentTypeSlug }: Props) {
   const { agent, isLoading, isError, isNotFound, refetch } = useAgentDetail(agentTypeSlug);
   const { can } = usePermissions();
-  /* Controlled so the header's Configure button can jump to Settings, the way
-     the reference's header does. Every other tab switch still goes through
-     Radix untouched. */
-  const [tab, setTab] = useState('overview');
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParamsTab = useSearchParams().get('tab');
+  const canViewKnowledge = can('knowledge', 'view');
+  const canViewConversations = can('conversation', 'view');
+  const canViewLeads = can('lead', 'view');
+  const canManage = can('agent', 'manage');
+  const gatedTabs: Partial<Record<AgentTab, boolean>> = {
+    conversations: canViewConversations,
+    prospects: canViewLeads,
+    knowledge: canViewKnowledge,
+  };
+  const isTabVisible = (candidate: AgentTab) => gatedTabs[candidate] ?? true;
+  /* Kept in the URL, not `useState`, so refreshing or sharing the link keeps
+     whichever tab was open — the eight tabs here are effectively eight
+     screens, and losing the current one on every reload was the reported
+     complaint. Falls back to Overview for a missing, stale, or unpermitted
+     `?tab=` value (an old bookmark, a typo, a link shared by someone with
+     broader access) rather than rendering a tab with no content mounted. */
+  const tab: AgentTab =
+    isAgentTab(searchParamsTab) && isTabVisible(searchParamsTab) ? searchParamsTab : 'overview';
   /* Radix unmounts the inactive tab's content, so leaving Draft with edits in
      flight discards them silently. The draft form reports its dirty state up
      here so the switch can be confirmed first — the natural next step after
@@ -80,18 +114,21 @@ export function AgentDetailView({ agentTypeSlug }: Props) {
   const [isDraftDirty, setIsDraftDirty] = useState(false);
   const [pendingTab, setPendingTab] = useState<string | null>(null);
 
+  const goToTab = (next: string) => {
+    const params = new URLSearchParams(window.location.search);
+    params.set('tab', next);
+    // `replace`, not `push`: switching tabs is a view change, not a new page —
+    // pushing would mean every tab click adds a Back-button stop.
+    router.replace(`${pathname}?${params.toString()}`, { scroll: false });
+  };
+
   const requestTab = (next: string) => {
     if (tab === 'draft' && next !== 'draft' && isDraftDirty) {
       setPendingTab(next);
       return;
     }
-    setTab(next);
+    goToTab(next);
   };
-
-  const canViewKnowledge = can('knowledge', 'view');
-  const canViewConversations = can('conversation', 'view');
-  const canViewLeads = can('lead', 'view');
-  const canManage = can('agent', 'manage');
 
   if (isLoading) return <AgentDetailSkeleton />;
 
@@ -262,7 +299,7 @@ export function AgentDetailView({ agentTypeSlug }: Props) {
             <AlertDialogCancel>{t.agents.detail.draft.leaveConfirmStay}</AlertDialogCancel>
             <AlertDialogAction
               onClick={() => {
-                if (pendingTab) setTab(pendingTab);
+                if (pendingTab) goToTab(pendingTab);
                 setPendingTab(null);
                 setIsDraftDirty(false);
               }}

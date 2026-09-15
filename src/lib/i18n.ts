@@ -147,6 +147,17 @@ export function formatDate(
   return date ? dateFormatter(DATE_STYLE).format(date) : fallback;
 }
 
+const TIME_STYLE: Intl.DateTimeFormatOptions = { timeStyle: 'short' };
+
+/** Time of day only ("5:42 PM"), for a chat message whose day is shown elsewhere. */
+export function formatTime(
+  value: string | number | Date | null | undefined,
+  fallback = '—'
+): string {
+  const date = toDate(value);
+  return date ? dateFormatter(TIME_STYLE).format(date) : fallback;
+}
+
 export function formatDateTime(
   value: string | number | Date | null | undefined,
   fallback = '—'

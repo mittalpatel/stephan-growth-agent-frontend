@@ -4,7 +4,7 @@ import { useQueryClient } from '@tanstack/react-query';
 
 import { useAuthMutation } from '@/hooks/useAuthMutation';
 import { useAuthQuery } from '@/hooks/useAuthQuery';
-import { agentDraftEndpoint, agentDraftKey } from '@/services/agents';
+import { AGENT_BY_TYPE_KEY, agentDraftEndpoint, agentDraftKey } from '@/services/agents';
 import type { ApiResponse } from '@/types/api';
 import type { AgentVersionDetail } from '@/types/agent';
 
@@ -30,7 +30,12 @@ export function useAgentDraft(agentId: string) {
   const query = useAuthQuery<ApiResponse<AgentVersionDetail>>(
     agentDraftKey(agentId),
     agentDraftEndpoint(agentId),
-    { enabled: Boolean(agentId) }
+    {
+      enabled: Boolean(agentId),
+      // No retry on 404: "no draft" is the settled state after every publish,
+      // and retrying it held the tab on a skeleton for several seconds.
+      retry: (failureCount, error) => error.response?.status !== 404 && failureCount < 2,
+    }
   );
 
   const createDraftMutation = useAuthMutation<
@@ -39,6 +44,7 @@ export function useAgentDraft(agentId: string) {
   >({
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: agentDraftKey(agentId) });
+      void queryClient.invalidateQueries({ queryKey: [AGENT_BY_TYPE_KEY] });
     },
   });
 
