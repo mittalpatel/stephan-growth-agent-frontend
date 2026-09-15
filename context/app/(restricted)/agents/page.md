@@ -293,6 +293,28 @@ keeps every field's value in its internal state regardless of mount state
 (`useAgentDraftForm` sets no `shouldUnregister`), so a value entered then
 hidden by collapsing a section still submits correctly.
 
+### Tab UI pass (2026-09-15)
+
+- **Draft**: every group is now a bordered `DraftSection` card, including
+  "Instructions and identity" and one "Messages in {LANG}" section per enabled
+  language (both open by default). Save lives in a **sticky bar** at the bottom
+  of the card with "Discard changes" (`form.reset()`), and is disabled until the
+  form is dirty. Select placeholders read "Use default" instead of a bare
+  em-dash, and the contrast warning names the background by its field label
+  rather than the raw theme key. The no-draft state is an `EmptyState`.
+- **Publish**: "Live on your site" and "Draft" are side-by-side cards. The live
+  card's badge says "Live", not the agent's own status label, because a
+  published version is live even while the agent is paused. The draft card
+  links to the Test tab ("Test first") and, with no draft, to the Draft tab;
+  `AgentPublishTab` takes `onNavigate` from `AgentDetailView`'s `requestTab`
+  for this. **Known and left as-is by request:** the Rollback card still passes
+  the currently published version's id, so it can only re-publish what is
+  already live. No read path lists older versions; a real history needs
+  `GET /agents/{id}/versions/` from the backend.
+- **Setup checklist**: a "{done} of {total} done" count with a progress bar,
+  numbered steps, and only the next unfinished step gets the filled button.
+- **Overview**: an all-zero metrics row gets a one-line "no activity yet" note.
+
 ### One place to create a deployment key (2026-09-09)
 
 `DeploymentKeysSection` and `EmbedSnippetSection` used to be two independent
@@ -538,6 +560,21 @@ of validation already tracked here.
 - **Test** — `useAgentTestAsk` posts to `POST .../draft/test/`, gated
   `agent:execute`, rendering the answer, confidence decision, and citations
   from `ChatRuntimeService`.
+
+  **Test console (2026-09-15)**: the tab is a session log rather than a single
+  answer box. `useAgentTestAsk` keeps an in-memory list of turns
+  (`pending`/`done`/`error`, each retryable), cleared by "Clear" or leaving the
+  tab. **The endpoint is single-turn**: it takes one `question` and never sees
+  earlier turns, so the UI says so beside the input rather than implying chat
+  memory. Before the first question it shows the draft's greeting for
+  `agent.default_language` and its `behavior_config.suggested_questions` as
+  one-click chips. Each answer shows its decision badge with a one-line
+  plain-language meaning and a collapsed source list. The question is a
+  RHF+Zod form (`agentTestQuestionSchema`, field `question` matching
+  `AgentTestAskRequestSerializer`); Enter asks, Shift+Enter adds a newline.
+  States: no `agent:execute` shows a locked empty state instead of a form that
+  would 403; no draft (normal right after a publish) offers "Create draft"
+  through `useAgentDraft.createDraft`.
 
   **Markdown rendering (2026-09-11)**: `result.answer` and each citation's
   `excerpt` are markdown (the answer's own formatting, and — since the

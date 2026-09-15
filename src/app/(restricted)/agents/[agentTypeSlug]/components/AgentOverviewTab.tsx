@@ -81,11 +81,24 @@ export function AgentOverviewTab({ agent }: Props) {
       );
     }
 
+    // All zeros is the normal state for a new agent, and a row of 0s alone
+    // reads like a broken counter rather than "nothing has happened yet".
+    const noActivity = metrics.every((metric) => metric.value === 0);
+
     return (
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        {metrics.map((metric) => (
-          <MetricCard key={metric.label} label={metric.label} value={formatNumber(metric.value)} />
-        ))}
+      <div className="space-y-3">
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {metrics.map((metric) => (
+            <MetricCard
+              key={metric.label}
+              label={metric.label}
+              value={formatNumber(metric.value)}
+            />
+          ))}
+        </div>
+        {noActivity && (
+          <p className="text-muted-foreground text-sm">{t.agents.detail.overview.noActivity}</p>
+        )}
       </div>
     );
   }

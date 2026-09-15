@@ -1,5 +1,7 @@
 'use client';
 
+import { FlaskConical, Globe, PencilLine, Rocket } from 'lucide-react';
+
 import { usePermissions } from '@/app/(restricted)/context/PermissionsContext';
 import {
   AlertDialog,
@@ -15,95 +17,130 @@ import {
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { StatusBadge } from '@/components/common/StatusBadge';
-import { format, formatDate } from '@/lib/i18n';
+import { format, formatDateTime } from '@/lib/i18n';
 import { t } from '@/locales';
 import type { Agent } from '@/types/agent';
 
 import { useAgentActions } from '../hooks/useAgentActions';
 
-type Props = Readonly<{ agent: Agent }>;
+type Props = Readonly<{ agent: Agent; onNavigate: (tab: string) => void }>;
 
-export function AgentPublishTab({ agent }: Props) {
+const copy = t.agents.detail.publish;
+
+export function AgentPublishTab({ agent, onNavigate }: Props) {
   const { can } = usePermissions();
   const canExecute = can('agent', 'execute');
   const { publish, isPublishing, rollback, isRollingBack } = useAgentActions(agent.id);
   const publishedVersion = agent.published_version;
+  const draftVersion = agent.draft_version;
 
   return (
     <div className="space-y-6">
-      <Card>
-        <CardHeader>
-          <CardTitle>{t.agents.detail.publish.title}</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="flex items-center justify-between gap-4">
-            <div>
-              <p className="text-sm font-medium">{t.agents.detail.publish.draftStatus}</p>
-              {agent.draft_version ? (
-                <p className="text-muted-foreground text-sm">
-                  {format(t.agents.detail.publish.versionLabel, {
-                    number: agent.draft_version.version_number,
-                  })}
-                </p>
-              ) : (
-                <p className="text-muted-foreground text-sm">{t.agents.detail.publish.noDraft}</p>
-              )}
-            </div>
-            {canExecute && agent.draft_version && (
-              <AlertDialog>
-                <AlertDialogTrigger asChild>
-                  <Button disabled={isPublishing}>{t.agents.detail.publish.publishAction}</Button>
-                </AlertDialogTrigger>
-                <AlertDialogContent>
-                  <AlertDialogHeader>
-                    <AlertDialogTitle>
-                      {t.agents.detail.publish.publishConfirmTitle}
-                    </AlertDialogTitle>
-                    <AlertDialogDescription>
-                      {t.agents.detail.publish.publishConfirmDescription}
-                    </AlertDialogDescription>
-                  </AlertDialogHeader>
-                  <AlertDialogFooter>
-                    <AlertDialogCancel>{t.agents.detail.overview.cancel}</AlertDialogCancel>
-                    <AlertDialogAction onClick={() => publish()}>
-                      {t.agents.actions.publish}
-                    </AlertDialogAction>
-                  </AlertDialogFooter>
-                </AlertDialogContent>
-              </AlertDialog>
-            )}
-          </div>
+      <div className="space-y-1">
+        <h2 className="font-display text-lg font-bold">{copy.title}</h2>
+        <p className="text-muted-foreground text-sm">{copy.description}</p>
+      </div>
 
-          <div className="border-border border-t pt-4">
-            <p className="text-sm font-medium">{t.agents.detail.publish.publishedStatus}</p>
-            {agent.published_version ? (
-              <div className="mt-1 flex items-center gap-2">
-                <StatusBadge label={t.agents.status.active} tone="success" />
-                <p className="text-muted-foreground text-sm">
-                  {format(t.agents.detail.publish.versionLabel, {
-                    number: agent.published_version.version_number,
-                  })}{' '}
-                  · {formatDate(agent.published_version.published_at)}
-                </p>
-              </div>
+      <div className="grid gap-4 md:grid-cols-2">
+        <Card>
+          <CardContent className="space-y-3">
+            <div className="flex items-center gap-2">
+              <Globe className="text-muted-foreground size-4" aria-hidden />
+              <p className="text-sm font-medium">{copy.publishedStatus}</p>
+            </div>
+            {publishedVersion ? (
+              <>
+                <div className="flex flex-wrap items-center gap-2">
+                  <p className="font-display text-2xl font-bold">
+                    {format(copy.versionLabel, { number: publishedVersion.version_number })}
+                  </p>
+                  {/* "Live", not the agent's own status label: a published
+                      version is live even while the agent is paused, and the
+                      two are different claims. */}
+                  <StatusBadge label={copy.liveBadge} tone="success" />
+                </div>
+                {publishedVersion.published_at && (
+                  <p className="text-muted-foreground text-xs">
+                    {format(copy.publishedAt, {
+                      date: formatDateTime(publishedVersion.published_at),
+                    })}
+                  </p>
+                )}
+              </>
             ) : (
-              <p className="text-muted-foreground mt-1 text-sm">
-                {t.agents.detail.publish.noPublished}
-              </p>
+              <p className="text-muted-foreground text-sm">{copy.noPublished}</p>
             )}
-          </div>
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+
+        <Card className={draftVersion ? 'border-primary/40' : undefined}>
+          <CardContent className="space-y-3">
+            <div className="flex items-center gap-2">
+              <PencilLine className="text-muted-foreground size-4" aria-hidden />
+              <p className="text-sm font-medium">{copy.draftStatus}</p>
+            </div>
+            {draftVersion ? (
+              <>
+                <div className="flex flex-wrap items-center gap-2">
+                  <p className="font-display text-2xl font-bold">
+                    {format(copy.versionLabel, { number: draftVersion.version_number })}
+                  </p>
+                  <StatusBadge label={copy.unpublishedBadge} tone="warning" />
+                </div>
+                <p className="text-muted-foreground text-xs">{copy.draftHint}</p>
+                <div className="flex flex-wrap gap-2 pt-1">
+                  <Button variant="outline" size="sm" onClick={() => onNavigate('test')}>
+                    <FlaskConical aria-hidden />
+                    {copy.testFirst}
+                  </Button>
+                  {canExecute && (
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button size="sm" disabled={isPublishing}>
+                          <Rocket aria-hidden />
+                          {copy.publishAction}
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>{copy.publishConfirmTitle}</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            {copy.publishConfirmDescription}
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>{t.agents.detail.overview.cancel}</AlertDialogCancel>
+                          <AlertDialogAction onClick={() => publish()}>
+                            {t.agents.actions.publish}
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                  )}
+                </div>
+              </>
+            ) : (
+              <div className="space-y-3">
+                <p className="text-muted-foreground text-sm">{copy.noDraft}</p>
+                <Button variant="outline" size="sm" onClick={() => onNavigate('draft')}>
+                  <PencilLine aria-hidden />
+                  {copy.startDraft}
+                </Button>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </div>
 
       {canExecute && publishedVersion && (
         <Card>
           <CardHeader>
-            <CardTitle>{t.agents.detail.publish.historyTitle}</CardTitle>
+            <CardTitle>{copy.historyTitle}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="flex items-center justify-between gap-4">
               <p className="text-muted-foreground text-sm">
-                {format(t.agents.detail.publish.versionLabel, {
+                {format(copy.versionLabel, {
                   number: publishedVersion.version_number,
                 })}
               </p>
@@ -115,11 +152,9 @@ export function AgentPublishTab({ agent }: Props) {
                 </AlertDialogTrigger>
                 <AlertDialogContent>
                   <AlertDialogHeader>
-                    <AlertDialogTitle>
-                      {t.agents.detail.publish.rollbackConfirmTitle}
-                    </AlertDialogTitle>
+                    <AlertDialogTitle>{copy.rollbackConfirmTitle}</AlertDialogTitle>
                     <AlertDialogDescription>
-                      {t.agents.detail.publish.rollbackConfirmDescription}
+                      {copy.rollbackConfirmDescription}
                     </AlertDialogDescription>
                   </AlertDialogHeader>
                   <AlertDialogFooter>

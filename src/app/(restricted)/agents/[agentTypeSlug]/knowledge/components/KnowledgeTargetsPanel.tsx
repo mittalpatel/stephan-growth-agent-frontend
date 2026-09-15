@@ -9,6 +9,7 @@ import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Skeleton } from '@/components/ui/skeleton';
 import { format } from '@/lib/i18n';
+import { cn } from '@/lib/utils';
 import { t } from '@/locales';
 
 import { useAllKnowledgeSources } from '../hooks/useAllKnowledgeSources';
@@ -51,7 +52,20 @@ export function KnowledgeTargetsPanel({ agentId }: Props) {
   const draft = edit?.draft ?? selectedIds;
   const setMode = (next: 'all' | 'selected') => setEdit({ mode: next, draft });
 
-  if (isLoading || isSourcesLoading) return <Skeleton className="h-40 w-full" />;
+  if (isLoading || isSourcesLoading) {
+    return (
+      <Card>
+        <CardHeader>
+          <Skeleton className="h-5 w-40" />
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <Skeleton className="h-4 w-3/4" />
+          <Skeleton className="h-16 w-full rounded-lg" />
+          <Skeleton className="h-16 w-full rounded-lg" />
+        </CardContent>
+      </Card>
+    );
+  }
 
   if (isError || isSourcesError) {
     return (
@@ -100,16 +114,42 @@ export function KnowledgeTargetsPanel({ agentId }: Props) {
           value={mode}
           onValueChange={(value) => setMode(value as 'all' | 'selected')}
           disabled={!canManage}
+          className="gap-2"
         >
-          <Label className="flex items-center gap-2 text-sm font-normal">
-            <RadioGroupItem value="all" />
-            {t.knowledge.targets.modeAll}
-          </Label>
-          <Label className="flex items-center gap-2 text-sm font-normal">
-            <RadioGroupItem value="selected" />
-            {t.knowledge.targets.modeSelected}
-          </Label>
+          {(
+            [
+              ['all', t.knowledge.targets.modeAll, t.knowledge.targets.modeAllDescription],
+              [
+                'selected',
+                t.knowledge.targets.modeSelected,
+                t.knowledge.targets.modeSelectedDescription,
+              ],
+            ] as const
+          ).map(([value, label, description]) => (
+            <Label
+              key={value}
+              className={cn(
+                'border-border flex cursor-pointer items-start gap-3 rounded-lg border p-3 font-normal',
+                mode === value && 'border-primary bg-primary/5'
+              )}
+            >
+              <RadioGroupItem value={value} className="mt-0.5" />
+              <span className="space-y-0.5">
+                <span className="block text-sm font-medium">{label}</span>
+                <span className="text-muted-foreground block text-xs">{description}</span>
+              </span>
+            </Label>
+          ))}
         </RadioGroup>
+
+        {mode === 'selected' && sources.length > 0 && (
+          <p className="text-muted-foreground text-xs">
+            {format(t.knowledge.targets.selectedCount, {
+              selected: draft.length,
+              total: sources.length,
+            })}
+          </p>
+        )}
 
         {mode === 'selected' && (
           <div className="max-h-64 space-y-1 overflow-y-auto rounded-md border p-2">
@@ -139,14 +179,26 @@ export function KnowledgeTargetsPanel({ agentId }: Props) {
           </p>
         )}
 
-        {canManage && (
-          <Button
-            type="button"
-            disabled={isSaving || !isDirty || (mode === 'selected' && draft.length === 0)}
-            onClick={() => save(mode === 'all' ? [] : draft, () => setEdit(null))}
-          >
-            {t.buttons.save}
-          </Button>
+        {canManage && isDirty && (
+          <div className="flex items-center gap-2">
+            <Button
+              type="button"
+              size="sm"
+              disabled={isSaving || (mode === 'selected' && draft.length === 0)}
+              onClick={() => save(mode === 'all' ? [] : draft, () => setEdit(null))}
+            >
+              {t.knowledge.targets.saveChanges}
+            </Button>
+            <Button
+              type="button"
+              size="sm"
+              variant="ghost"
+              disabled={isSaving}
+              onClick={() => setEdit(null)}
+            >
+              {t.knowledge.targets.discard}
+            </Button>
+          </div>
         )}
       </CardContent>
     </Card>

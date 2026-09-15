@@ -240,6 +240,7 @@ export const agents = {
       stepDomain: 'Allow your website domain',
       stepEmbed: 'Get your embed code',
       goTo: 'Go',
+      progress: '{done} of {total} done',
       allDone: 'All set. This agent is ready to embed on your site.',
     },
     tabs: {
@@ -260,6 +261,8 @@ export const agents = {
       cancel: 'Cancel',
       performanceTitle: 'Performance',
       performanceError: 'Could not load this agent’s performance.',
+      noActivity:
+        'No activity in this period yet. Numbers appear once visitors start chatting with the agent on your site.',
       capabilitiesTitle: 'Capabilities',
       howItWorksTitle: 'How it works',
       stepLabel: 'Step {number}',
@@ -281,7 +284,13 @@ export const agents = {
       displayNameDescription:
         'The name shown in the widget header, distinct from the agent record name above. Leave blank to use that name.',
       displayNameBlank: 'Enter a name, or leave this blank to use the agent name.',
-      localizedTextTitle: 'Localized text for {language}',
+      localizedTextTitle: 'Messages in {language}',
+      localizedTextDescription:
+        'What visitors read in this language. Greeting, fallback and disclosure are required to publish.',
+      basicsHeading: 'Instructions and identity',
+      basicsDescription: 'How the agent behaves and what it is called in the widget.',
+      useDefault: 'Use default',
+      discardChanges: 'Discard changes',
       greetingLabel: 'Greeting',
       greetingDescription: 'The first message visitors see when they open the widget.',
       greetingPlaceholder: 'Hi! How can I help you today?',
@@ -318,7 +327,8 @@ export const agents = {
       colorErrorDescription: 'Used for error states, like a failed submission.',
       colorPlaceholder: '#0B1E3D',
       colorMustBeHex: 'Enter a hex color like #0B1E3D.',
-      contrastFailing: 'Contrast {ratio} to 1 against {against} — needs at least 4.5 to 1.',
+      contrastFailing:
+        'Too hard to read on {against}: contrast is {ratio} to 1, and it needs at least 4.5 to 1.',
       contrastPassing: 'Contrast {ratio} to 1 against {against}.',
       useSuggestedColor: 'Use suggested color ({color})',
       themeTypographyHeading: 'Typography',
@@ -381,7 +391,7 @@ export const agents = {
       previewInputPlaceholder: 'Type a message…',
       behaviorRuntimeHeading: 'Answer tuning',
       behaviorRuntimeDescription:
-        'Optional. The defaults work well for most agents — only change these if you know what you need.',
+        'Optional. The defaults work well for most agents, so only change these if you know what you need.',
       groundednessThresholdLabel: 'Groundedness threshold',
       groundednessThresholdDescription:
         'How closely an answer must match the knowledge base before the agent will give it, from 0 (answer even with weak matches) to 1 (only answer with a near-exact match).',
@@ -479,8 +489,16 @@ export const agents = {
     },
     publish: {
       title: 'Publish',
-      draftStatus: 'Draft version',
-      publishedStatus: 'Published version',
+      description:
+        'Visitors always get the live version. Publishing replaces it with your draft straight away.',
+      draftStatus: 'Draft',
+      publishedStatus: 'Live on your site',
+      liveBadge: 'Live',
+      unpublishedBadge: 'Not published',
+      publishedAt: 'Published {date}',
+      draftHint: 'Try it on the Test tab before publishing so visitors never meet a broken answer.',
+      testFirst: 'Test first',
+      startDraft: 'Start a draft',
       noDraft: 'No unpublished changes.',
       noPublished: 'This agent has never been published.',
       publishAction: 'Publish draft',
@@ -494,20 +512,48 @@ export const agents = {
         'This publishes the selected version again, replacing whatever is currently live.',
     },
     test: {
-      title: 'Test the draft',
-      description: 'Ask a question against the draft version before publishing it.',
-      questionPlaceholder: 'Ask a question…',
+      title: 'Test your agent',
+      description:
+        'Ask the questions your visitors would. Answers come from your unpublished draft, and nothing here is saved or shown to visitors.',
+      draftVersion: 'Draft v{version}',
+      clear: 'Clear',
+      questionLabel: 'Your question',
+      questionPlaceholder: 'Type a question a visitor might ask…',
+      questionRequired: 'Type a question first.',
+      keyboardHint: 'Press Enter to ask, Shift + Enter for a new line.',
       submit: 'Ask',
-      answerLabel: 'Answer',
-      confidenceLabel: 'Confidence',
+      asking: 'Thinking…',
+      youLabel: 'You',
+      agentLabel: 'Agent',
+      greetingLabel: 'Greeting visitors see first',
+      suggestionsLabel: 'Try a suggested question',
+      emptyTitle: 'Ask your first question',
+      emptyDescription: 'See how your agent answers before you publish it.',
+      independentNote:
+        'Each question is answered on its own, without earlier questions as context.',
+      retry: 'Try again',
+      errorFallback: 'The agent could not answer. Please try again.',
       confidence: {
         answered: 'Answered',
         clarify: 'Needs clarification',
         fallback: 'Fell back',
         handoff: 'Handed off',
       },
-      citationsLabel: 'Citations',
-      noCitations: 'No citations.',
+      confidenceHelp: {
+        answered: 'Your knowledge had enough to answer this.',
+        clarify: 'The agent would ask the visitor to clarify first.',
+        fallback: 'Nothing relevant was found, so visitors would get your fallback message.',
+        handoff: 'This would be passed to a person on your team.',
+      },
+      citationsLabel: 'Sources',
+      citationsCount: { one: '{count} source', other: '{count} sources' },
+      noCitations: 'No sources were used for this answer.',
+      noDraftTitle: 'Nothing to test right now',
+      noDraftDescription:
+        'Publishing clears the draft. Create a new one from your published version to keep testing.',
+      createDraft: 'Create draft',
+      noPermissionTitle: 'You cannot run tests',
+      noPermissionDescription: 'Ask an admin for permission to test agents.',
       /** Appended after a PDF citation's `source_title` when `page_number`
        * is set — a website citation has no page number. */
       citationPage: 'p. {page}',
@@ -524,10 +570,22 @@ export const agents = {
     description: 'Allowed domains, deployment keys, and how to embed this agent on a website.',
     noPermissionTitle: 'View permission required',
     noPermissionDescription: "You don't have permission to view this agent's settings.",
+    identity: {
+      title: 'Agent details',
+      description: 'The internal name, where handoff emails go, and whether the agent is running.',
+      metadataHeading: 'About this agent',
+      notSet: 'Not set',
+    },
+    install: {
+      title: 'Install on your website',
+      description: 'Two steps: allow your domain, then paste the embed code on your site.',
+      step: 'Step {number}',
+    },
     domains: {
       title: 'Allowed domains',
       description:
-        "Add every website domain the widget should work on. Visitors' browsers will only load the widget from a domain listed here — everywhere else it silently refuses to load, so add your domain before pasting the embed code below.",
+        'Add every website domain the widget should work on. The widget will not load on any other domain, so add yours before pasting the embed code.',
+      addedAt: 'Added {date}',
       hostnameLabel: 'Hostname',
       hostnamePlaceholder: 'www.example.com',
       add: 'Add domain',
@@ -549,6 +607,8 @@ export const agents = {
       description:
         "Every credential issued so far, including one for each embed code you've generated above. Revoke one to immediately stop any widget using it.",
       revoke: 'Revoke',
+      createdAt: 'Created {date}',
+      revokedAt: 'Revoked {date}',
       revoked: 'Deployment key revoked.',
       revokeConfirmTitle: 'Revoke this deployment key?',
       revokeConfirmDescription: 'Any widget using this key will stop working immediately.',

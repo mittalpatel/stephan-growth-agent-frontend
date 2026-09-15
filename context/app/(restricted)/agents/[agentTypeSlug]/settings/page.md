@@ -86,3 +86,18 @@ one-time-secret warning and copy affordance as `RevealDeploymentKeyDialog`.
 No new `ROUTE_PERMISSIONS` entry, same reasoning as the knowledge route:
 `{ prefix: '/agents', resources: ['agent'] }` already covers every
 `/agents/[agentId]/**` route.
+
+## Layout pass (2026-09-15)
+
+`AgentSettingsView` groups Allowed domains and the embed code under one
+"Install on your website" heading as **Step 1** and **Step 2**: the order was
+already right, but nothing said the snippet depends on the domain, and a
+snippet pasted before its domain is allowed fails silently. Issued keys stay
+below as the audit list.
+
+- `AgentIdentitySection` has its own title, Save is disabled until the form is
+  dirty, "Discard changes" appears when it is, and the read-only type, slug and
+  created date sit in a separate "About this agent" list below the inputs.
+- Domain and key rows are bordered lists with labelled dates ("Added",
+  "Created", "Revoked"); active keys sort above revoked ones.
+- The domains description no longer contains an em-dash.

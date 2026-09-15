@@ -243,7 +243,7 @@ export function AgentDetailView({ agentTypeSlug }: Props) {
           <AgentDraftTab agent={agent} onDirtyChange={setIsDraftDirty} />
         </TabsContent>
         <TabsContent value="publish">
-          <AgentPublishTab agent={agent} />
+          <AgentPublishTab agent={agent} onNavigate={requestTab} />
         </TabsContent>
         <TabsContent value="test">
           <AgentTestTab agent={agent} />

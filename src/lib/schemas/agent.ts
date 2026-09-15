@@ -306,3 +306,11 @@ export const agentDraftUpdateSchema = z
 // it becomes only after validation.
 export type AgentDraftFormValues = z.input<typeof agentDraftUpdateSchema>;
 export type AgentDraftSubmitValues = z.output<typeof agentDraftUpdateSchema>;
+
+/** `question` matches `AgentTestAskRequestSerializer` exactly, which trims
+ * and rejects blank input but sets no length cap. */
+export const agentTestQuestionSchema = z.object({
+  question: z.string().trim().min(1, t.agents.detail.test.questionRequired),
+});
+
+export type AgentTestQuestionFormValues = z.infer<typeof agentTestQuestionSchema>;

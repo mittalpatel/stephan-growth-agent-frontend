@@ -31,7 +31,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { formatDate } from '@/lib/i18n';
+import { format, formatDate } from '@/lib/i18n';
 import { t } from '@/locales';
 import type { KnowledgeSourceListItem, KnowledgeSourceStatus } from '@/types/knowledge';
 
@@ -103,7 +103,14 @@ export function KnowledgeSourcesTable({ agentTypeSlug, sources }: Props) {
                     {(canManage || canExecute) && (
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="icon" className="size-8">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="size-8"
+                            aria-label={format(t.knowledge.actions.moreActions, {
+                              name: source.display_name,
+                            })}
+                          >
                             <MoreHorizontal className="size-4" aria-hidden />
                           </Button>
                         </DropdownMenuTrigger>

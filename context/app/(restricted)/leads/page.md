@@ -95,3 +95,18 @@ still `{created_at, status, email}`), so it must not be added to `sortOptions`.
 Filters stay client-declared here because `LeadListView` still has no
 `?type=parameters` branch, even though `LeadSelector.build_parameters_config()`
 now builds one.
+
+## Detail sheet pass (2026-09-15)
+
+`LeadDetailSheet` titles itself with the lead's name (or email) and capture
+time, and opens with a contact block: `mailto:`/`tel:` links, and the phone
+number, which the sheet previously never showed. Status and qualification sit
+side by side, then titled sections for interest, evaluation history, collected
+fields, conversation and consent.
+
+Two display bugs fixed: the linked conversation's status rendered as the raw
+enum (`handoff_active`); it is now narrowed against `CONVERSATION_STATUS_VALUES`
+and translated, since `LeadConversationSummary.status` is typed as a plain
+string. Field keys in collected fields and "Missing: …" now use the
+`qualifiableField` labels where one exists. In the list, a lead with no name no
+longer shows its email twice.

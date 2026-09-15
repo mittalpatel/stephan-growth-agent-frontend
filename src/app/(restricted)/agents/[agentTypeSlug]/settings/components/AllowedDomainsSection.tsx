@@ -11,7 +11,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { agentDomainCreateSchema, type AgentDomainCreateFormValues } from '@/lib/schemas/agent';
-import { formatDate } from '@/lib/i18n';
+import { format, formatDate } from '@/lib/i18n';
 import { t } from '@/locales';
 import type { AllowedDomain } from '@/types/agent';
 
@@ -59,16 +59,26 @@ export function AllowedDomainsSection({ agentId }: Props) {
       );
     }
 
-    if (domains.length === 0) return <p className="text-muted-foreground text-sm">{copy.empty}</p>;
+    if (domains.length === 0) {
+      return (
+        <p className="border-border text-muted-foreground rounded-lg border border-dashed px-4 py-6 text-center text-sm">
+          {copy.empty}
+        </p>
+      );
+    }
 
     return (
-      <ul className="divide-border divide-y">
+      <ul className="border-border divide-border divide-y rounded-lg border">
         {domains.map((domain) => (
-          <li key={domain.id} className="flex items-center justify-between gap-3 py-2.5">
-            <div className="flex items-center gap-2">
-              <Globe className="text-muted-foreground size-4" aria-hidden />
-              <span className="text-sm font-medium">{domain.hostname}</span>
-              <span className="text-muted-foreground text-xs">{formatDate(domain.created_at)}</span>
+          <li key={domain.id} className="flex items-center justify-between gap-3 px-3 py-2.5">
+            <div className="flex min-w-0 items-center gap-3">
+              <Globe className="text-muted-foreground size-4 shrink-0" aria-hidden />
+              <div className="min-w-0">
+                <p className="truncate text-sm font-medium">{domain.hostname}</p>
+                <p className="text-muted-foreground text-xs">
+                  {format(copy.addedAt, { date: formatDate(domain.created_at) })}
+                </p>
+              </div>
             </div>
             {canManage && (
               <Button
@@ -97,8 +107,8 @@ export function AllowedDomainsSection({ agentId }: Props) {
 
         {canManage && (
           <FormProvider {...form}>
-            <form onSubmit={submit} className="flex items-end gap-2">
-              <div className="flex-1">
+            <form onSubmit={submit} className="flex flex-wrap items-end gap-2">
+              <div className="min-w-48 flex-1">
                 <RHFTextField<AgentDomainCreateFormValues>
                   name="hostname"
                   label={copy.hostnameLabel}

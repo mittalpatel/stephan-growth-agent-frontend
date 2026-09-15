@@ -1,6 +1,6 @@
 'use client';
 
-import { AlertTriangle } from 'lucide-react';
+import { AlertTriangle, BookOpen } from 'lucide-react';
 
 import { usePermissions } from '@/app/(restricted)/context/PermissionsContext';
 import { EmptyState } from '@/components/common/EmptyState';
@@ -75,6 +75,7 @@ export function KnowledgeSourcesView({ agentId, agentTypeSlug }: Props) {
         />
       ) : (
         <EmptyState
+          icon={BookOpen}
           title={t.knowledge.list.emptyTitle}
           description={t.knowledge.list.emptyDescription}
         />
@@ -84,28 +85,35 @@ export function KnowledgeSourcesView({ agentId, agentTypeSlug }: Props) {
     return <KnowledgeSourcesTable agentTypeSlug={agentTypeSlug} sources={list.sources} />;
   }
 
+  // Order follows the job: see how healthy the knowledge is, manage the
+  // sources themselves (the thing people come here for), then the two
+  // per-agent refinements side by side rather than stacked above the list.
   return (
     <div className="flex flex-col gap-6">
       <KnowledgeHealthPanel agentId={agentId} />
 
-      <KnowledgeTargetsPanel agentId={agentId} />
-
-      <div className="space-y-4">
-        <p className="text-muted-foreground text-sm">{t.knowledge.list.sharedNotice}</p>
-
-        {canManage && (
-          <div className="flex justify-end gap-2">
-            {/* `includeSource` keeps a narrowed agent from creating a source
-                it cannot then see — and, before that, from 404ing on its own
-                crawl-job poll. It is a no-op for an un-narrowed agent. */}
-            <AddPdfDialog onCreated={includeSource} />
-            <AddWebsiteDialog
-              agentId={agentId}
-              agentTypeSlug={agentTypeSlug}
-              onCreated={includeSource}
-            />
+      <section className="space-y-4">
+        <div className="flex flex-wrap items-end justify-between gap-3">
+          <div className="min-w-0 space-y-1">
+            <h2 className="font-display text-lg font-bold">{t.knowledge.list.sectionTitle}</h2>
+            <p className="text-muted-foreground max-w-2xl text-sm">
+              {t.knowledge.list.sharedNotice}
+            </p>
           </div>
-        )}
+          {canManage && (
+            <div className="flex shrink-0 gap-2">
+              {/* `includeSource` keeps a narrowed agent from creating a source
+                  it cannot then see — and, before that, from 404ing on its own
+                  crawl-job poll. It is a no-op for an un-narrowed agent. */}
+              <AddPdfDialog onCreated={includeSource} />
+              <AddWebsiteDialog
+                agentId={agentId}
+                agentTypeSlug={agentTypeSlug}
+                onCreated={includeSource}
+              />
+            </div>
+          )}
+        </div>
 
         <FilterToolbar
           title={list.title}
@@ -143,9 +151,12 @@ export function KnowledgeSourcesView({ agentId, agentTypeSlug }: Props) {
             onLimitChange={list.onLimitChange}
           />
         )}
-      </div>
+      </section>
 
-      <IndexVersionsPanel agentId={agentId} />
+      <div className="grid items-start gap-6 lg:grid-cols-2">
+        <KnowledgeTargetsPanel agentId={agentId} />
+        <IndexVersionsPanel agentId={agentId} />
+      </div>
     </div>
   );
 }
