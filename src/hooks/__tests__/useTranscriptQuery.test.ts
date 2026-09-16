@@ -1,9 +1,6 @@
 import { describe, it, expect } from 'vitest';
 
-import {
-  flattenTranscript,
-  olderPageParam,
-} from '@/app/(restricted)/conversations/hooks/useConversationMessages';
+import { flattenTranscript, olderPageParam } from '@/hooks/useTranscriptQuery';
 import type { ApiResponse } from '@/types/api';
 import type { Message } from '@/types/conversation';
 

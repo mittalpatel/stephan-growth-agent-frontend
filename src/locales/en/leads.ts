@@ -54,6 +54,8 @@ export const leads = {
     missingFieldsLabel: 'Missing: {fields}',
     conversationHeading: 'Conversation',
     noConversation: 'No linked conversation.',
+    viewTranscript: 'View transcript',
+    hideTranscript: 'Hide transcript',
   },
   consent: {
     given: 'Given',

@@ -115,3 +115,40 @@ and translated, since `LeadConversationSummary.status` is typed as a plain
 string. Field keys in collected fields and "Missing: …" now use the
 `qualifiableField` labels where one exists. In the list, a lead with no name no
 longer shows its email twice.
+
+## Source conversation transcript (2026-09-16)
+
+The Conversation section used to show only a status-and-date summary, so an
+operator deciding whether to call a lead could not read what the visitor
+actually said. It now has a "View transcript" collapsible over
+`GET /leads/{id}/conversation/messages/` (backend 2026-09-16), rendering the
+shared `ConversationTranscript` (see `context/components.md`).
+
+**Why the transcript renders here rather than linking to `/conversations`.**
+The backend authorizes this endpoint on `Perm.LEAD_VIEW`, deliberately _not_
+`Perm.CONVERSATION_VIEW`, so an operator with lead access but no conversation
+access can still read the conversation that produced a lead. Every seeded
+system role currently grants both together, but RBAC allows arbitrary custom
+roles, so a deep link would fail for exactly the person the endpoint exists
+for. For the same reason the section adds **no** frontend permission check
+beyond the route guard's `lead:view` (`src/constants/roles.ts`).
+
+Two things keep the request off the wire until it is genuinely needed. Radix
+unmounts a closed `CollapsibleContent`, so `useLeadConversationMessages` only
+mounts when the transcript is expanded; and its `enabled` also requires
+`lead.conversation` to be non-null, so the endpoint's
+`lead_no_linked_conversation` 404 is never requested at all. The null case
+keeps the existing "No linked conversation" copy.
+
+The transcript's query key (`leadConversationMessagesKey`) is deliberately
+separate from `conversationMessagesPrefixKey`: the same rows read through a
+differently authorized route must not share a cache entry. The paging itself is
+shared through `useTranscriptQuery` rather than duplicated, and no polling is
+enabled here, unlike the operator queue: a captured lead's conversation is
+history, not a queue being worked.
+
+Nothing was needed for the same backend commit's new phone validation
+(`lead_invalid_phone`). The dashboard has no form that creates or edits a lead
+(`useLeadActions` only PATCHes status, and `lead.phone` is read-only), so the
+new error code has no frontend surface to bind to. Lead capture is the widget's
+form, in the backend repo.

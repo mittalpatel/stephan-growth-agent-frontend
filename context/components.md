@@ -157,6 +157,29 @@ visitor, AI, operator and system message) and the agent Test tab (`askedAt` /
 timestamp). Not shown in `WidgetPreview`, which mirrors the live `widget.js`,
 and that bundle shows no times.
 
+## ConversationTranscript
+
+`src/components/common/ConversationTranscript.tsx` (extracted 2026-09-16). One
+conversation's full transcript: system turns as dividers, visitor/AI/operator
+bubbles with role-specific fills, markdown on the agent side only, citations
+with `page_number`, `MessageTime` on every turn, a "load earlier messages"
+control at the top of the scroll region, and auto-scroll that follows new turns
+only while the reader is already pinned to the bottom.
+
+It is a **pure presenter** — it takes transcript state (`TranscriptState`, the
+return of `useTranscriptQuery`) rather than fetching, because two differently
+authorized endpoints serve the same rows: `GET /conversations/{id}/messages/`
+(`conversation:view`, via `useConversationMessages`) and
+`GET /leads/{id}/conversation/messages/` (`lead:view`, via
+`useLeadConversationMessages`). It previously lived inside
+`ConversationsListView` as a module-private function that called its own hook,
+which both blocked reuse and broke the hook/presenter split.
+
+`className` overrides the default `flex-1` fill on whichever state branch
+renders. The conversations pane owns its own height and keeps the fill; the
+lead detail sheet is already scrolling, so it passes a bounded `max-h-80`
+instead.
+
 ## PreviewBanner
 
 `src/components/common/PreviewBanner.tsx`. Takes one already-translated `note`.

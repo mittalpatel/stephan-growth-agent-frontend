@@ -8,9 +8,24 @@ import { buildListParams, type ListQuery } from './listParams';
 export const LEADS_ENDPOINT = '/api/v1/leads/';
 export const leadDetailEndpoint = (id: string) => `${LEADS_ENDPOINT}${id}/`;
 export const leadStatusEndpoint = (id: string) => `${LEADS_ENDPOINT}${id}/status/`;
+/**
+ * The transcript of the conversation this lead was captured from (backend
+ * 2026-09-16). Contract-identical to
+ * `GET /conversations/{id}/messages/` — it reuses the same
+ * `ConversationSelector.list_messages()` and `MessageSerializer` — but is
+ * authorized on `lead:view` rather than `conversation:view`, so a sales
+ * operator with lead access can read it without broader conversation access.
+ * 404s when the lead has no linked conversation.
+ */
+export const leadConversationMessagesEndpoint = (id: string) =>
+  `${LEADS_ENDPOINT}${id}/conversation/messages/`;
 
 export const LEADS_LIST_KEY = 'leads-list';
 export const leadDetailKey = (id: string) => ['lead-detail', id];
+/** Deliberately separate from `conversationMessagesPrefixKey`: the same rows
+ * read through a differently authorized route, so the two must not share a
+ * cache entry. */
+export const leadConversationMessagesKey = (id: string) => ['lead-conversation-messages', id];
 
 export type LeadListQuery = ListQuery;
 export const buildLeadListParams = buildListParams;

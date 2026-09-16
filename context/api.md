@@ -114,6 +114,19 @@ top-level query param server-side, so the frontend sends it the same way — see
 how that's threaded through `useQueryParams`'s ad-hoc param pair rather than
 `buildListParams`.
 
+## One contract, two authorizations
+
+`GET /conversations/{id}/messages/` and `GET /leads/{id}/conversation/messages/`
+(backend 2026-09-16) are contract-identical — same `MessageSerializer`, same
+oldest-first ordering, same `?page=last` paging — and differ only in URL and
+permission: `conversation:view` versus `lead:view`. The backend split them on
+purpose, so an operator with lead access but no conversation access can still
+read the conversation a lead came from.
+
+The frontend mirrors that: one `useTranscriptQuery` (`src/hooks/`) parameterized
+by endpoint, one `ConversationTranscript` presenter, but **separate query keys**.
+Same rows under different authorization must not share a cache entry.
+
 ## Reference implementation
 
 `src/services/projects.ts` plus `src/app/(restricted)/projects/hooks/useProjectsList.ts`.

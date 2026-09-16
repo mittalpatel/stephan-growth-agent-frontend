@@ -79,17 +79,37 @@ Paging therefore runs **backwards**, which nothing else in this app does:
 the hook opens on `?page=last` (resolved server-side by DRF's
 `PageNumberPagination.last_page_strings`, so the newest page costs one
 request and no count round trip), and "Load earlier messages" walks down
-toward page 1. `olderPageParam` and `flattenTranscript` are exported from the
-hook and unit-tested directly — the page direction and the
-reverse-the-pages-not-the-rows ordering are the two things most likely to
-break silently. The component is keyed on the conversation id so switching
-rows discards accumulated pages rather than carrying them across.
+toward page 1. `olderPageParam` and `flattenTranscript` are unit-tested
+directly — the page direction and the reverse-the-pages-not-the-rows ordering
+are the two things most likely to break silently.
 
-This is the one consumer of `useAuthInfiniteQuery` (`src/hooks/`), added
-alongside it: `useAuthQuery`'s accumulating sibling, for reads whose pages
-stack in the UI. Ordinary lists must keep using `useQueryParams` so they stay
-linkable; this hook's page state is deliberately local, which a transcript
-inside a detail panel wants and a list screen does not.
+This is a consumer of `useAuthInfiniteQuery` (`src/hooks/`), added alongside
+it: `useAuthQuery`'s accumulating sibling, for reads whose pages stack in the
+UI. Ordinary lists must keep using `useQueryParams` so they stay linkable;
+this hook's page state is deliberately local, which a transcript inside a
+detail panel wants and a list screen does not.
+
+**Split into hook and presenter (2026-09-16).** The backend added
+`GET /leads/{id}/conversation/messages/`, a contract-identical read of the
+same rows under `lead:view` instead of `conversation:view`, so the lead detail
+sheet now shows a transcript too. Rather than duplicate ~180 lines of bubble
+rendering, the shared parts were extracted:
+
+- `src/hooks/useTranscriptQuery.ts` owns the backwards paging, the live-poll
+  cadence and the two pure helpers, parameterized by query key and endpoint.
+  `useConversationMessages(conversationId, { live })` is now a thin wrapper
+  over it that keeps its previous public signature, and it finally uses the
+  `conversationMessagesPrefixKey` helper instead of rebuilding that key inline.
+- `ConversationTranscript` moved to `src/components/common/` as a pure
+  presenter taking transcript state as props (see `context/components.md`). It
+  used to call the hook itself, which blocked reuse and broke this repo's
+  hook/presenter rule.
+
+`ConversationsListView` therefore calls `useConversationMessages` itself and
+spreads the result. It still keys the component on the conversation id, but
+for a different reason than before: the accumulated pages are already
+discarded by the query key changing with `activeId`, so the key now only
+resets the component's scroll position and pinned-to-bottom ref.
 
 **Markdown rendering (2026-09-11)**: an agent bubble's `m.content` goes
 through `src/components/common/Markdown.tsx` (same component the Test tab

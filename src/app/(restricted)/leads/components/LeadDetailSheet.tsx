@@ -1,9 +1,11 @@
 'use client';
 
-import type { ReactNode } from 'react';
-import { Mail, MessageSquare, Phone } from 'lucide-react';
+import { useState, type ReactNode } from 'react';
+import { ChevronDown, Mail, MessageSquare, Phone } from 'lucide-react';
 
 import { usePermissions } from '@/app/(restricted)/context/PermissionsContext';
+import { ConversationTranscript } from '@/components/common/ConversationTranscript';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import {
   Sheet,
   SheetContent,
@@ -21,15 +23,17 @@ import {
 import { StatusBadge } from '@/components/common/StatusBadge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { format, formatDate, formatDateTime } from '@/lib/i18n';
+import { cn } from '@/lib/utils';
 import { CONVERSATION_STATUS_VALUES } from '@/services/conversations';
 import { LEAD_STATUS_TRANSITIONS } from '@/services/leads';
 import { t } from '@/locales';
 import type { ConversationStatus } from '@/types/conversation';
-import type { LeadStatus } from '@/types/lead';
+import type { LeadConversationSummary, LeadStatus } from '@/types/lead';
 
 import { LEAD_STATUS_TONE } from '../leadStatusTone';
 import { QUALIFICATION_OUTCOME_TONE } from '../qualificationOutcomeTone';
 import { useLeadActions } from '../hooks/useLeadActions';
+import { useLeadConversationMessages } from '../hooks/useLeadConversationMessages';
 import { useLeadDetail } from '../hooks/useLeadDetail';
 
 type Props = Readonly<{ leadId: string | null; onOpenChange: (open: boolean) => void }>;
@@ -56,6 +60,67 @@ function Section({ title, children }: Readonly<{ title: string; children: ReactN
       </h3>
       {children}
     </section>
+  );
+}
+
+/**
+ * The conversation a lead came from: a one-line summary, plus the transcript
+ * behind a collapsible.
+ *
+ * Reading what the visitor actually said is the most useful context for
+ * deciding whether to call a lead, and `GET /leads/{id}/conversation/messages/`
+ * is authorized on `lead:view` precisely so an operator without
+ * `conversation:view` can still get it. Linking out to `/conversations` would
+ * fail for exactly that person, so the transcript renders here instead.
+ *
+ * Radix unmounts closed `CollapsibleContent`, so the hook only mounts on
+ * expand: the request is lazy for free, and nothing is fetched for a lead
+ * whose transcript is never opened.
+ */
+function LeadConversationSection({
+  leadId,
+  conversation,
+}: Readonly<{ leadId: string; conversation: LeadConversationSummary | null }>) {
+  const [open, setOpen] = useState(false);
+  const transcript = useLeadConversationMessages(leadId, open && conversation !== null);
+
+  if (!conversation) {
+    return <p className="text-muted-foreground text-sm">{copy.noConversation}</p>;
+  }
+
+  return (
+    <div className="space-y-2">
+      <div className="flex items-center gap-2 text-sm">
+        <MessageSquare className="text-muted-foreground size-4" aria-hidden />
+        <span>
+          {isConversationStatus(conversation.status)
+            ? t.conversations.status[conversation.status]
+            : conversation.status}
+        </span>
+        <span className="text-muted-foreground text-xs">
+          {format(copy.startedAt, { date: formatDate(conversation.created_at) })}
+        </span>
+      </div>
+
+      <Collapsible open={open} onOpenChange={setOpen}>
+        <CollapsibleTrigger className="text-primary-strong flex items-center gap-1 text-sm font-medium underline-offset-2 hover:underline">
+          <ChevronDown
+            className={cn('size-4 transition-transform', open && 'rotate-180')}
+            aria-hidden
+          />
+          {open ? copy.hideTranscript : copy.viewTranscript}
+        </CollapsibleTrigger>
+        <CollapsibleContent>
+          {/* The sheet already owns the page scroll, so the transcript gets a
+              bounded height of its own rather than the `flex-1` fill it uses
+              in the conversations pane. */}
+          <ConversationTranscript
+            {...transcript}
+            className="border-border mt-2 max-h-80 rounded-lg border px-3 py-3"
+          />
+        </CollapsibleContent>
+      </Collapsible>
+    </div>
   );
 }
 
@@ -221,21 +286,7 @@ export function LeadDetailSheet({ leadId, onOpenChange }: Props) {
             </Section>
 
             <Section title={copy.conversationHeading}>
-              {lead.conversation ? (
-                <div className="flex items-center gap-2 text-sm">
-                  <MessageSquare className="text-muted-foreground size-4" aria-hidden />
-                  <span>
-                    {isConversationStatus(lead.conversation.status)
-                      ? t.conversations.status[lead.conversation.status]
-                      : lead.conversation.status}
-                  </span>
-                  <span className="text-muted-foreground text-xs">
-                    {format(copy.startedAt, { date: formatDate(lead.conversation.created_at) })}
-                  </span>
-                </div>
-              ) : (
-                <p className="text-muted-foreground text-sm">{copy.noConversation}</p>
-              )}
+              <LeadConversationSection leadId={lead.id} conversation={lead.conversation} />
             </Section>
 
             <Section title={copy.consentNotice}>
