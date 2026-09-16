@@ -34,10 +34,22 @@ export function useConversationsList(agentId: string | null) {
     setSort,
     setFilter,
     getFilterValues,
+    getParam,
+    setParam,
     setPageNumber,
     setPageRowsLimit,
     clearAllFilters,
   } = useQueryParams(NAMESPACE);
+
+  // `has_escalation` (backend 2026-09-16) is the first boolean-typed filter
+  // in this codebase — it rides its own top-level query param rather than the
+  // generic `filter`/`filter_by` column contract, so it's stored via the
+  // ad-hoc `getParam`/`setParam` pair instead of `getFilterValues`/`setFilter`.
+  const hasEscalationParam = getParam('has_escalation');
+  const hasEscalation: 'true' | 'false' | undefined =
+    hasEscalationParam === 'true' || hasEscalationParam === 'false'
+      ? hasEscalationParam
+      : undefined;
 
   const listQueryInput = {
     page: queryParams.page,
@@ -48,6 +60,7 @@ export function useConversationsList(agentId: string | null) {
     sort_direction: queryParams.sort_direction,
     filter: queryParams.filter,
     filter_by: queryParams.filter_by,
+    has_escalation: hasEscalation,
   };
 
   const listQuery = useAuthQuery<ApiResponse<ConversationListItem[]>>(
@@ -72,15 +85,38 @@ export function useConversationsList(agentId: string | null) {
           label: t.conversations.status[value],
         })),
       },
+      {
+        key: 'has_escalation',
+        label: t.conversations.filters.hasEscalationLabel,
+        type: 'single_select',
+        options: [
+          { value: 'true', label: t.conversations.filters.hasEscalationYes },
+          { value: 'false', label: t.conversations.filters.hasEscalationNo },
+        ],
+      },
     ],
     []
   );
 
   const activeFilters = useMemo(
-    () =>
-      Object.fromEntries(filterConfigs.map((config) => [config.key, getFilterValues(config.key)])),
-    [filterConfigs, getFilterValues]
+    () => ({
+      ...Object.fromEntries(
+        filterConfigs
+          .filter((config) => config.key !== 'has_escalation')
+          .map((config) => [config.key, getFilterValues(config.key)])
+      ),
+      has_escalation: hasEscalation ? [hasEscalation] : [],
+    }),
+    [filterConfigs, getFilterValues, hasEscalation]
   );
+
+  function onFilterChange(column: string, values: string[]) {
+    if (column === 'has_escalation') {
+      setParam('has_escalation', values[0] ?? null);
+      return;
+    }
+    setFilter(column, values);
+  }
 
   const hasActiveFilters = Object.values(activeFilters).some((v) => v.length > 0);
 
@@ -107,7 +143,7 @@ export function useConversationsList(agentId: string | null) {
       setSort(queryParams.sort, queryParams.sort_direction === 'asc' ? 'desc' : 'asc'),
     filterConfigs,
     activeFilters,
-    onFilterChange: setFilter,
+    onFilterChange,
     hasActiveFilters,
     onResetFilters: clearAllFilters,
 

@@ -50,6 +50,14 @@ export const agentThemeDefaultsKey = (id: string) => ['agent-theme-defaults', id
 export const agentTestAskEndpoint = (id: string) => `${agentDraftEndpoint(id)}test/`;
 export const agentPublishEndpoint = (id: string) => `${agentDetailEndpoint(id)}publish/`;
 export const agentRollbackEndpoint = (id: string) => `${agentDetailEndpoint(id)}rollback/`;
+/**
+ * `GET /agents/{id}/versions/` (backend 2026-09-16) — the agent's full
+ * version history, most recent `version_number` first. Deliberately never
+ * cached server-side (`publish()`/`rollback()` don't invalidate the general
+ * agent caches), so this is fetched lazily rather than kept warm.
+ */
+export const agentVersionsEndpoint = (id: string) => `${agentDetailEndpoint(id)}versions/`;
+export const agentVersionsKey = (id: string) => ['agent-versions', id];
 
 export const agentDomainsEndpoint = (id: string) => `${agentDetailEndpoint(id)}domains/`;
 export const agentDomainDeleteEndpoint = (id: string, domainId: string) =>

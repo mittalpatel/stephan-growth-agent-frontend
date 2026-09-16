@@ -110,6 +110,12 @@ const localizedTextEntrySchema = z.object({
    * ._handle_unsupported_language`). This field just lets an operator
    * override that default per language. */
   unsupported_language_message: z.string(),
+  /** Optional (backend 2026-09-16): both fall back to a platform default
+   * (`DEFAULT_CONSENT_TEXT` / `DEFAULT_THANK_YOU_TEXT`) when blank, both at
+   * publish-check time and in `WidgetConfigView.lead_capture`, so leaving
+   * either empty is a legitimate choice rather than incomplete localization. */
+  consent_text: z.string(),
+  thank_you_text: z.string(),
 });
 
 /** Parses to a plain object, or fails with a single message on the field —

@@ -106,6 +106,14 @@ Field names here have drifted before (`display_name`/`allow_multiple` on the fro
 versus `label`/`type` on the wire) and rendered blank headings while both sides
 compiled. Hence the contract test.
 
+Not every filter a `?type=parameters` response lists rides the generic
+`filter`/`filter_by` contract above. `has_escalation` on `/conversations/` (backend
+2026-09-16, the first `"boolean"`-typed filter in this codebase) is read as its own
+top-level query param server-side, so the frontend sends it the same way — see
+`context/app/(restricted)/conversations/page.md`'s "List/detail/toolbar" section for
+how that's threaded through `useQueryParams`'s ad-hoc param pair rather than
+`buildListParams`.
+
 ## Reference implementation
 
 `src/services/projects.ts` plus `src/app/(restricted)/projects/hooks/useProjectsList.ts`.

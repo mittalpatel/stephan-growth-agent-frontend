@@ -307,6 +307,15 @@ export const agents = {
         'Shown when a visitor writes in a language this agent doesn\'t support and "Politely decline" is selected below. Leave blank to use the default message.',
       unsupportedLanguageMessagePlaceholder:
         "Sorry, I can't help in this language yet. Please try English.",
+      consentTextLabel: 'Lead capture consent text (optional)',
+      consentTextDescription:
+        'Shown above the widget lead form before a visitor submits their details. Leave blank to use the platform default.',
+      consentTextPlaceholder:
+        'By submitting this form, you agree to be contacted about your enquiry.',
+      thankYouTextLabel: 'Lead capture thank-you message (optional)',
+      thankYouTextDescription:
+        'Shown after a visitor submits the lead form. Leave blank to use the platform default.',
+      thankYouTextPlaceholder: "Thanks! We'll be in touch shortly.",
       themeTitle: 'Widget theme',
       themeColorsHeading: 'Colors',
       colorPrimaryLabel: 'Primary',
@@ -508,9 +517,18 @@ export const agents = {
         'The draft becomes the live version visitors interact with immediately.',
       historyTitle: 'Version history',
       versionLabel: 'Version {number}',
+      rollbackAction: 'Roll back',
       rollbackConfirmTitle: 'Roll back to this version?',
       rollbackConfirmDescription:
         'This publishes the selected version again, replacing whatever is currently live.',
+      rollbackPickerLabel: 'Version to restore',
+      rollbackPickerPlaceholder: 'Choose a version',
+      rollbackPickerErrorTitle: "Couldn't load version history",
+      rollbackPickerRetry: 'Try again',
+      rollbackPickerEmpty: 'No earlier versions to roll back to.',
+      rollbackVersionByEmail: 'Version {number}, published by {email}',
+      rollbackVersionUnpublished: 'Version {number}, published {date}',
+      rollbackVersionUnknownPublisher: 'an unknown operator',
     },
     test: {
       title: 'Test your agent',

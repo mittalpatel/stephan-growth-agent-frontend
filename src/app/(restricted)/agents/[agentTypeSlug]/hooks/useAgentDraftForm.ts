@@ -42,6 +42,8 @@ type LocalizedTextFormValues = Record<
     fallback_message: string;
     disclosure_text: string;
     unsupported_language_message: string;
+    consent_text: string;
+    thank_you_text: string;
   }
 >;
 
@@ -59,6 +61,8 @@ function buildLocalizedTextDefaults(
         fallback_message: existing[lang]?.fallback_message ?? '',
         disclosure_text: existing[lang]?.disclosure_text ?? '',
         unsupported_language_message: existing[lang]?.unsupported_language_message ?? '',
+        consent_text: existing[lang]?.consent_text ?? '',
+        thank_you_text: existing[lang]?.thank_you_text ?? '',
       },
     ])
   );

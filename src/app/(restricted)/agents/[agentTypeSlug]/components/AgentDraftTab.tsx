@@ -374,6 +374,38 @@ function DraftForm({
                   className={fieldInputCls}
                 />
               </div>
+              <div>
+                <label className={fieldLabelCls} htmlFor={`consent_text-${lang}`}>
+                  {t.agents.detail.draft.consentTextLabel}
+                </label>
+                <p className={fieldDescriptionCls}>
+                  {t.agents.detail.draft.consentTextDescription}
+                </p>
+                <textarea
+                  id={`consent_text-${lang}`}
+                  rows={2}
+                  placeholder={t.agents.detail.draft.consentTextPlaceholder}
+                  disabled={!canManage}
+                  {...register(`localized_text.${lang}.consent_text`)}
+                  className={fieldInputCls}
+                />
+              </div>
+              <div>
+                <label className={fieldLabelCls} htmlFor={`thank_you_text-${lang}`}>
+                  {t.agents.detail.draft.thankYouTextLabel}
+                </label>
+                <p className={fieldDescriptionCls}>
+                  {t.agents.detail.draft.thankYouTextDescription}
+                </p>
+                <textarea
+                  id={`thank_you_text-${lang}`}
+                  rows={2}
+                  placeholder={t.agents.detail.draft.thankYouTextPlaceholder}
+                  disabled={!canManage}
+                  {...register(`localized_text.${lang}.thank_you_text`)}
+                  className={fieldInputCls}
+                />
+              </div>
             </DraftSection>
           ))}
 

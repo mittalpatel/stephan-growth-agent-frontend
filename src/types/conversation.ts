@@ -18,7 +18,16 @@ export type MessageRole = 'visitor' | 'agent' | 'operator' | 'system';
 export type ConfidenceDecision = 'answered' | 'clarify' | 'fallback' | 'handoff';
 
 /** Mirrors `EscalationReason` in `apps/conversations/constants.py`. */
-export type EscalationReason = 'low_confidence' | 'explicit_request' | 'operator_initiated';
+export type EscalationReason =
+  | 'visitor_requested'
+  | 'low_confidence'
+  | 'sensitive_topic'
+  | 'self_harm_or_high_risk'
+  | 'abuse'
+  | 'tool_failure'
+  | 'unsupported_language'
+  | 'operator_initiated'
+  | 'operator_claimed';
 
 /** `POST /escalations/{id}/resolve/` response shape (backend 2026-09-15). */
 export type Escalation = {

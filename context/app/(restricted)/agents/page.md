@@ -263,9 +263,12 @@ reads `agentByTypeKey(slug)` (`useAgentDetail`), so after a publish the Publish
 tab kept showing the old live version and a draft that no longer existed. Update,
 publish and rollback now write their response (the full `AgentSerializer` body)
 into both keys and invalidate the draft and the list. Writing rather than
-refetching also avoids a backend bug found in the same live test: `publish()`/
-`rollback()` never clear the by-type server cache, so a plain reload can still
-show the old version until the backend fix lands (reported to the backend team).
+refetching also avoided a backend bug found in the same live test: `publish()`/
+`rollback()` never cleared the by-type server cache, so a plain reload could
+still show the old version. **Fixed backend-side 2026-09-16**: both now also
+call `invalidate_agent_caches()`; our `applyAgent` write-through above stays as
+belt-and-braces since it's still the fastest path to a consistent UI (no round
+trip needed).
 
 ### Active tab lives in the URL (2026-09-15)
 
@@ -330,10 +333,9 @@ hidden by collapsing a section still submits correctly.
   published version is live even while the agent is paused. The draft card
   links to the Test tab ("Test first") and, with no draft, to the Draft tab;
   `AgentPublishTab` takes `onNavigate` from `AgentDetailView`'s `requestTab`
-  for this. **Known and left as-is by request:** the Rollback card still passes
-  the currently published version's id, so it can only re-publish what is
-  already live. No read path lists older versions; a real history needs
-  `GET /agents/{id}/versions/` from the backend.
+  for this. The Rollback card originally passed the currently published
+  version's id, so it could only re-publish what was already live; see
+  "Real rollback version picker" below for the 2026-09-16 fix.
 - **Setup checklist**: a "{done} of {total} done" count with a progress bar,
   numbered steps, and only the next unfinished step gets the filled button.
 - **Overview**: an all-zero metrics row gets a one-line "no activity yet" note.
@@ -558,10 +560,8 @@ of validation already tracked here.
   it from the label or trial-and-error the widget theme.
 
 - **Publish** — draft/published version numbers, `POST .../publish/` (gated
-  `agent:execute`, confirmed via `AlertDialog`), and a one-entry "version
-  history" limited to rolling back to the currently published version
-  (`POST .../rollback/`). The backend has no version-list endpoint, so a full
-  history browser isn't possible yet.
+  `agent:execute`, confirmed via `AlertDialog`), and rollback (`POST
+.../rollback/`) via a real version picker (see below).
 
   **Publish error codes (2026-09-10 sync)**: `useAgentActions`'s
   `publishMutation.onError` branches on `getErrorCode(error)`
@@ -659,6 +659,35 @@ away — so `bindQualificationError()` hand-binds that message onto
 `QUALIFIABLE_LEAD_FIELDS` (`name`, `phone`, `interest_note`) is mirrored in
 `src/lib/constants/agentTheme.ts`. `email` is absent by design: every lead
 already has one, so scoring it would hand out free points to everybody.
+
+### Real rollback version picker (2026-09-16)
+
+`GET /agents/{id}/versions/` (`AgentVersionListItemSerializer`, most recent
+`version_number` first, never cached server-side) replaced the placeholder
+Rollback button that could only re-publish the version already live. New
+`useAgentVersions(agentId, enabled)` fetches lazily — only once the rollback
+`AlertDialog` opens, not alongside the agent detail — since the list is
+unbounded and the endpoint is deliberately never cached, mirroring the
+backend's own reasoning for not caching it. `AgentPublishTab` renders a
+shadcn `Select` inside the confirm dialog, excluding the currently published
+version from the choices, with all four states designed: a `Skeleton` while
+loading, an inline retry on error, "No earlier versions to roll back to" when
+the filtered list is empty, and each populated row labeled with its publisher
+email (falling back to its created date when never published).
+
+### Lead-capture consent and thank-you text (2026-09-16)
+
+The backend added two optional `LocalizedTextKey`s — `consent_text` (shown
+above the widget's lead form) and `thank_you_text` (shown after a successful
+submission) — both published into `WidgetConfigView.lead_capture` and both
+falling back to a platform default when blank. Wired in following the exact
+`unsupported_language_message` precedent: added to `LocalizedText`
+(`src/types/agent.ts`), `localizedTextEntrySchema`
+(`src/lib/schemas/agent.ts`), `LocalizedTextFormValues`/
+`buildLocalizedTextDefaults` (`useAgentDraftForm.ts`), and two more
+`<textarea>` blocks per language in `AgentDraftTab.tsx`'s "Messages in
+{LANG}" section. `useAgentDraftForm.submit` already forwards `values
+.localized_text` wholesale, so no field whitelist needed updating.
 
 ## Nav and route registration
 

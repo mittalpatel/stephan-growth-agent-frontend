@@ -44,7 +44,7 @@ const NAMESPACE_KEYS = [
 // this namespace but are not part of the typed `QueryState` above. List them here
 // so `clearAllFilters` purges them too — a key missing from this array survives a
 // reset, which looks like the reset button being broken.
-const CUSTOM_PARAM_KEYS: readonly string[] = [];
+const CUSTOM_PARAM_KEYS: readonly string[] = ['has_escalation'];
 
 // ── Hook ──────────────────────────────────────────────────────────────────────
 

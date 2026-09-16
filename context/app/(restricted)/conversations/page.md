@@ -40,10 +40,19 @@ search field (`ConversationSelector` declares none) and its `status`
 `src/services/conversations.ts` — `AgentConversationListView` never wires up
 a `?type=parameters` route despite its selector supporting one, the same gap
 `apps.knowledge`'s source list has (see that page's doc). `date_from`/
-`date_to`/`has_escalation` (which the selector does support, via raw
-`request.GET.get()` reads rather than the generic filter contract) are not
-wired into the toolbar — out of scope for this pass; add them as plain query
-params (not through `filter`/`filter_by`) if a future pass needs them.
+`date_to` are still not wired into the toolbar.
+
+`has_escalation` (2026-09-16) **is** wired in, but not through the generic
+`filter`/`filter_by` contract every `multi_select` `FilterConfig` uses —
+`ConversationSelector._apply_list_filters` reads it as its own top-level
+`request.GET.get("has_escalation")`, the first `"boolean"`-typed filter in
+this codebase. It rides `useQueryParams`'s ad-hoc `getParam`/`setParam` pair
+instead (added to `CUSTOM_PARAM_KEYS` so `clearAllFilters` purges it too), and
+`ConversationListQuery.has_escalation` is appended to the query string
+directly in `conversationsListUrl`, bypassing `buildListParams`. The
+`FilterToolbar` UI still treats it as an ordinary `single_select`
+`FilterConfig` with `true`/`false` options — only the storage layer differs,
+via `useConversationsList`'s own `onFilterChange` branching on the column key.
 
 Selecting a row loads that conversation's detail (`useConversationDetail`)
 into the side panel; messages render as per-role bubbles (see "Human handoff"
@@ -202,11 +211,23 @@ departure and expires presence on a ~60s TTL, so a stale "is viewing" after a
 crashed tab clears itself; that is accepted, not a client bug. Presence shows
 other operators only.
 
-**Escalation history.** `ConversationDetailSerializer.escalations` now
-returns every escalation this conversation has had (`{id, reason, created_at,
+**Escalation history.** `ConversationDetailSerializer.escalations` returns
+every escalation this conversation has had (`{id, reason, created_at,
 resolved_at}`), and `active_escalation` on the list/detail row surfaces the
-current unresolved one — see `types/conversation.ts`. The UI does not yet
-surface the reason anywhere; that is a frontend follow-up, not a backend gap.
+current unresolved one — see `types/conversation.ts`. As of 2026-09-16 the UI
+surfaces both: the detail header shows a `warning`-toned `StatusBadge` chip
+for the active escalation's reason next to the status badge, and the right
+panel has an "Escalation history" section listing every escalation with its
+reason and either its resolved time or "Still open". `EscalationReason` was
+also corrected to match the backend's actual enum — the type had drifted to
+`'low_confidence' | 'explicit_request' | 'operator_initiated'`, missing six
+real values (`visitor_requested`, `sensitive_topic`,
+`self_harm_or_high_risk`, `abuse`, `tool_failure`, `unsupported_language`)
+and carrying one, `explicit_request`, that was never a real backend value.
+`operator_claimed` (backend 2026-09-15 review follow-up, `claim()` always
+leaving an open `Escalation` behind) is new. Every reason has locale copy
+under `t.conversations.detail.escalationReason`, with a neutral fallback for
+anything unrecognized rather than rendering the raw enum value.
 
 ## Assign operator
 

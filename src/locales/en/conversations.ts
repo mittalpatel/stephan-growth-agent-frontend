@@ -21,6 +21,9 @@ export const conversations = {
   },
   filters: {
     statusLabel: 'Status',
+    hasEscalationLabel: 'Escalated',
+    hasEscalationYes: 'Has an escalation',
+    hasEscalationNo: 'No escalation',
   },
   list: {
     errorTitle: "Couldn't load conversations",
@@ -62,6 +65,23 @@ export const conversations = {
       fallback: 'Fallback',
       handoff: 'Handoff',
     },
+    escalatedFor: 'Escalated: {reason}',
+    escalationsHeading: 'Escalation history',
+    noEscalations: 'This conversation has never been escalated.',
+    escalationResolvedAt: 'Resolved {date}',
+    escalationOpen: 'Still open',
+    escalationReason: {
+      visitor_requested: 'The visitor asked for a human',
+      low_confidence: 'The AI had low confidence in its answer',
+      sensitive_topic: 'A sensitive topic was raised',
+      self_harm_or_high_risk: 'A self-harm or high-risk message was detected',
+      abuse: 'Abusive language was detected',
+      tool_failure: 'A tool call failed',
+      unsupported_language: 'The visitor wrote in an unsupported language',
+      operator_initiated: 'An operator replied without an escalation',
+      operator_claimed: 'An operator took over the conversation',
+    },
+    escalationReasonUnknown: 'Unknown reason',
   },
   reply: {
     label: 'Reply as a human',

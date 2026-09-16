@@ -31,6 +31,12 @@ export type LocalizedText = {
   unsupported_language_message?: string;
   human_requested_confirmation?: string;
   information_email_sent_confirmation?: string;
+  /** Consent copy shown above the widget's lead-capture form, and the
+   * message shown after a successful submission (backend 2026-09-16,
+   * `WidgetConfigView.lead_capture`). Both fall back to a platform default
+   * when blank, so an empty value is a legitimate choice, not a gap. */
+  consent_text?: string;
+  thank_you_text?: string;
 };
 
 /**
@@ -215,6 +221,23 @@ export type AgentDraftUpdateInput = Partial<{
 
 /** Body for `POST /agents/{id}/rollback/`. */
 export type AgentRollbackInput = { target_version_id: string };
+
+/**
+ * `GET /agents/{id}/versions/` row shape (backend 2026-09-16,
+ * `AgentVersionListItemSerializer`) — separate from `AgentVersionSummary`
+ * above, which is only ever the embedded `published_version`/`draft_version`
+ * pointer on `Agent`. Powers the rollback picker: `AgentVersionSummary` alone
+ * never named an earlier version's id.
+ */
+export type AgentVersionListItem = {
+  id: string;
+  version_number: number;
+  status: AgentVersionStatus;
+  display_name: string;
+  created_at: string;
+  published_at: string | null;
+  published_by_email: string | null;
+};
 
 /** Body for `POST /agents/{id}/draft/test/`. */
 export type AgentTestAskInput = { question: string };

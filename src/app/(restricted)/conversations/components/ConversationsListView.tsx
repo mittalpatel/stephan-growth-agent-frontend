@@ -511,6 +511,17 @@ export function ConversationsListView({ agentId: pinnedAgentId }: Props = {}) {
                               {conversation.language}
                             </span>
                           )}
+                          {conversation.active_escalation && (
+                            <StatusBadge
+                              label={format(t.conversations.detail.escalatedFor, {
+                                reason:
+                                  t.conversations.detail.escalationReason[
+                                    conversation.active_escalation.reason
+                                  ] ?? t.conversations.detail.escalationReasonUnknown,
+                              })}
+                              tone="warning"
+                            />
+                          )}
                         </div>
                         <p className="text-muted-foreground text-xs">
                           {format(t.conversations.detail.startedAt, {
@@ -578,6 +589,34 @@ export function ConversationsListView({ agentId: pinnedAgentId }: Props = {}) {
                     >
                       {conversation.summary || t.conversations.detail.noSummary}
                     </p>
+                  </section>
+                  <section className="border-border flex flex-col gap-2 border-t pt-5">
+                    <h3 className="text-muted-foreground text-xs font-semibold tracking-wider uppercase">
+                      {t.conversations.detail.escalationsHeading}
+                    </h3>
+                    {conversation.escalations.length === 0 ? (
+                      <p className="text-muted-foreground text-sm italic">
+                        {t.conversations.detail.noEscalations}
+                      </p>
+                    ) : (
+                      <ul className="flex flex-col gap-2">
+                        {conversation.escalations.map((escalation) => (
+                          <li key={escalation.id} className="text-sm">
+                            <p className="text-foreground">
+                              {t.conversations.detail.escalationReason[escalation.reason] ??
+                                t.conversations.detail.escalationReasonUnknown}
+                            </p>
+                            <p className="text-muted-foreground text-xs">
+                              {escalation.resolved_at
+                                ? format(t.conversations.detail.escalationResolvedAt, {
+                                    date: formatDateTime(escalation.resolved_at),
+                                  })
+                                : t.conversations.detail.escalationOpen}
+                            </p>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
                   </section>
                   {canManage && (
                     <section className="border-border flex flex-col gap-4 border-t pt-5">

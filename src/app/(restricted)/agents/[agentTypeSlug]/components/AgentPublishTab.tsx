@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import { FlaskConical, Globe, PencilLine, Rocket } from 'lucide-react';
 
 import { usePermissions } from '@/app/(restricted)/context/PermissionsContext';
@@ -16,12 +17,21 @@ import {
 } from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Skeleton } from '@/components/ui/skeleton';
 import { StatusBadge } from '@/components/common/StatusBadge';
-import { format, formatDateTime } from '@/lib/i18n';
+import { format, formatDate, formatDateTime } from '@/lib/i18n';
 import { t } from '@/locales';
 import type { Agent } from '@/types/agent';
 
 import { useAgentActions } from '../hooks/useAgentActions';
+import { useAgentVersions } from '../hooks/useAgentVersions';
 
 type Props = Readonly<{ agent: Agent; onNavigate: (tab: string) => void }>;
 
@@ -33,6 +43,56 @@ export function AgentPublishTab({ agent, onNavigate }: Props) {
   const { publish, isPublishing, rollback, isRollingBack } = useAgentActions(agent.id);
   const publishedVersion = agent.published_version;
   const draftVersion = agent.draft_version;
+
+  // Fetched only once the rollback dialog is opened: `GET /versions/` is
+  // unbounded and never cached server-side, so there's no reason to pay for
+  // it before the picker is actually in view.
+  const [rollbackDialogOpen, setRollbackDialogOpen] = useState(false);
+  const [targetVersionId, setTargetVersionId] = useState<string | null>(null);
+  const versions = useAgentVersions(agent.id, rollbackDialogOpen);
+  const rollbackChoices = versions.versions.filter((v) => v.id !== publishedVersion?.id);
+
+  function renderVersionPicker() {
+    if (versions.isLoading) return <Skeleton className="h-9 w-full" />;
+
+    if (versions.isError) {
+      return (
+        <div className="flex items-center justify-between gap-2">
+          <p className="text-destructive text-sm">{copy.rollbackPickerErrorTitle}</p>
+          <Button variant="outline" size="sm" onClick={() => void versions.refetch()}>
+            {copy.rollbackPickerRetry}
+          </Button>
+        </div>
+      );
+    }
+
+    if (rollbackChoices.length === 0) {
+      return <p className="text-muted-foreground text-sm">{copy.rollbackPickerEmpty}</p>;
+    }
+
+    return (
+      <Select value={targetVersionId ?? ''} onValueChange={setTargetVersionId}>
+        <SelectTrigger className="w-full">
+          <SelectValue placeholder={copy.rollbackPickerPlaceholder} />
+        </SelectTrigger>
+        <SelectContent>
+          {rollbackChoices.map((version) => (
+            <SelectItem key={version.id} value={version.id}>
+              {version.published_by_email
+                ? format(copy.rollbackVersionByEmail, {
+                    number: version.version_number,
+                    email: version.published_by_email,
+                  })
+                : format(copy.rollbackVersionUnpublished, {
+                    number: version.version_number,
+                    date: formatDate(version.created_at),
+                  })}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -144,7 +204,13 @@ export function AgentPublishTab({ agent, onNavigate }: Props) {
                   number: publishedVersion.version_number,
                 })}
               </p>
-              <AlertDialog>
+              <AlertDialog
+                open={rollbackDialogOpen}
+                onOpenChange={(open) => {
+                  setRollbackDialogOpen(open);
+                  if (!open) setTargetVersionId(null);
+                }}
+              >
                 <AlertDialogTrigger asChild>
                   <Button variant="outline" disabled={isRollingBack}>
                     {t.agents.actions.rollback}
@@ -157,10 +223,19 @@ export function AgentPublishTab({ agent, onNavigate }: Props) {
                       {copy.rollbackConfirmDescription}
                     </AlertDialogDescription>
                   </AlertDialogHeader>
+
+                  <div className="space-y-2">
+                    <p className="text-sm font-medium">{copy.rollbackPickerLabel}</p>
+                    {renderVersionPicker()}
+                  </div>
+
                   <AlertDialogFooter>
                     <AlertDialogCancel>{t.agents.detail.overview.cancel}</AlertDialogCancel>
-                    <AlertDialogAction onClick={() => rollback(publishedVersion.id)}>
-                      {t.agents.actions.rollback}
+                    <AlertDialogAction
+                      disabled={!targetVersionId}
+                      onClick={() => targetVersionId && rollback(targetVersionId)}
+                    >
+                      {copy.rollbackAction}
                     </AlertDialogAction>
                   </AlertDialogFooter>
                 </AlertDialogContent>

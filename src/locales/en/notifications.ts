@@ -26,6 +26,7 @@ export const notifications = {
     new_device_login: 'Sign-in from a new device',
     invite_accepted: 'Invite accepted',
     project_shared: 'A project was shared with you',
+    conversation_assigned: 'A conversation was assigned to you',
   },
 
   /**

@@ -67,7 +67,8 @@ export type NotificationEventType =
   | 'organization_added'
   | 'new_device_login'
   | 'invite_accepted'
-  | 'project_shared';
+  | 'project_shared'
+  | 'conversation_assigned';
 
 /** Mirrors `apps.notifications.constants.Channel` exactly. */
 export type NotificationChannel = 'email' | 'in_app';

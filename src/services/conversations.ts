@@ -88,7 +88,14 @@ export const analyticsSummaryKey = (agentId: string, range: string) => [
   range,
 ];
 
-export type ConversationListQuery = ListQuery;
+/**
+ * `has_escalation` (backend 2026-09-16) is read as its own top-level query
+ * param by `ConversationSelector._apply_list_filters` — it is the first
+ * `"boolean"`-typed filter in this codebase and is **not** routed through the
+ * generic `filter`/`filter_by` column contract the way every `multi_select`
+ * filter is, so it can't be folded into `buildListParams`.
+ */
+export type ConversationListQuery = ListQuery & { has_escalation?: 'true' | 'false' };
 export const buildConversationListParams = buildListParams;
 
 /** `agentId: null` reads the org-wide listing instead of one agent's. */
@@ -96,6 +103,9 @@ export function conversationsListUrl(agentId: string | null, query: Conversation
   const search = new URLSearchParams(
     Object.entries(buildConversationListParams(query)).map(([key, value]) => [key, String(value)])
   );
+  if (query.has_escalation) {
+    search.set('has_escalation', query.has_escalation);
+  }
   const base = agentId === null ? CONVERSATIONS_ENDPOINT : agentConversationsEndpoint(agentId);
   return `${base}?${search.toString()}`;
 }
