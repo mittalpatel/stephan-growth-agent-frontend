@@ -448,12 +448,29 @@ export const agents = {
       configPlaceholder: '{}',
       configMustBeObject: 'Enter a valid JSON object, e.g. {}',
 
+      handoffHeading: 'Handoff',
+      handoffDescription:
+        'Phrases that hand a conversation to a human immediately, before the agent replies. This is separate from the trigger phrases under Lead qualification below, which offer the contact-details form instead.',
+      humanHandoffEnabledLabel: 'Allow handoff to a human',
+      humanHandoffEnabledDescription:
+        'When off, the agent never hands off on its own and the trigger phrases below are ignored. Safety escalations and operators claiming a conversation still work.',
+      leadCaptureEnabledLabel: 'Allow lead capture',
+      leadCaptureEnabledDescription:
+        'When off, the agent never offers the contact-details form and the trigger phrases below are ignored.',
+      sendInformationEmailEnabledLabel: 'Allow information emails',
+      sendInformationEmailEnabledDescription:
+        'When off, the agent cannot email visitors the information they asked for.',
+      handoffTriggerPhrasesLabel: 'Trigger phrases',
+      handoffTriggerPhrasesDescription:
+        'Add none and this handoff never fires on its own; the agent can still hand off when a visitor explicitly asks for a human.',
+      handoffTriggerPhrasePlaceholder: 'cancel my subscription',
+
       qualificationHeading: 'Lead qualification',
       qualificationDescription:
         'Rules that decide whether a captured lead counts as qualified, partial, or unqualified. Leave everything blank and every lead stays unqualified.',
       qualificationTriggerPhrasesLabel: 'Trigger phrases',
       qualificationTriggerPhrasesDescription:
-        'The agent only offers to collect contact details after a visitor message contains one of these. Add none and it can offer at any point.',
+        'When a visitor message contains one of these, the contact-details form is always offered. Add none and the agent decides when to offer it.',
       qualificationTriggerPhrasePlaceholder: 'request a quote',
       qualificationRequiredFieldsLabel: 'Required fields',
       qualificationRequiredFieldsDescription:

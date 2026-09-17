@@ -3,6 +3,7 @@ import { getToken } from 'next-auth/jwt';
 import axios from 'axios';
 
 import { persistSession } from '@/lib/auth/sessionCookie';
+import { serverBackendOrigin } from '@/lib/serverBackendOrigin';
 
 // Refreshes the backend access token server-side. The refresh token lives only
 // in the encrypted next-auth JWT cookie (token.backendRefreshToken) and is never
@@ -22,7 +23,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'No refresh token' }, { status: 401 });
   }
 
-  const url = `${process.env.NEXT_PUBLIC_BACKEND_API}api/v1/auth/token/refresh/`;
+  const url = `${serverBackendOrigin().replace(/\/*$/, '/')}api/v1/auth/token/refresh/`;
   try {
     const { data } = await axios.post(url, { refresh });
 

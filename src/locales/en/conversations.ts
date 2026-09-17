@@ -80,6 +80,7 @@ export const conversations = {
       unsupported_language: 'The visitor wrote in an unsupported language',
       operator_initiated: 'An operator replied without an escalation',
       operator_claimed: 'An operator took over the conversation',
+      handoff_trigger_matched: 'A configured handoff trigger phrase was matched',
     },
     escalationReasonUnknown: 'Unknown reason',
   },

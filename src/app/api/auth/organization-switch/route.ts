@@ -3,6 +3,7 @@ import { getToken } from 'next-auth/jwt';
 import axios from 'axios';
 
 import { persistSession } from '@/lib/auth/sessionCookie';
+import { serverBackendOrigin } from '@/lib/serverBackendOrigin';
 
 /**
  * Switch the session's active organization, server-side.
@@ -82,9 +83,6 @@ export async function POST(request: NextRequest) {
   }
 }
 
-const BACKEND_ORIGIN = (process.env.NEXT_PUBLIC_BACKEND_API ?? 'http://localhost:8000/').replace(
-  /\/*$/,
-  '/'
-);
+const BACKEND_ORIGIN = serverBackendOrigin().replace(/\/*$/, '/');
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;

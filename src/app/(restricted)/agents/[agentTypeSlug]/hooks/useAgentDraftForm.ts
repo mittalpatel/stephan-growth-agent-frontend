@@ -144,6 +144,10 @@ function behaviorFieldsFromConfig(behavior: BehaviorConfig & Record<string, unkn
   delete rest.max_history_messages;
   delete rest.moderation_self_harm_categories;
   delete rest.unsupported_language_behavior;
+  delete rest.handoff_trigger_phrases;
+  delete rest.lead_capture_enabled;
+  delete rest.human_handoff_enabled;
+  delete rest.send_information_email_enabled;
   delete rest.suggested_questions;
   delete rest.prohibited_claims;
   return {
@@ -152,6 +156,10 @@ function behaviorFieldsFromConfig(behavior: BehaviorConfig & Record<string, unkn
     max_history_messages: behavior.max_history_messages ?? '',
     moderation_self_harm_categories: toRows(behavior.moderation_self_harm_categories),
     unsupported_language_behavior: behavior.unsupported_language_behavior ?? '',
+    handoff_trigger_phrases: toRows(behavior.handoff_trigger_phrases),
+    lead_capture_enabled: behavior.lead_capture_enabled ?? true,
+    human_handoff_enabled: behavior.human_handoff_enabled ?? true,
+    send_information_email_enabled: behavior.send_information_email_enabled ?? true,
     suggested_questions: toRows(behavior.suggested_questions),
     prohibited_claims: toRows(behavior.prohibited_claims),
     behavior_config_advanced: JSON.stringify(rest, null, 2),
@@ -223,6 +231,13 @@ function buildBehaviorRuntimeFieldsPayload(
   if (values.unsupported_language_behavior) {
     fields.unsupported_language_behavior = values.unsupported_language_behavior;
   }
+  const handoffTriggerPhrases = fromRows(values.handoff_trigger_phrases);
+  if (handoffTriggerPhrases.length) fields.handoff_trigger_phrases = handoffTriggerPhrases;
+  // Tool toggles are always sent explicitly, so switching one back on persists
+  // `true` over a stored `false` (the backend merges by key presence).
+  fields.lead_capture_enabled = values.lead_capture_enabled;
+  fields.human_handoff_enabled = values.human_handoff_enabled;
+  fields.send_information_email_enabled = values.send_information_email_enabled;
   return fields;
 }
 

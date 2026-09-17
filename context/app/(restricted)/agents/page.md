@@ -467,6 +467,35 @@ of validation already tracked here.
   the keys the structured fields above own so the two representations never
   fight over the same data.
 
+  **Handoff trigger phrases** (backend 2026-09-17): `behavior_config
+.handoff_trigger_phrases` is validated the same way as
+  `moderation_self_harm_categories` (same `stringListField()`, no client-side
+  ceiling), but renders in its own **"Handoff"** `DraftSection`, not folded into
+  "Behavior & Runtime" — it's a list of phrases that, when a visitor's own message
+  contains one, deterministically hands the conversation off to a human before any
+  moderation/retrieval/completion call, which is a big enough behavior change to
+  deserve its own heading rather than reading as another answer-tuning knob. It is
+  easy to confuse with `qualification_config.trigger_phrases` ("Trigger phrases"
+  under "Lead qualification", the very next section) since both are phrase lists
+  with the same field label, but they gate unrelated things: this one hands off to
+  a human, the qualification one forces the lead-capture form suggestion on a
+  match (backend `ce3631b`; before that it only vetoed the model's own call). The "Handoff" section's own heading/description and the qualification
+  section's heading/description are what actually disambiguate them — an operator
+  scanning section titles sees "Handoff" and "Lead qualification" as two different
+  concerns before ever reading either field's own copy. A match produces an
+  escalation with `reason=handoff_trigger_matched` — see
+  `context/app/(restricted)/conversations/page.md`'s escalation-reasons coverage.
+
+  **Tool toggles** (backend `467f1d0`): `behavior_config.lead_capture_enabled`,
+  `human_handoff_enabled`, `send_information_email_enabled` render as
+  `RHFSwitchField`s: handoff at the top of "Handoff", lead capture at the top of
+  "Lead qualification", information email at the end of "Behavior & Runtime".
+  Unset on the server means enabled, so the form defaults each to `true`, and
+  `buildBehaviorRuntimeFieldsPayload` always sends all three explicitly so
+  re-enabling persists over a stored `false`. When handoff or lead capture is off,
+  that section's trigger-phrase list is disabled (watched via `useWatch`), since
+  the backend ignores those phrases too.
+
   **Contrast checking**: `src/lib/contrast.ts` ports
   `ThemeValidationService.check_contrast`'s WCAG AA math client-side for
   instant inline feedback as colors are edited (no network call per

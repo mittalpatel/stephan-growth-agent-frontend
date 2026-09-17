@@ -2,6 +2,8 @@ import { NextResponse, type NextRequest } from 'next/server';
 import { getToken } from 'next-auth/jwt';
 import axios from 'axios';
 
+import { serverBackendOrigin } from '@/lib/serverBackendOrigin';
+
 /**
  * Mint a short-lived, single-use WebSocket ticket, server-side only.
  *
@@ -43,7 +45,4 @@ export async function POST(request: NextRequest) {
   }
 }
 
-const BACKEND_ORIGIN = (process.env.NEXT_PUBLIC_BACKEND_API ?? 'http://localhost:8000/').replace(
-  /\/*$/,
-  '/'
-);
+const BACKEND_ORIGIN = serverBackendOrigin().replace(/\/*$/, '/');

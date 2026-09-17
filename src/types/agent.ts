@@ -87,6 +87,19 @@ export type BehaviorConfig = {
   unsupported_language_behavior?: string;
   suggested_questions?: string[];
   prohibited_claims?: string[];
+  /** Backend 2026-09-17: a deterministic, proactive handoff to a human whenever a
+   * visitor message contains one of these — checked before any moderation/
+   * retrieval/completion call. Additive only; never gates the visitor's own
+   * explicit "talk to a human" request. Distinct from `qualification_config
+   * .trigger_phrases`, which forces the lead-capture form suggestion. */
+  handoff_trigger_phrases?: string[];
+  /** Backend 2026-09-17 per-agent tool toggles. Unset means enabled. Turning
+   * handoff off also silences `handoff_trigger_phrases`; turning lead capture
+   * off also silences the forced `qualification_config.trigger_phrases`
+   * suggestion. Safety escalations and operator claims are unaffected. */
+  lead_capture_enabled?: boolean;
+  human_handoff_enabled?: boolean;
+  send_information_email_enabled?: boolean;
 };
 
 /** The `Lead` fields a qualification rule may reference. Mirrors

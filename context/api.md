@@ -22,6 +22,27 @@ interceptors at all, because the absence is the whole point.
 Both send `Accept-Language` from `DEFAULT_LANGUAGE`, so backend messages come back
 translated.
 
+## Server-side backend calls — `src/lib/serverBackendOrigin.ts`
+
+Every route handler and `authOptions.ts`'s `authorize()` that calls the backend
+directly (i.e. everything in the table above plus `refresh`, `logout`,
+`organization-switch`, `impersonation-start/end`, `change-password`, the realtime
+ticket route, and `getMyOrganizations`/`getMyPermissions`) reads the backend origin
+through `serverBackendOrigin()`, not `process.env.NEXT_PUBLIC_BACKEND_API` directly.
+
+It prefers `BACKEND_INTERNAL_API` when set, falling back to
+`NEXT_PUBLIC_BACKEND_API` otherwise — unset anywhere, behavior is unchanged. This
+exists for hosts where the Next.js _server_ can't route back to its own public
+domain (a NAT hairpin): a server-side call using the public URL hangs until a
+reverse proxy kills it, which surfaces as a stuck sign-in/sign-up spinner.
+`BACKEND_INTERNAL_API` lets that one host point server-to-server calls at a
+local/internal address (e.g. `http://127.0.0.1:8000/`) instead.
+
+The browser has no such loopback problem and always uses the public URL —
+`axiosPublic.ts`, `useRealtimeSocket.ts`'s WebSocket URL, and the CSP/image config
+in `backendOrigins.ts` are deliberately untouched by this and keep reading
+`NEXT_PUBLIC_BACKEND_API` directly.
+
 ## The envelope
 
 Every `/api/v1/*` endpoint answers with the same shape:

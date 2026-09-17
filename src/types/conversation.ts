@@ -27,7 +27,8 @@ export type EscalationReason =
   | 'tool_failure'
   | 'unsupported_language'
   | 'operator_initiated'
-  | 'operator_claimed';
+  | 'operator_claimed'
+  | 'handoff_trigger_matched';
 
 /** `POST /escalations/{id}/resolve/` response shape (backend 2026-09-15). */
 export type Escalation = {

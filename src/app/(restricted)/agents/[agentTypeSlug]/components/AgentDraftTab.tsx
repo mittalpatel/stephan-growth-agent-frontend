@@ -257,6 +257,8 @@ function DraftForm({
 
   useBeforeUnloadWarning(isDirty);
   const watchedColors = useWatch({ control: form.control });
+  const humanHandoffEnabled = watchedColors.human_handoff_enabled !== false;
+  const leadCaptureEnabled = watchedColors.lead_capture_enabled !== false;
   const colorsByKey = Object.fromEntries(
     THEME_COLOR_FIELD_KEYS.map((key) => [
       key,
@@ -550,13 +552,46 @@ function DraftForm({
                 maxItems={20}
                 className="mt-4"
               />
+              <RHFSwitchField<AgentDraftFormValues>
+                name="send_information_email_enabled"
+                label={t.agents.detail.draft.sendInformationEmailEnabledLabel}
+                description={t.agents.detail.draft.sendInformationEmailEnabledDescription}
+                disabled={!canManage}
+              />
             </div>
+          </DraftSection>
+
+          <DraftSection title={t.agents.detail.draft.handoffHeading} defaultOpen={false}>
+            <p className="text-muted-foreground -mt-2 text-xs">
+              {t.agents.detail.draft.handoffDescription}
+            </p>
+            <RHFSwitchField<AgentDraftFormValues>
+              name="human_handoff_enabled"
+              label={t.agents.detail.draft.humanHandoffEnabledLabel}
+              description={t.agents.detail.draft.humanHandoffEnabledDescription}
+              disabled={!canManage}
+            />
+            <RHFStringListField<AgentDraftFormValues>
+              name="handoff_trigger_phrases"
+              label={t.agents.detail.draft.handoffTriggerPhrasesLabel}
+              description={t.agents.detail.draft.handoffTriggerPhrasesDescription}
+              itemPlaceholder={t.agents.detail.draft.handoffTriggerPhrasePlaceholder}
+              addLabel={t.agents.detail.draft.addListItem}
+              removeLabel={t.agents.detail.draft.removeListItem}
+              disabled={!canManage || !humanHandoffEnabled}
+            />
           </DraftSection>
 
           <DraftSection title={t.agents.detail.draft.qualificationHeading} defaultOpen={false}>
             <p className="text-muted-foreground -mt-2 text-xs">
               {t.agents.detail.draft.qualificationDescription}
             </p>
+            <RHFSwitchField<AgentDraftFormValues>
+              name="lead_capture_enabled"
+              label={t.agents.detail.draft.leadCaptureEnabledLabel}
+              description={t.agents.detail.draft.leadCaptureEnabledDescription}
+              disabled={!canManage}
+            />
             <RHFStringListField<AgentDraftFormValues>
               name="qualification_trigger_phrases"
               label={t.agents.detail.draft.qualificationTriggerPhrasesLabel}
@@ -564,7 +599,7 @@ function DraftForm({
               itemPlaceholder={t.agents.detail.draft.qualificationTriggerPhrasePlaceholder}
               addLabel={t.agents.detail.draft.addListItem}
               removeLabel={t.agents.detail.draft.removeListItem}
-              disabled={!canManage}
+              disabled={!canManage || !leadCaptureEnabled}
             />
             <RHFCheckboxGroupField<AgentDraftFormValues>
               name="qualification_required_fields"

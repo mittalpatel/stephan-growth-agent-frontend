@@ -213,6 +213,13 @@ export const agentDraftUpdateSchema = z
       t.agents.validation.listTooLong
     ),
     unsupported_language_behavior: optionalEnum(UNSUPPORTED_LANGUAGE_BEHAVIORS),
+    // behavior_config.handoff_trigger_phrases (backend 2026-09-17) — no client
+    // ceiling, matching qualification_trigger_phrases, its lead-capture sibling.
+    handoff_trigger_phrases: stringListField(),
+    // behavior_config tool toggles (backend 2026-09-17), unset means enabled.
+    lead_capture_enabled: z.boolean(),
+    human_handoff_enabled: z.boolean(),
+    send_information_email_enabled: z.boolean(),
     // behavior_config.suggested_questions / .prohibited_claims
     suggested_questions: stringListField(MAX_SUGGESTED_QUESTION_LENGTH).max(
       MAX_SUGGESTED_QUESTIONS,

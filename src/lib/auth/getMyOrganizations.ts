@@ -1,6 +1,8 @@
 import 'server-only';
 import type { OrganizationSummary } from '@/types/next-auth';
 
+import { serverBackendOrigin } from '@/lib/serverBackendOrigin';
+
 // Server-side fetch of the caller's *current* organization memberships.
 //
 // `session.user.organizations` (and `.organization`) are snapshotted into the JWT
@@ -19,7 +21,7 @@ export async function getMyOrganizations(accessToken: string | undefined): Promi
 }> {
   if (!accessToken) return { data: [], loaded: false };
 
-  const base = process.env.NEXT_PUBLIC_BACKEND_API ?? '';
+  const base = serverBackendOrigin();
   try {
     const res = await fetch(`${base}api/v1/organizations/`, {
       headers: { Authorization: `Bearer ${accessToken}` },

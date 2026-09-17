@@ -1,5 +1,7 @@
 import 'server-only';
 
+import { serverBackendOrigin } from '@/lib/serverBackendOrigin';
+
 // Server-side fetch of the caller's effective permission set + role. Permissions
 // no longer ride in the session JWT (see lib/auth/authOptions.ts) — the restricted
 // layout calls this on the server with the user's access token and seeds the client
@@ -24,7 +26,7 @@ export async function getMyPermissions(accessToken: string | undefined): Promise
 }> {
   if (!accessToken) return { data: EMPTY, loaded: false };
 
-  const base = process.env.NEXT_PUBLIC_BACKEND_API ?? '';
+  const base = serverBackendOrigin();
   try {
     const res = await fetch(`${base}api/v1/auth/me/permissions/`, {
       headers: { Authorization: `Bearer ${accessToken}` },

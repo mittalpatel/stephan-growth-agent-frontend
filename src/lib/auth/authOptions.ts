@@ -7,6 +7,7 @@ import { DEFAULT_LANGUAGE } from '@/config/language';
 import { t } from '@/locales';
 
 import { getOidcProviders } from './oidcProviders';
+import { serverBackendOrigin } from '@/lib/serverBackendOrigin';
 
 // GitHub is plain OAuth2, not OIDC — it issues no id_token, so it can't join
 // the generic OIDC provider loop below and needs its own well-known env var
@@ -19,7 +20,7 @@ const GITHUB_CLIENT_SECRET = process.env.GITHUB_CLIENT_SECRET;
 
 const ACCEPT_LANGUAGE = { 'Accept-Language': DEFAULT_LANGUAGE };
 
-const BASE_URL = process.env.NEXT_PUBLIC_BACKEND_API ?? 'http://localhost:8000/';
+const BASE_URL = serverBackendOrigin();
 
 interface AuthEnvelope<T> {
   success: boolean;

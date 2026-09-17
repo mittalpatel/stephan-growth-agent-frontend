@@ -2,6 +2,8 @@ import { NextResponse, type NextRequest } from 'next/server';
 import { getToken } from 'next-auth/jwt';
 import axios from 'axios';
 
+import { serverBackendOrigin } from '@/lib/serverBackendOrigin';
+
 // Blacklists the backend refresh token before next-auth clears the session
 // cookie. Without this, the refresh token stays valid for its full 7-day
 // lifetime even after the user logs out — a logout should invalidate it
@@ -19,7 +21,7 @@ export async function POST(request: NextRequest) {
 
   try {
     await axios.post(
-      `${process.env.NEXT_PUBLIC_BACKEND_API}api/v1/auth/logout/`,
+      `${serverBackendOrigin().replace(/\/*$/, '/')}api/v1/auth/logout/`,
       { refresh },
       { headers: { Authorization: `Bearer ${access}` } }
     );

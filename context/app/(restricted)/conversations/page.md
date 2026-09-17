@@ -249,6 +249,16 @@ leaving an open `Escalation` behind) is new. Every reason has locale copy
 under `t.conversations.detail.escalationReason`, with a neutral fallback for
 anything unrecognized rather than rendering the raw enum value.
 
+`handoff_trigger_matched` (backend 2026-09-17) is the newest addition: a
+deterministic, admin-configured phrase list
+(`behavior_config.handoff_trigger_phrases`, see
+`context/app/(restricted)/agents/page.md`'s "Handoff trigger phrases" section)
+hands a conversation off whenever a visitor message contains one, before any
+moderation/retrieval/completion call. It shows up in both the active-escalation
+badge and the escalation history list the same as any other reason — no
+component change was needed, since both display sites already index the reason
+dynamically off the locale map rather than switching on known values.
+
 ## Assign operator
 
 `conversation:manage` unlocks an "assign operator" control in the side panel

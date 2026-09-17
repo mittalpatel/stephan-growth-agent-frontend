@@ -3,11 +3,9 @@ import { getToken } from 'next-auth/jwt';
 import axios from 'axios';
 
 import { persistSession } from '@/lib/auth/sessionCookie';
+import { serverBackendOrigin } from '@/lib/serverBackendOrigin';
 
-const BACKEND_ORIGIN = (process.env.NEXT_PUBLIC_BACKEND_API ?? 'http://localhost:8000/').replace(
-  /\/*$/,
-  '/'
-);
+const BACKEND_ORIGIN = serverBackendOrigin().replace(/\/*$/, '/');
 
 /**
  * Change the password, server-side, and absorb the token rotation it causes.

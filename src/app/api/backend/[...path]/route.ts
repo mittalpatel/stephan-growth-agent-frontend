@@ -1,6 +1,8 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import { getToken } from 'next-auth/jwt';
 
+import { serverBackendOrigin } from '@/lib/serverBackendOrigin';
+
 /**
  * Same-origin proxy for every authenticated backend call.
  *
@@ -20,10 +22,7 @@ import { getToken } from 'next-auth/jwt';
  * adding a new backend endpoint never requires touching this file.
  */
 
-const BACKEND_ORIGIN = (process.env.NEXT_PUBLIC_BACKEND_API ?? 'http://localhost:8000/').replace(
-  /\/$/,
-  ''
-);
+const BACKEND_ORIGIN = serverBackendOrigin().replace(/\/$/, '');
 
 //: Headers worth forwarding from the browser's request to the backend. Not a
 // blanket forward — `Host`, `Cookie`, `Connection`, etc. are same-origin/Next.js
