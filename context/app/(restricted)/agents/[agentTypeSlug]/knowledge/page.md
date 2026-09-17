@@ -591,6 +591,18 @@ callback that fires only on success, which is what lets it drop local edits
 at the right moment: keeping them through a failed save is the difference
 between retrying and retyping.
 
+A search input filters the checkbox list client-side by `display_name`
+(case-insensitive substring), scoped to the loaded `sources` page like
+everything else in this mode (see the truncation note above) — there's no
+separate search endpoint. "Select all"/"Deselect all" text buttons sit next
+to the selected-count line and act on the currently-filtered set, not the
+full list, so searching then "Select all" adds only the matches rather than
+silently selecting everything. Both write into the same `draft` state the
+per-row checkboxes use via `setEdit`, so they participate in the same
+`isDirty` diff and undo through "Discard" like any other edit, and both are
+gated on `canManage`. "Select all" disables once every visible source is
+already selected; "Deselect all" disables once none of them are.
+
 ## Search index
 
 `IndexVersionsPanel` + `useIndexVersions.ts` — its own local pagination

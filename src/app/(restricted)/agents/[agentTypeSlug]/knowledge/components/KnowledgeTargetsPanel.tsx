@@ -1,10 +1,12 @@
 'use client';
 
+import { Search } from 'lucide-react';
 import { useState } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -47,6 +49,7 @@ export function KnowledgeTargetsPanel({ agentId }: Props) {
   // render where the panel shows a stale copy of what the server just
   // returned.
   const [edit, setEdit] = useState<{ mode: 'all' | 'selected'; draft: string[] } | null>(null);
+  const [search, setSearch] = useState('');
 
   const mode = edit?.mode ?? (isNarrowed ? 'selected' : 'all');
   const draft = edit?.draft ?? selectedIds;
@@ -90,11 +93,41 @@ export function KnowledgeTargetsPanel({ agentId }: Props) {
     );
   }
 
+  const visibleSources = search.trim()
+    ? sources.filter((source) =>
+        source.display_name.toLowerCase().includes(search.trim().toLowerCase())
+      )
+    : sources;
+
   const toggle = (sourceId: string, checked: boolean) => {
     setEdit({
       mode,
       draft: checked ? [...draft, sourceId] : draft.filter((id) => id !== sourceId),
     });
+  };
+
+  const renderSourceList = () => {
+    if (sources.length === 0) {
+      return <p className="text-muted-foreground p-2 text-sm">{t.knowledge.targets.noSources}</p>;
+    }
+    if (visibleSources.length === 0) {
+      return (
+        <p className="text-muted-foreground p-2 text-sm">{t.knowledge.targets.noSourcesMatch}</p>
+      );
+    }
+    return visibleSources.map((source) => (
+      <label
+        key={source.id}
+        className="hover:bg-accent flex items-center gap-2 rounded-md px-2 py-1.5 text-sm"
+      >
+        <Checkbox
+          checked={draft.includes(source.id)}
+          disabled={!canManage}
+          onCheckedChange={(checked) => toggle(source.id, checked === true)}
+        />
+        <span className="truncate">{source.display_name}</span>
+      </label>
+    ));
   };
 
   const isDirty =
@@ -143,33 +176,59 @@ export function KnowledgeTargetsPanel({ agentId }: Props) {
         </RadioGroup>
 
         {mode === 'selected' && sources.length > 0 && (
-          <p className="text-muted-foreground text-xs">
-            {format(t.knowledge.targets.selectedCount, {
-              selected: draft.length,
-              total: sources.length,
-            })}
-          </p>
+          <div className="relative">
+            <Search className="text-muted-foreground absolute top-1/2 left-2.5 h-4 w-4 -translate-y-1/2" />
+            <Input
+              value={search}
+              onChange={(event) => setSearch(event.target.value)}
+              placeholder={t.knowledge.targets.searchPlaceholder}
+              className="pl-8"
+            />
+          </div>
+        )}
+
+        {mode === 'selected' && sources.length > 0 && (
+          <div className="flex items-center justify-between gap-3">
+            <p className="text-muted-foreground text-xs">
+              {format(t.knowledge.targets.selectedCount, {
+                selected: draft.length,
+                total: sources.length,
+              })}
+            </p>
+            {canManage && visibleSources.length > 0 && (
+              <div className="flex items-center gap-3">
+                <button
+                  type="button"
+                  className="text-primary text-xs font-medium hover:underline disabled:pointer-events-none disabled:opacity-50"
+                  disabled={visibleSources.every((source) => draft.includes(source.id))}
+                  onClick={() =>
+                    setEdit({
+                      mode,
+                      draft: [...new Set([...draft, ...visibleSources.map((source) => source.id)])],
+                    })
+                  }
+                >
+                  {t.knowledge.targets.selectAll}
+                </button>
+                <button
+                  type="button"
+                  className="text-primary text-xs font-medium hover:underline disabled:pointer-events-none disabled:opacity-50"
+                  disabled={!visibleSources.some((source) => draft.includes(source.id))}
+                  onClick={() => {
+                    const visibleIds = new Set(visibleSources.map((source) => source.id));
+                    setEdit({ mode, draft: draft.filter((id) => !visibleIds.has(id)) });
+                  }}
+                >
+                  {t.knowledge.targets.deselectAll}
+                </button>
+              </div>
+            )}
+          </div>
         )}
 
         {mode === 'selected' && (
           <div className="max-h-64 space-y-1 overflow-y-auto rounded-md border p-2">
-            {sources.length === 0 ? (
-              <p className="text-muted-foreground p-2 text-sm">{t.knowledge.targets.noSources}</p>
-            ) : (
-              sources.map((source) => (
-                <label
-                  key={source.id}
-                  className="hover:bg-accent flex items-center gap-2 rounded-md px-2 py-1.5 text-sm"
-                >
-                  <Checkbox
-                    checked={draft.includes(source.id)}
-                    disabled={!canManage}
-                    onCheckedChange={(checked) => toggle(source.id, checked === true)}
-                  />
-                  <span className="truncate">{source.display_name}</span>
-                </label>
-              ))
-            )}
+            {renderSourceList()}
           </div>
         )}
 
