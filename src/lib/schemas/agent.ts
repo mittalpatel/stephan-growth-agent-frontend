@@ -236,6 +236,7 @@ export const agentDraftUpdateSchema = z
     // `useAgentDraftForm.ts` for the reassembly back into the nested body.
     qualification_trigger_phrases: stringListField(),
     qualification_required_fields: z.array(z.enum(QUALIFIABLE_LEAD_FIELDS)),
+    qualification_form_required_fields: z.array(z.enum(QUALIFIABLE_LEAD_FIELDS)),
     qualification_questions: z
       .array(
         z.object({

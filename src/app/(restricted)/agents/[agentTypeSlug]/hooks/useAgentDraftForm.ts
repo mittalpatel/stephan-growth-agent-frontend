@@ -267,6 +267,10 @@ function qualificationFieldsFromConfig(qualification: QualificationConfig) {
   return {
     qualification_trigger_phrases: toRows(qualification.trigger_phrases),
     qualification_required_fields: qualification.required_fields ?? [],
+    // Unset falls back to `required_fields` on the backend, so seed it the
+    // same way: saving an untouched form keeps the widget form unchanged.
+    qualification_form_required_fields:
+      qualification.form_required_fields ?? qualification.required_fields ?? [],
     qualification_questions: qualification.questions ?? [],
     qualification_qualified_threshold: scoring.qualified_threshold ?? '',
     qualification_partial_threshold: scoring.partial_threshold ?? '',
@@ -296,6 +300,7 @@ function buildQualificationConfigPayload(
   const rest = { ...stored };
   delete rest.trigger_phrases;
   delete rest.required_fields;
+  delete rest.form_required_fields;
   delete rest.questions;
   delete rest.scoring;
 
@@ -308,6 +313,7 @@ function buildQualificationConfigPayload(
     ...rest,
     trigger_phrases: fromRows(values.qualification_trigger_phrases),
     required_fields: values.qualification_required_fields,
+    form_required_fields: values.qualification_form_required_fields,
     questions: values.qualification_questions,
     ...(hasThresholds && {
       scoring: {

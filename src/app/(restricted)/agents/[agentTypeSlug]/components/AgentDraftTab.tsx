@@ -608,6 +608,13 @@ function DraftForm({
               options={QUALIFIABLE_FIELD_OPTIONS}
               disabled={!canManage}
             />
+            <RHFCheckboxGroupField<AgentDraftFormValues>
+              name="qualification_form_required_fields"
+              label={t.agents.detail.draft.qualificationFormRequiredFieldsLabel}
+              description={t.agents.detail.draft.qualificationFormRequiredFieldsDescription}
+              options={QUALIFIABLE_FIELD_OPTIONS}
+              disabled={!canManage || !leadCaptureEnabled}
+            />
             <RHFObjectListField<AgentDraftFormValues>
               name="qualification_questions"
               label={t.agents.detail.draft.qualificationQuestionsLabel}

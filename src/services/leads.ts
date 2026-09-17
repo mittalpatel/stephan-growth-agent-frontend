@@ -46,7 +46,7 @@ export function leadsListUrl(query: LeadListQuery): string {
  * exposed in this list's toolbar since there is no agent-name lookup
  * endpoint cheap enough to build an option list from here.)
  */
-export const LEAD_STATUS_VALUES = ['new', 'contacted', 'qualified', 'disqualified'] as const;
+export const LEAD_STATUS_VALUES = ['new', 'contacted', 'qualified', 'disqualified', 'won'] as const;
 
 /**
  * The `qualification_outcome` values `LeadSelector._FILTER_FIELDS` accepts,
@@ -60,15 +60,17 @@ export const LEAD_QUALIFICATION_OUTCOME_VALUES = ['qualified', 'partial', 'unqua
 
 /**
  * `LeadStatus._TRANSITIONS` (`apps/leads/constants.py`) mirrored so the
- * status control only ever offers a legal next state. `new`/`contacted`
- * branch two ways; `qualified`/`disqualified` are terminal (empty list).
+ * status control only ever offers a legal next state. As of backend
+ * 2026-09-17 `new` can skip straight to `qualified`, `disqualified` can be
+ * reopened to `new`, and `won` is the only terminal status (empty list).
  */
 export const LEAD_STATUS_TRANSITIONS: Record<
   (typeof LEAD_STATUS_VALUES)[number],
   readonly (typeof LEAD_STATUS_VALUES)[number][]
 > = {
-  new: ['contacted', 'disqualified'],
+  new: ['contacted', 'qualified', 'disqualified'],
   contacted: ['qualified', 'disqualified'],
-  qualified: [],
-  disqualified: [],
+  qualified: ['won', 'disqualified'],
+  disqualified: ['new'],
+  won: [],
 };

@@ -12,4 +12,5 @@ export const LEAD_STATUS_TONE: Record<LeadStatus, StatusTone> = {
   contacted: 'info',
   qualified: 'success',
   disqualified: 'danger',
+  won: 'success',
 };

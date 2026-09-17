@@ -15,8 +15,10 @@ version, collected fields, linked conversation summary). Gated on
 `lead:manage` now exists and gates a status control in `LeadDetailSheet`:
 `PATCH /api/v1/leads/{id}/status/` (`useLeadActions.ts`), offering only the
 legal next state(s) per `LEAD_STATUS_TRANSITIONS` in
-`apps/leads/constants.py` — `new` → `contacted`/`disqualified`, `contacted`
-→ `qualified`/`disqualified`, `qualified`/`disqualified` terminal. A 409
+`apps/leads/constants.py`. As of backend 2026-09-17: `new` →
+`contacted`/`qualified`/`disqualified`, `contacted` → `qualified`/`disqualified`,
+`qualified` → `won`/`disqualified`, `disqualified` → `new` (reopen), and `won`
+is the only terminal status (tone `success`). A 409
 (`lead_invalid_status_transition`) surfaces via the mutation's toast the same
 as any other error; the picker never offers an illegal transition in the
 first place.
@@ -39,7 +41,7 @@ the kind of thing nobody notices until a screenshot.
 The static preview split "Website prospects" (a fabricated intent-scored
 funnel) from "Outreach leads" (Meta/referral-sourced). Neither maps onto the
 real data model: a `Lead` is agent-scoped and belongs to one flat table with
-one `LeadStatus` enum (`new`/`contacted`/`qualified`/`disqualified`) — there
+one `LeadStatus` enum (`new`/`contacted`/`qualified`/`disqualified`/`won`) — there
 is no prospect/outreach split, no pipeline-stage funnel, and no
 leads-summary endpoint to source a metric row's numbers from. Per the plan's
 own guidance ("don't fabricate numbers"), the metric row and pipeline funnel
@@ -152,3 +154,11 @@ Nothing was needed for the same backend commit's new phone validation
 (`useLeadActions` only PATCHes status, and `lead.phone` is read-only), so the
 new error code has no frontend surface to bind to. Lead capture is the widget's
 form, in the backend repo.
+
+## AI capture reason
+
+`LeadDetailSerializer.reason` (backend 2026-09-17) is the model's own `reason`
+argument from its `capture_lead` tool call, carried onto the lead at capture
+time. `LeadDetailSheet` shows it in its own section under Interest, falling
+back to "Not provided" when blank (e.g. the form was offered by a
+trigger-phrase match rather than the model).

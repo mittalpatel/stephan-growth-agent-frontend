@@ -735,3 +735,14 @@ from the Sprint 1 preview; unchanged here.
 
 Knowledge tab: `context/app/(restricted)/agents/[agentTypeSlug]/knowledge/page.md`.
 Settings tab: `context/app/(restricted)/agents/[agentTypeSlug]/settings/page.md`.
+
+## Required to qualify vs. required on the form
+
+Backend 2026-09-17 split `qualification_config.required_fields` (only feeds
+`QualificationService`'s "required to qualify") from the new
+`form_required_fields` (only marks widget form fields required). Unset on the
+server falls back to `required_fields`, so `qualificationFieldsFromConfig`
+seeds `qualification_form_required_fields` the same way and
+`buildQualificationConfigPayload` always sends both: saving an untouched form
+never changes what the widget asks for. The form checkbox group is disabled
+when lead capture is switched off.

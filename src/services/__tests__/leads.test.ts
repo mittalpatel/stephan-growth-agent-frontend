@@ -31,10 +31,11 @@ describe('lead status transitions', () => {
   // whole table is asserted explicitly rather than spot-checked.
   it('mirrors the backend transition table exactly', () => {
     expect(LEAD_STATUS_TRANSITIONS).toEqual({
-      new: ['contacted', 'disqualified'],
+      new: ['contacted', 'qualified', 'disqualified'],
       contacted: ['qualified', 'disqualified'],
-      qualified: [],
-      disqualified: [],
+      qualified: ['won', 'disqualified'],
+      disqualified: ['new'],
+      won: [],
     });
   });
 
@@ -50,9 +51,9 @@ describe('lead status transitions', () => {
     }
   });
 
-  it('treats qualified and disqualified as terminal', () => {
-    expect(LEAD_STATUS_TRANSITIONS.qualified).toHaveLength(0);
-    expect(LEAD_STATUS_TRANSITIONS.disqualified).toHaveLength(0);
+  it('treats only won as terminal', () => {
+    expect(LEAD_STATUS_TRANSITIONS.won).toHaveLength(0);
+    expect(LEAD_STATUS_TRANSITIONS.disqualified).toEqual(['new']);
   });
 
   it('never offers a self-transition, which the picker renders separately', () => {

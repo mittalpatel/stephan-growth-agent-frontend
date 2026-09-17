@@ -4,7 +4,7 @@
  */
 
 /** Mirrors `LeadStatus` in `apps/leads/constants.py`. */
-export type LeadStatus = 'new' | 'contacted' | 'qualified' | 'disqualified';
+export type LeadStatus = 'new' | 'contacted' | 'qualified' | 'disqualified' | 'won';
 
 /**
  * Mirrors `QualificationOutcome` in `apps/leads/constants.py`.
@@ -64,6 +64,9 @@ export type QualificationResult = {
 /** Full record from `GET /api/v1/leads/{id}/`. */
 export type Lead = LeadListItem & {
   interest_note: string;
+  /** Backend 2026-09-17: the AI's own reason for suggesting capture. Blank
+   * when the model never called `capture_lead` (e.g. a trigger-phrase match). */
+  reason: string;
   consent_notice_version: string;
   fields: LeadField[];
   conversation: LeadConversationSummary | null;

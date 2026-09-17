@@ -472,9 +472,12 @@ export const agents = {
       qualificationTriggerPhrasesDescription:
         'When a visitor message contains one of these, the contact-details form is always offered. Add none and the agent decides when to offer it.',
       qualificationTriggerPhrasePlaceholder: 'request a quote',
-      qualificationRequiredFieldsLabel: 'Required fields',
+      qualificationRequiredFieldsLabel: 'Required to qualify',
       qualificationRequiredFieldsDescription:
         'A lead missing any of these stays unqualified no matter how it scores. Email is always collected, so it is not listed here.',
+      qualificationFormRequiredFieldsLabel: 'Required on the form',
+      qualificationFormRequiredFieldsDescription:
+        'Fields a visitor must fill in to submit the contact-details form. Keep this short: every required field means fewer submissions. A lead can still be captured without the fields required to qualify, it just scores lower.',
       qualificationQuestionsLabel: 'Scoring',
       qualificationQuestionsDescription:
         'Points a lead earns for each detail it provides. Each field can be listed once. A lead is scored as the share of all these points it earns, from 0 to 100.',

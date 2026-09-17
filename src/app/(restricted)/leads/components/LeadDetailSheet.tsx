@@ -173,9 +173,9 @@ export function LeadDetailSheet({ leadId, onOpenChange }: Props) {
             </ul>
 
             {/* The status is worth showing to everyone who can open this sheet;
-                only the ability to change it is gated. `qualified` and
-                `disqualified` are terminal, so they render read-only for
-                everyone rather than as a picker with no options. */}
+                only the ability to change it is gated. `won` is terminal, so it
+                renders read-only for everyone rather than as a picker with no
+                options. */}
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="space-y-1.5">
                 <p className="text-muted-foreground text-xs font-semibold tracking-wider uppercase">
@@ -224,6 +224,12 @@ export function LeadDetailSheet({ leadId, onOpenChange }: Props) {
             <Section title={copy.interestNote}>
               <p className={lead.interest_note ? 'text-sm' : 'text-muted-foreground text-sm'}>
                 {lead.interest_note || copy.notProvided}
+              </p>
+            </Section>
+
+            <Section title={copy.reason}>
+              <p className={lead.reason ? 'text-sm' : 'text-muted-foreground text-sm'}>
+                {lead.reason || copy.notProvided}
               </p>
             </Section>
 

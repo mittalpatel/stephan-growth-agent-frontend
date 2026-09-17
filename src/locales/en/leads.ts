@@ -6,6 +6,7 @@ export const leads = {
     contacted: 'Contacted',
     qualified: 'Qualified',
     disqualified: 'Disqualified',
+    won: 'Won',
   },
   qualificationOutcome: {
     qualified: 'Qualified',
@@ -40,6 +41,7 @@ export const leads = {
     noPhone: 'No phone number',
     notProvided: 'Not provided',
     interestNote: 'Interest',
+    reason: 'Why the agent flagged this lead',
     consentNotice: 'Consent',
     consentVersion: 'Notice version {version}',
     fieldsHeading: 'Collected fields',

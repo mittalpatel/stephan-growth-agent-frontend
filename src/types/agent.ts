@@ -124,11 +124,14 @@ export type QualifiableLeadField = 'name' | 'phone' | 'interest_note';
  * instead of dropping them.
  */
 export type QualificationConfig = {
-  /** Gates `suggest_lead_capture`: when set, the agent only offers capture
-   * after a visitor message matches one of these. Unset means unconditional. */
+  /** Backend 2026-09-17: a visitor message matching one of these always
+   * forces `suggest_lead_capture`. Unset leaves it to the model. */
   trigger_phrases?: string[];
   /** Any of these still blank forces `unqualified`, whatever the score. */
   required_fields?: QualifiableLeadField[];
+  /** Backend 2026-09-17: fields the widget form requires to submit, decoupled
+   * from `required_fields`. Unset falls back to `required_fields`. */
+  form_required_fields?: QualifiableLeadField[];
   /** Each present field adds its `weight` to the lead's score. A field may
    * appear at most once. */
   questions?: { field: QualifiableLeadField; weight: number }[];
