@@ -35,14 +35,18 @@ across every restricted page, not just this one — it is a sibling of
 `ImpersonationBanner.tsx` and `ProfilePopup.tsx` in that sense, not a child of
 this route.
 
-## Polling, not push
+## Push, with polling as a fail-open backstop
 
-`useNotificationBell` polls unread count every 30s always, and the recent list
-only while the dropdown is open — see `POLL_INTERVAL_MS`/`RECENT_LIMIT`. No
-websocket, matching ADR-0016's stance that a bell badge does not justify the
-deployment-topology cost of Django Channels (ASGI, sticky sessions, a second
-process class). If a future need justifies real-time delivery, this is the one
-hook to replace; nothing else assumes polling.
+`useRealtimeSocket` (mounted in `LayoutWrapper`, shared with the widget's other
+live features) invalidates the bell's unread-count and recent-list queries the
+moment a `notification` message arrives over the socket, so delivery is push in
+the common case. `useNotificationBell` also polls unread count every 5 minutes
+regardless, and the recent list on the same interval while the dropdown is open — see
+`POLL_INTERVAL_MS`/`RECENT_LIMIT` — purely so the badge still catches up if the
+socket never connected (blocked upgrade, channel-layer outage). This
+supersedes ADR-0016's original polling-only stance; the ADR's reasoning against
+standing up Channels for the bell alone no longer applies now that the app
+maintains a realtime socket connection for other features regardless.
 
 ## The four production event types are EMAIL-only today
 

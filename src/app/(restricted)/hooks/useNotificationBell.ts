@@ -21,12 +21,13 @@ import {
 import type { ApiResponse } from '@/types/api';
 
 /** How often the bell polls for new notifications, as a fail-open backstop.
- * `useRealtimeSocket` (mounted in `LayoutWrapper`) now invalidates these same
- * queries the moment a notification is pushed live, so in the common case this
- * interval never has to do the work — it only matters if the socket never
- * connected (blocked upgrade, channel-layer outage). Kept short regardless, so
- * a password-reset-adjacent event still feels prompt even then. */
-const POLL_INTERVAL_MS = 30_000;
+ * `useRealtimeSocket` (mounted in `LayoutWrapper`) invalidates these same
+ * queries the moment a notification is pushed live, so this interval never
+ * has to do the work in the common case — it only matters if the socket never
+ * connected (blocked upgrade, channel-layer outage). Every open tab polls
+ * independently, so a short interval multiplies fast; 5 minutes is still
+ * prompt enough for that fallback path without hammering the backend. */
+const POLL_INTERVAL_MS = 300_000;
 
 /** How many recent notifications the dropdown shows before "View all". */
 const RECENT_LIMIT = 5;
