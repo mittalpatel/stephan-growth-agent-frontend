@@ -15,6 +15,14 @@ moved here from what used to be the Overview tab), then two management
 sections and an informational embed snippet, all under `apps/agents`'s
 domain/key endpoints.
 
+`AgentIdentitySection`'s `human_inbox_email` field (`t.agents.form.
+inboxEmailLabel`) is where both handoff and lead-captured emails go
+(2026-09-18: the description text was updated when the lead-captured email
+was enriched, `apps.leads.tasks.notify_lead_captured` on the backend — this
+is the §5.1 "human inbox/contact to receive lead notifications and handoff
+requests" prerequisite from the client scope doc, one field doing both
+jobs).
+
 ## View/manage split (backend 2026-09-07)
 
 `AgentDomainListCreateView` and `AgentKeyListCreateView` gained `GET`

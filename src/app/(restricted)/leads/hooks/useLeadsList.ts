@@ -39,6 +39,8 @@ export function useLeadsList(agentId?: string) {
     setPageNumber,
     setPageRowsLimit,
     clearAllFilters,
+    getParam,
+    setParam,
   } = useQueryParams(NAMESPACE);
 
   const listQueryInput = {
@@ -93,8 +95,16 @@ export function useLeadsList(agentId?: string) {
 
   const hasActiveFilters = Object.values(activeFilters).some((v) => v.length > 0);
 
+  // Selected lead lives in the URL (`?leads_lead=<id>`), not component state:
+  // the lead-captured email's deep link points here, and per AGENTS.md, view
+  // state that should survive a refresh/back-navigation belongs in the URL.
+  const selectedLeadId = getParam('lead') || null;
+  const selectLead = (id: string | null) => setParam('lead', id, false);
+
   return {
     leads,
+    selectedLeadId,
+    selectLead,
     total: meta?.count ?? 0,
     currentPage: meta?.current_page ?? queryParams.page,
     totalPages: meta?.total_pages ?? 1,

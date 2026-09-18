@@ -611,7 +611,8 @@ export const agents = {
     noPermissionDescription: "You don't have permission to view this agent's settings.",
     identity: {
       title: 'Agent details',
-      description: 'The internal name, where handoff emails go, and whether the agent is running.',
+      description:
+        'The internal name, where handoff and lead-captured emails go, and whether the agent is running.',
       metadataHeading: 'About this agent',
       notSet: 'Not set',
     },

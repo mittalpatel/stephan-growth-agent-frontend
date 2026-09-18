@@ -58,6 +58,9 @@ export const leads = {
     noConversation: 'No linked conversation.',
     viewTranscript: 'View transcript',
     hideTranscript: 'Hide transcript',
+    notificationHeading: 'Notification',
+    notificationSent: 'Emailed to the human inbox {date}',
+    notificationPending: 'Not emailed yet',
   },
   consent: {
     given: 'Given',

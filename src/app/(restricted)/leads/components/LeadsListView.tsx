@@ -1,6 +1,5 @@
 'use client';
 
-import { useState } from 'react';
 import { AlertTriangle } from 'lucide-react';
 
 import { EmptyState } from '@/components/common/EmptyState';
@@ -42,7 +41,6 @@ type Props = Readonly<{
  */
 export function LeadsListView({ agentId }: Props = {}) {
   const list = useLeadsList(agentId);
-  const [selectedId, setSelectedId] = useState<string | null>(null);
 
   function renderBody() {
     if (list.isLoading) {
@@ -99,7 +97,7 @@ export function LeadsListView({ agentId }: Props = {}) {
         </thead>
         <DataTableBody>
           {list.leads.map((lead) => (
-            <DataTableRow key={lead.id} onClick={() => setSelectedId(lead.id)}>
+            <DataTableRow key={lead.id} onClick={() => list.selectLead(lead.id)}>
               <td className={`${dataTableTd} font-medium`}>
                 {/* The email is the fallback title, so it is not repeated
                     underneath when there is no name. */}
@@ -171,7 +169,10 @@ export function LeadsListView({ agentId }: Props = {}) {
         />
       )}
 
-      <LeadDetailSheet leadId={selectedId} onOpenChange={(open) => !open && setSelectedId(null)} />
+      <LeadDetailSheet
+        leadId={list.selectedLeadId}
+        onOpenChange={(open) => !open && list.selectLead(null)}
+      />
     </div>
   );
 }

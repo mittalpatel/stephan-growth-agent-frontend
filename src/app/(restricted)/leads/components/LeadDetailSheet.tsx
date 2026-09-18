@@ -295,6 +295,14 @@ export function LeadDetailSheet({ leadId, onOpenChange }: Props) {
               <LeadConversationSection leadId={lead.id} conversation={lead.conversation} />
             </Section>
 
+            <Section title={copy.notificationHeading}>
+              <p className={lead.notified_at ? 'text-sm' : 'text-muted-foreground text-sm'}>
+                {lead.notified_at
+                  ? format(copy.notificationSent, { date: formatDateTime(lead.notified_at) })
+                  : copy.notificationPending}
+              </p>
+            </Section>
+
             <Section title={copy.consentNotice}>
               <p className="text-sm">
                 {lead.consent_given ? t.leads.consent.given : t.leads.consent.notGiven}

@@ -62,6 +62,25 @@ underlying `MotionListItem` now forwards `onClick` too, see
 fields and its linked conversation's status/date (not a link into the
 conversations page — that page has no per-conversation deep link yet).
 
+The selected lead lives in the URL (`?leads_lead=<id>`, via `useLeadsList`'s
+`selectedLeadId`/`selectLead`, `useQueryParams`'s ad-hoc `getParam`/`setParam`
+under the `leads` namespace), not `useState` (2026-09-18, moved off local
+state) — the lead-captured email's deep link points at this exact URL
+(`apps.leads.tasks.notify_lead_captured` on the backend), and per AGENTS.md,
+selection state that a link should be able to restore belongs in the URL.
+`setParam(..., false)` skips the usual page-1 reset a filter change would
+trigger, since opening a lead shouldn't move the list.
+
+## Notification status (2026-09-18)
+
+`LeadDetailSheet` has a Notification section showing `Lead.notified_at`
+(detail-only field, `useLeadDetail`) — when the lead-captured email was last
+handed to the mail queue, not a delivery confirmation, or a "not emailed
+yet" state when null. See the backend repo's leads context doc (apps/leads,
+context/leads/overview.md there) for the enriched payload (qualification
+outcome/score, phone, AI reason, the deep link) and the cooldown-merge
+re-notify rule.
+
 ## Qualification outcome (2026-09-14)
 
 The backend's L1-02 rule-based qualification engine (backend branch

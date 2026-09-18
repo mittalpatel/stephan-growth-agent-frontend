@@ -72,4 +72,8 @@ export type Lead = LeadListItem & {
   conversation: LeadConversationSummary | null;
   /** Newest first, per `QualificationResult.Meta.ordering`. */
   qualification_results: QualificationResult[];
+  /** Backend 2026-09-18: when the lead-captured email notification was last
+   * handed to the mail queue, not a delivery confirmation. Null until then.
+   * Detail-only: never on `LeadListItem`, never filterable/sortable. */
+  notified_at: string | null;
 };
