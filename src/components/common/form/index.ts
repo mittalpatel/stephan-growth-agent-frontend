@@ -8,4 +8,5 @@ export { RHFColorField } from './RHFColorField';
 export { RHFStringListField } from './RHFStringListField';
 export { RHFObjectListField, type ObjectListColumn } from './RHFObjectListField';
 export { RHFCheckboxGroupField } from './RHFCheckboxGroupField';
+export { RHFSearchableCheckboxGroupField } from './RHFSearchableCheckboxGroupField';
 export { fieldInputCls, fieldLabelCls, getRhfError } from './fieldStyles';

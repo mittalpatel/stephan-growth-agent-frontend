@@ -19,9 +19,9 @@ typography wasn't part of that feedback. One type scale, Tailwind defaults other
 ## RHF form primitives — `src/components/common/form/`
 
 `RHFTextField`, `RHFTextareaField`, `RHFSelectField`, `RHFSwitchField`, `RHFColorField`,
-`RHFStringListField`, `RHFObjectListField`, `RHFCheckboxGroupField`, plus
-`fieldStyles.ts` (`fieldInputCls`, `fieldLabelCls`, `fieldDescriptionCls`,
-`getRhfError`).
+`RHFStringListField`, `RHFObjectListField`, `RHFCheckboxGroupField`,
+`RHFSearchableCheckboxGroupField`, plus `fieldStyles.ts` (`fieldInputCls`,
+`fieldLabelCls`, `fieldDescriptionCls`, `getRhfError`).
 
 Use these inside a `<FormProvider>` rather than wiring controlled inputs per form.
 When a field type is missing, add a primitive here instead of inlining a one-off —
@@ -36,16 +36,18 @@ input. Added for the agent theme/behavior config form (`AgentDraftTab.tsx`), whe
 most fields' effect isn't obvious from the label alone; use it on any new field where
 the same is true, not reflexively on every field.
 
-### The three list/group fields
+### The list/group fields
 
-Added 2026-09-14 for the agent qualification rule editor. They differ in what the
-bound field actually holds, which is the thing to check before reaching for one:
+Added 2026-09-14 for the agent qualification rule editor, plus one from
+2026-09-18. They differ in what the bound field actually holds, which is the thing
+to check before reaching for one:
 
-| Field                   | Value shape                                      | Use for                         |
-| ----------------------- | ------------------------------------------------ | ------------------------------- |
-| `RHFStringListField`    | `{ value: string }[]`                            | A repeatable free-text list     |
-| `RHFObjectListField`    | the rows' real shape, e.g. `{ field, weight }[]` | A repeatable record             |
-| `RHFCheckboxGroupField` | `string[]`                                       | Any subset of a small fixed set |
+| Field                             | Value shape                                      | Use for                         |
+| --------------------------------- | ------------------------------------------------ | ------------------------------- |
+| `RHFStringListField`              | `{ value: string }[]`                            | A repeatable free-text list     |
+| `RHFObjectListField`              | the rows' real shape, e.g. `{ field, weight }[]` | A repeatable record             |
+| `RHFCheckboxGroupField`           | `string[]`                                       | Any subset of a small fixed set |
+| `RHFSearchableCheckboxGroupField` | `string[]`                                       | Any subset of a **large** set   |
 
 `RHFStringListField`'s `{ value }` wrapper is an artifact of `useFieldArray` needing
 each row to be an object, and callers convert at the read/submit boundary
@@ -61,6 +63,18 @@ real third case appears, rather than guessing at one now.
 `RHFCheckboxGroupField` goes through `Controller`, not `register` — the value is an
 array assembled from several inputs, and Radix's checkbox is not a native input to
 bind to. Reach for `RHFSelectField` when exactly one value is allowed.
+
+`RHFSearchableCheckboxGroupField` (2026-09-18, added for the agent Languages
+picker and its 45 options) is the same binding with the three affordances a long
+list needs: a filter input, select-all/deselect-all, and a `max-h-64` scroll area.
+The split point is roughly a dozen options — below that, showing every row at once
+is the entire value of a checkbox group, so use the plain one. Select-all and
+deselect-all act on the **filtered** subset only: with a search box on screen, a
+control that silently reaches past what is visible is a footgun. Its copy arrives
+through a `copy` prop rather than a locale namespace, so the primitive stays
+feature-agnostic the way `RHFSelectField`'s `placeholder` does. The pattern was
+proven first, un-extracted, in `KnowledgeTargetsPanel`, which keeps its own local
+copy because it is not RHF-bound.
 
 ## FilterToolbar
 

@@ -1,14 +1,19 @@
 'use client';
 
 import { useEffect } from 'react';
-import { useForm, FormProvider } from 'react-hook-form';
+import { useForm, FormProvider, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 
 import { usePermissions } from '@/app/(restricted)/context/PermissionsContext';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { RHFSelectField, RHFTextField } from '@/components/common/form';
+import {
+  RHFSearchableCheckboxGroupField,
+  RHFSelectField,
+  RHFTextField,
+} from '@/components/common/form';
 import { applyApiError } from '@/lib/apiError';
+import { SUPPORTED_LANGUAGES } from '@/lib/constants/agentLanguages';
 import { formatDate } from '@/lib/i18n';
 import { agentUpdateSchema, type AgentUpdateFormValues } from '@/lib/schemas/agent';
 import { t } from '@/locales';
@@ -38,17 +43,62 @@ export function AgentIdentitySection({ agent }: Props) {
       name: agent.name,
       human_inbox_email: agent.human_inbox_email,
       status: agent.status,
+      enabled_languages: agent.enabled_languages as AgentUpdateFormValues['enabled_languages'],
+      default_language: agent.default_language as AgentUpdateFormValues['default_language'],
     },
   });
+
+  /* Compared by value, not identity: `agent` is re-created by every query
+     refetch, so depending on the array itself would reset the form (and wipe an
+     in-progress edit) on any background refresh. */
+  const enabledLanguagesKey = agent.enabled_languages.join(',');
 
   useEffect(() => {
     form.reset({
       name: agent.name,
       human_inbox_email: agent.human_inbox_email,
       status: agent.status,
+      enabled_languages: agent.enabled_languages as AgentUpdateFormValues['enabled_languages'],
+      default_language: agent.default_language as AgentUpdateFormValues['default_language'],
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [agent.id, agent.name, agent.human_inbox_email, agent.status]);
+  }, [
+    agent.id,
+    agent.name,
+    agent.human_inbox_email,
+    agent.status,
+    enabledLanguagesKey,
+    agent.default_language,
+  ]);
+
+  /* The default-language options are narrowed to whatever is currently ticked,
+     so the two fields cannot visibly disagree before submit. */
+  const enabledLanguages = useWatch({ control: form.control, name: 'enabled_languages' });
+  const defaultLanguageOptions = SUPPORTED_LANGUAGES.filter((option) =>
+    (enabledLanguages ?? []).includes(option.value)
+  );
+
+  /* Unticking the language that is currently the default moves the default to
+     the first one still enabled.
+
+     Without this the field lies: a native `<select>` cannot display a value
+     that is no longer among its options, so it falls back to showing the first
+     one while the form value underneath is still the removed language. The
+     operator sees "English" selected next to an error insisting the default
+     is not enabled. Re-pointing it is also what they almost certainly want,
+     since the alternative is an error demanding they re-pick by hand after
+     every removal.
+
+     Skipped while nothing is enabled: there is no language to move to, and
+     `enabled_languages`' own `min(1)` error is the accurate message then. The
+     schema's `refine` stays as the backstop and as the mirror of the backend's
+     cross-field rule. */
+  const defaultLanguage = useWatch({ control: form.control, name: 'default_language' });
+  useEffect(() => {
+    const enabled = enabledLanguages ?? [];
+    if (enabled.length === 0 || enabled.includes(defaultLanguage)) return;
+    form.setValue('default_language', enabled[0], { shouldDirty: true, shouldValidate: true });
+  }, [enabledLanguages, defaultLanguage, form]);
 
   const submit = form.handleSubmit(async (values) => {
     try {
@@ -56,7 +106,7 @@ export function AgentIdentitySection({ agent }: Props) {
     } catch (error) {
       applyApiError<AgentUpdateFormValues>(error, {
         setError: form.setError,
-        fields: ['name', 'human_inbox_email', 'status'],
+        fields: ['name', 'human_inbox_email', 'status', 'enabled_languages', 'default_language'],
       });
     }
   });
@@ -104,6 +154,36 @@ export function AgentIdentitySection({ agent }: Props) {
                   { value: 'paused', label: t.agents.status.paused },
                   { value: 'archived', label: t.agents.status.archived },
                 ]}
+                required
+              />
+            </div>
+
+            {/* Full width rather than a third grid cell: the list is long
+                enough that a half-width column would scroll in two dimensions
+                at once on a narrow viewport. */}
+            <RHFSearchableCheckboxGroupField<AgentUpdateFormValues>
+              name="enabled_languages"
+              label={t.agents.form.enabledLanguagesLabel}
+              description={t.agents.form.enabledLanguagesDescription}
+              options={SUPPORTED_LANGUAGES}
+              disabled={!canManage}
+              required
+              copy={{
+                searchPlaceholder: t.agents.form.enabledLanguagesSearchPlaceholder,
+                selectAll: t.agents.form.enabledLanguagesSelectAll,
+                deselectAll: t.agents.form.enabledLanguagesDeselectAll,
+                selectedCount: t.agents.form.enabledLanguagesSelectedCount,
+                noMatches: t.agents.form.enabledLanguagesNoMatches,
+              }}
+            />
+
+            <div className="grid gap-4 sm:grid-cols-2">
+              <RHFSelectField<AgentUpdateFormValues>
+                name="default_language"
+                label={t.agents.form.defaultLanguageLabel}
+                description={t.agents.form.defaultLanguageDescription}
+                disabled={!canManage}
+                options={defaultLanguageOptions}
                 required
               />
             </div>

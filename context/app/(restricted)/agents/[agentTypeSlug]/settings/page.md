@@ -23,6 +23,44 @@ is the §5.1 "human inbox/contact to receive lead notifications and handoff
 requests" prerequisite from the client scope doc, one field doing both
 jobs).
 
+## The Languages picker (backend 2026-09-18)
+
+`AgentIdentitySection` also owns `enabled_languages` and `default_language`,
+added when the backend shipped validation for them
+(`feat/multi-language-support-2026-09-18`). Both write through the same
+`PATCH /agents/{id}/` as name/email/status. Before this, **no UI existed for
+either field**, so every agent had been stuck at `enabled_languages: ["en"]`
+since provisioning.
+
+- `src/lib/constants/agentLanguages.ts` mirrors the backend's
+  `SUPPORTED_LANGUAGE_CODES` (45 curated ISO 639-1 codes, no locale variants)
+  and is cited by that constant in return, so the mirror is documented from
+  both ends. The codes are a `const` tuple, which is what lets `z.enum()`
+  consume them without a cast and makes the display-name map total: a code
+  with no name fails the build rather than rendering blank.
+- `agentUpdateSchema` mirrors all three server rules, including the cross-field
+  one, bound via `path: ['default_language']` so a client-side failure lands on
+  the same input the backend's own error targets.
+- The default-language select's options are narrowed with `useWatch` to
+  whatever is currently ticked, so the two fields cannot visibly disagree
+  before submit. The schema's `refine` still covers the case where the
+  currently-selected default gets unticked.
+
+**The consequence worth knowing:** publish requires `greeting`,
+`fallback_message`, and `disclosure_text` for _every_ enabled language
+(`AgentService._assert_localization_complete`). Enabling five languages creates
+15 mandatory fields on the Draft tab. The picker's description says so, because
+nothing else in the app does: there is no client-side publish gate and no
+per-language completeness indicator, so `missing_language_localization` arrives
+as a bare server-message toast after the Publish click. That gap is real and
+not addressed here.
+
+Not a concern, though it looks like one: `useAgentDraftForm`'s reset effect is
+keyed on `enabledLanguages.join(',')` and rebuilds the whole draft form when the
+list changes. `AgentDetailView` renders tabs through Radix `TabsContent` with no
+`forceMount`, so the Draft tab is already unmounted whenever Settings is on
+screen.
+
 ## View/manage split (backend 2026-09-07)
 
 `AgentDomainListCreateView` and `AgentKeyListCreateView` gained `GET`

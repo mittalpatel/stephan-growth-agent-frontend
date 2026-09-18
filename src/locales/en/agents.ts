@@ -208,6 +208,17 @@ export const agents = {
     nameLabel: 'Name',
     inboxEmailLabel: 'Human inbox email',
     statusLabel: 'Status',
+    enabledLanguagesLabel: 'Languages',
+    enabledLanguagesDescription:
+      'The languages this agent will answer in. Each one you enable needs its own greeting, fallback message, and AI disclosure on the Draft tab before the agent can be published again.',
+    enabledLanguagesSearchPlaceholder: 'Search languages',
+    enabledLanguagesSelectAll: 'Select all',
+    enabledLanguagesDeselectAll: 'Deselect all',
+    enabledLanguagesSelectedCount: '{selected} of {total} selected',
+    enabledLanguagesNoMatches: 'No languages match your search.',
+    defaultLanguageLabel: 'Default language',
+    defaultLanguageDescription:
+      'Used for the widget greeting and whenever a visitor writes in a language this agent does not support.',
   },
   toast: {
     updated: 'Agent updated.',
@@ -226,6 +237,8 @@ export const agents = {
     listItemRequired: 'Enter a value or remove this row.',
     listItemTooLong: 'This is too long.',
     listTooLong: 'You can add up to 20 items.',
+    enabledLanguagesRequired: 'Enable at least one language.',
+    defaultLanguageNotEnabled: 'The default language must be one of the enabled languages.',
   },
   detail: {
     backToList: 'Back to agents',

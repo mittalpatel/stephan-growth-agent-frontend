@@ -18,6 +18,7 @@ import {
   WIDGET_MODES,
   WIDGET_POSITIONS,
 } from '@/lib/constants/agentTheme';
+import { SUPPORTED_LANGUAGE_CODES } from '@/lib/constants/agentLanguages';
 import { HEX_COLOR_RE } from '@/lib/contrast';
 import { isValidHostname } from '@/lib/hostname';
 import { t } from '@/locales';
@@ -67,15 +68,31 @@ const stringListField = (maxItemLength?: number) =>
  * auto-provisioned roster (backend 2026-09-07 removed `POST /agents/`
  * entirely, along with `AgentCreateSerializer`).
  */
-export const agentUpdateSchema = z.object({
-  name: z
-    .string()
-    .trim()
-    .min(1, t.agents.validation.nameRequired)
-    .max(200, t.agents.validation.nameTooLong),
-  human_inbox_email: z.string().trim().email(t.agents.validation.emailInvalid),
-  status: z.enum(['active', 'paused', 'archived']),
-});
+export const agentUpdateSchema = z
+  .object({
+    name: z
+      .string()
+      .trim()
+      .min(1, t.agents.validation.nameRequired)
+      .max(200, t.agents.validation.nameTooLong),
+    human_inbox_email: z.string().trim().email(t.agents.validation.emailInvalid),
+    status: z.enum(['active', 'paused', 'archived']),
+    // Mirrors `AgentWriteSerializer.validate_enabled_languages`: the allowlist
+    // rejects unknown codes, and an agent with no language at all cannot
+    // answer anyone.
+    enabled_languages: z
+      .array(z.enum(SUPPORTED_LANGUAGE_CODES))
+      .min(1, t.agents.validation.enabledLanguagesRequired),
+    default_language: z.enum(SUPPORTED_LANGUAGE_CODES),
+  })
+  // Mirrors the serializer's cross-field `validate()`. Bound to
+  // `default_language` via `path` because that is the field the backend's own
+  // error targets, so a client-side failure and a server-side one land on the
+  // same input rather than in two different places.
+  .refine((values) => values.enabled_languages.includes(values.default_language), {
+    path: ['default_language'],
+    message: t.agents.validation.defaultLanguageNotEnabled,
+  });
 
 export type AgentUpdateFormValues = z.infer<typeof agentUpdateSchema>;
 
