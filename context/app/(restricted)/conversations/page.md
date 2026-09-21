@@ -298,3 +298,11 @@ bottom; loading older pages never moves it.
 `handoff_requested` danger (red, a visitor is waiting on a human),
 `handoff_active` warning (amber, a human is handling it), `resolved` success
 (green), `abandoned` neutral (grey). The two handoff states used to share amber.
+
+`abandoned` has two sources since the backend's widget session lifecycle (2026-09-21):
+the visitor ending the chat from the widget, and an hourly sweep that abandons an
+`open` or unclaimed `handoff_requested` conversation once its visitor session has
+idled 24 hours or reached the 7 day cap. A conversation with an operator attached
+(`handoff_active`) is exempt from the idle rule. So an `abandoned` row can now appear
+with no visitor action, and there is no field telling the two apart. Nothing to
+render differently: the status type, label and tone already cover it.
