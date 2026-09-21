@@ -73,7 +73,11 @@ stay in the API because the widget and agent defaults still read them
   shell use it with the backend's readable text color) and `email_reply_to`.
 - **Domains** (`DomainsTab`/`useOrganizationDomains.ts`; hidden unless
   `NEXT_PUBLIC_CUSTOM_DOMAINS_ENABLED=true`, set together with the backend's
-  `CUSTOM_DOMAIN_ROUTING_ENABLED`): claim, verify,
+  `CUSTOM_DOMAIN_ROUTING_ENABLED`). **Dormant by decision, 2026-09-21**: the product
+  is not using domain-based organizations, so the flag stays off and this tab does not
+  render. The code is kept rather than deleted in case that reverses; the same flag now
+  also short-circuits `getPublicBranding` so nothing queries for domains while it is
+  off. What follows describes the tab as built, for whoever turns it on: claim, verify,
   promote, and remove custom domains. `verify` is a real DNS TXT lookup: each
   pending row shows the record to publish (`dns_record`: type, name, value) and a
   "Check DNS record" button, which fails with the backend's own message until the

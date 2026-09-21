@@ -45,7 +45,11 @@ hamburger button, closed by its own close button or the backdrop.
   the restricted layout's `generateMetadata` (server-only `getOrgBrandSummary`)
   overrides the root `%s | YB Inspire` title template, resolved per request.
   Beyond the mark, org colors are NOT applied anywhere else in the dashboard.
-- **Signed-out pages** (`/`, `/login`, forgot-password, signup): branded by hostname.
+- **Signed-out pages** (`/`, `/login`, forgot-password, signup): branded by hostname,
+  but **inert unless `CUSTOM_DOMAINS_ENABLED` is on**, which it is not by default.
+  `getPublicBranding()` returns `null` immediately when the flag is off, so these pages
+  stay platform-branded with no backend call on first paint. The rest of this paragraph
+  describes what happens once the flag is turned on.
   `getPublicBranding()` (server-only, `cache()`d per request) sends the request Host
   to the unauthenticated `GET /public/branding/?host=` (outside `/api/v1/`), which
   answers only for a domain that passed DNS verification; anything else, including

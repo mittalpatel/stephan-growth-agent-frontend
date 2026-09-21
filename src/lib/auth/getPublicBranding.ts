@@ -3,6 +3,7 @@ import { cache } from 'react';
 import type { Metadata } from 'next';
 import { headers } from 'next/headers';
 
+import { CUSTOM_DOMAINS_ENABLED } from '@/constants/features';
 import { serverBackendOrigin } from '@/lib/serverBackendOrigin';
 import type { PublicBranding } from '@/types/settings';
 
@@ -16,8 +17,15 @@ import type { PublicBranding } from '@/types/settings';
  * header only selects whose public branding to look up, so a spoofed one reveals
  * nothing the real domain does not already show any visitor. Not cached: it is
  * per-host and small, and a rename should show on the next load.
+ *
+ * Short-circuited while custom domains are off. Without them there is no verified
+ * domain for the lookup to match, so every call is a backend round trip that can only
+ * return null, on the first paint of the landing and auth pages. Signed-in branding is
+ * unaffected: it comes from `GET /settings/brand/summary/` and never needed a domain.
  */
 export const getPublicBranding = cache(async (): Promise<PublicBranding | null> => {
+  if (!CUSTOM_DOMAINS_ENABLED) return null;
+
   const requestHeaders = await headers();
   const host = requestHeaders.get('x-forwarded-host') ?? requestHeaders.get('host');
   if (!host) return null;
