@@ -2,12 +2,15 @@
 
 import type { FieldValues, Path } from 'react-hook-form';
 import { useFormContext } from 'react-hook-form';
+import { NativeSelect } from '@/components/common/NativeSelect';
 import { cn } from '@/lib/utils';
-import { fieldDescriptionCls, fieldInputCls, fieldLabelCls, getRhfError } from './fieldStyles';
+import { fieldDescriptionCls, fieldLabelCls, getRhfError } from './fieldStyles';
 
 export type SelectFieldOption = Readonly<{ value: string; label: string }>;
 
-// Generic native <select> bound to the surrounding RHF context. Pass `placeholder`
+// Generic select bound to the surrounding RHF context, rendered through the shared
+// `NativeSelect` so it matches every other control. Still a native select, so
+// `register()`'s ref and change handling pass straight through. Pass `placeholder`
 // to render a leading empty-value option (e.g. an optional field's "—").
 type Props<T extends FieldValues> = Readonly<{
   name: Path<T>;
@@ -44,12 +47,13 @@ export function RHFSelectField<T extends FieldValues>({
         {required ? ' *' : ''}
       </label>
       {description && <p className={fieldDescriptionCls}>{description}</p>}
-      <select
+      <NativeSelect
         id={name}
         disabled={disabled || isSubmitting}
         aria-invalid={error ? true : undefined}
         {...register(name)}
-        className={cn(fieldInputCls, error && 'border-error')}
+        containerClassName="w-full"
+        className={cn(error && 'border-error')}
       >
         {placeholder !== undefined && <option value="">{placeholder}</option>}
         {options.map((o) => (
@@ -57,7 +61,7 @@ export function RHFSelectField<T extends FieldValues>({
             {o.label}
           </option>
         ))}
-      </select>
+      </NativeSelect>
       {error && <p className="mt-1 text-xs text-error">{error}</p>}
     </div>
   );

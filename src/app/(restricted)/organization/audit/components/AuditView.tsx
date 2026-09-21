@@ -133,7 +133,6 @@ export default function AuditView() {
       <PageHeader title={copy.title} description={copy.description} />
 
       <FilterToolbar
-        title={list.title}
         total={list.total}
         displayed={list.displayed}
         isFetching={list.isFetching}

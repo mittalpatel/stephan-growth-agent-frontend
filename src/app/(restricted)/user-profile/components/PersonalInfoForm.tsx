@@ -32,12 +32,15 @@ export function PersonalInfoForm({ profile }: Readonly<{ profile: UserProfile }>
       <form onSubmit={submit} className="grid gap-4 md:grid-cols-2">
         <div className="md:col-span-2">
           <Label htmlFor="email">{copy.emailLabel}</Label>
+          {/* No fill override: `bg-accent` is the hover surface and rendered this
+              read-only field as a dark block. `Input`'s own disabled styling is what
+              every other non-editable field in the app uses. */}
           <Input
             id="email"
             value={profile.email}
             readOnly
             disabled
-            className={fieldClass(false, 'cursor-not-allowed bg-accent')}
+            className={fieldClass(false, 'cursor-not-allowed')}
           />
         </div>
 

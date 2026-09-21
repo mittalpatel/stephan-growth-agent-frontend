@@ -42,28 +42,30 @@ export function UserProfileClient() {
   const initials = initialsOf(profile.full_name, profile.email);
 
   return (
-    <div className="flex flex-col gap-6 px-4 py-6 sm:px-6 lg:px-8">
+    // LayoutWrapper already applies the page gutter and max width; padding again
+    // here pushed this page's content off the left edge every other page shares.
+    <div className="flex flex-col gap-6">
       <PageHeader title={copy.title} description={copy.subtitle} />
 
       <Tabs defaultValue="profile" orientation="vertical" className="items-start">
-        <TabsList className="w-full shrink-0 gap-1 rounded-2xl border border-input bg-card p-2 sm:w-56">
+        <TabsList className="border-input bg-card w-full shrink-0 gap-1 rounded-lg border p-2 sm:w-56">
           <TabsTrigger
             value="profile"
-            className="justify-start gap-2 rounded-xl px-3 py-2 font-medium data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
+            className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground justify-start gap-2 rounded-md px-3 py-2 font-medium"
           >
             <User className="size-4" aria-hidden />
             {copy.tabs.profile}
           </TabsTrigger>
           <TabsTrigger
             value="security"
-            className="justify-start gap-2 rounded-xl px-3 py-2 font-medium data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
+            className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground justify-start gap-2 rounded-md px-3 py-2 font-medium"
           >
             <Shield className="size-4" aria-hidden />
             {copy.tabs.security}
           </TabsTrigger>
           <TabsTrigger
             value="sessions"
-            className="justify-start gap-2 rounded-xl px-3 py-2 font-medium data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
+            className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground justify-start gap-2 rounded-md px-3 py-2 font-medium"
           >
             <Monitor className="size-4" aria-hidden />
             {copy.tabs.sessions}
@@ -72,12 +74,8 @@ export function UserProfileClient() {
 
         <TabsContent value="profile" className="flex flex-col gap-6">
           {/* Profile hero — only shown on the Profile tab, not Security/Sessions. */}
-          <section className="relative overflow-hidden rounded-2xl border border-input bg-card p-6 shadow-sm sm:p-7">
-            <div
-              className="absolute -right-10 -top-10 h-40 w-40 rounded-full bg-primary/10"
-              aria-hidden
-            />
-            <div className="relative flex flex-wrap items-center gap-5">
+          <section className="elevated p-6 sm:p-7">
+            <div className="flex flex-wrap items-center gap-5">
               <div className="flex h-20 w-20 shrink-0 items-center justify-center rounded-2xl bg-primary text-2xl font-bold text-primary-foreground shadow-lg">
                 {initials}
               </div>

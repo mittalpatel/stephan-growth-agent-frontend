@@ -119,7 +119,6 @@ export function ApprovalsListView() {
       <PageHeader title={t.approvals.title} description={t.approvals.description} />
 
       <FilterToolbar
-        title={t.approvals.title}
         total={list.total}
         displayed={list.approvals.length}
         isFetching={list.isFetching}

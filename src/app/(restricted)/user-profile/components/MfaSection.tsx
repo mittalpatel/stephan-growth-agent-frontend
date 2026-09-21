@@ -11,19 +11,9 @@ import MfaDisableDialog from './MfaDisableDialog';
 import MfaEnrollDialog from './MfaEnrollDialog';
 import MfaRecoveryCodesDialog from './MfaRecoveryCodesDialog';
 
-const copy = t.userProfile.mfa;
-const CARD = 'rounded-2xl border border-border bg-card p-6 shadow-sm';
+import { CARD, SectionHeader } from './profileUi';
 
-function SectionHeader({ icon, title }: Readonly<{ icon: React.ReactNode; title: string }>) {
-  return (
-    <div className="mb-5 flex items-center gap-3 border-b border-input pb-4">
-      <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary text-primary-foreground">
-        {icon}
-      </span>
-      <h2 className="text-lg font-normal text-foreground">{title}</h2>
-    </div>
-  );
-}
+const copy = t.userProfile.mfa;
 
 export function MfaSection() {
   const {

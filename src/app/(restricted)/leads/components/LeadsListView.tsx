@@ -134,7 +134,6 @@ export function LeadsListView({ agentId }: Props = {}) {
       {!agentId && <PageHeader title={t.leads.title} description={t.leads.description} />}
 
       <FilterToolbar
-        title={t.leads.title}
         total={list.total}
         displayed={list.leads.length}
         isFetching={list.isFetching}

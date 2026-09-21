@@ -22,7 +22,7 @@ export const legal = {
 
   privacyPolicy: {
     title: 'Privacy Notice',
-    subtitle: 'Placeholder — replace before launch',
+    subtitle: 'Placeholder text. Replace before launch.',
     sections: [
       {
         body: [
@@ -74,7 +74,7 @@ export const legal = {
 
   termsAndConditions: {
     title: 'Terms and Conditions of Use',
-    subtitle: 'Placeholder — replace before launch',
+    subtitle: 'Placeholder text. Replace before launch.',
     sections: [
       {
         body: [

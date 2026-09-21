@@ -163,7 +163,10 @@ export function BillingView() {
     }
 
     if (plans.length === 0) {
-      return <p className="text-muted-foreground text-sm">{t.billing.plans.empty}</p>;
+      // `EmptyState`, like every other empty list in the app and like this
+      // section's own error branch above. A bare sentence here read as loose text
+      // under a heading, with the carded Subscription and Usage sections above it.
+      return <EmptyState title={t.billing.plans.empty} />;
     }
 
     return (

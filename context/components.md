@@ -76,12 +76,35 @@ feature-agnostic the way `RHFSelectField`'s `placeholder` does. The pattern was
 proven first, un-extracted, in `KnowledgeTargetsPanel`, which keeps its own local
 copy because it is not RHF-bound.
 
+## NativeSelect
+
+`src/components/common/NativeSelect.tsx`
+
+A native `<select>` wearing the shadcn `Select` trigger's chrome: same border,
+radius, focus ring and a chevron. Used by `FilterToolbar` (page size, sort),
+`ListPagination` (page size), `RHFSelectField` and `RHFObjectListField`, which is
+every select in the app that is not the Radix one.
+
+Deliberately still native rather than Radix: it keeps RHF's `register()` ref
+spreading straight through, keeps native keyboard behaviour, and keeps the platform
+picker on mobile, which beats a custom listbox on a phone. Only the chrome changed,
+so the controls that adopted it behave exactly as they did before.
+
+The chevron is a real element, not a background image, because a data-URI SVG cannot
+follow `currentColor` and this has to read in both themes. Pass `containerClassName`
+for the wrapper (e.g. `w-full` in a form) and `className` for the select itself.
+
 ## FilterToolbar
 
 `src/components/common/FilterToolbar.tsx`
 
-The list-page header: title, result count, view toggle, search, filters, reset, sort,
-page size, and an optional trailing action.
+The list-page header: optional title, result count, view toggle, search, filters,
+reset, sort, page size, and an optional trailing action.
+
+`title` is optional (2026-09-21). A page that already names itself in its
+`PageHeader` omits it, so the name is not printed twice and the page has one h1;
+the toolbar's own heading is an h2. Only a list with no page header of its own
+(projects, agent knowledge) still passes a title.
 
 Renders its filter controls **entirely from the backend's `?type=parameters`
 payload**, so adding a filter is a backend-only change. Filter chips show what is

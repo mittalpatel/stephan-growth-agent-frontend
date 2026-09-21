@@ -27,6 +27,14 @@ export const notifications = {
     invite_accepted: 'Invite accepted',
     project_shared: 'A project was shared with you',
     conversation_assigned: 'A conversation was assigned to you',
+    // Added 2026-09-21: these five existed in the backend's EventType but had no
+    // label here, so the preferences list and the bell showed the raw key
+    // ("lead_captured") to the user.
+    lead_captured: 'A lead was captured',
+    conversation_escalated: 'A conversation was escalated',
+    approval_pending: 'An action needs your approval',
+    org_data_export_ready: 'Your data export is ready',
+    org_deletion_requested: 'Organization deletion requested',
   },
 
   /**
@@ -60,7 +68,7 @@ export const notifications = {
     title: 'Notification preferences',
     description: 'Choose which notifications you receive by email.',
     channelEmail: 'Email',
-    requiredNote: 'Required — carries a security code you need to complete the action.',
+    requiredNote: 'Required. It carries a security code you need to complete the action.',
     updated: 'Preferences updated.',
     updateFailed: "Couldn't update this preference. Please try again.",
   },

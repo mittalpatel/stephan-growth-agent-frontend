@@ -81,7 +81,7 @@ export const userProfile = {
     disableConfirmButton: 'Disable',
     recoveryCodesDialogTitle: 'Save your recovery codes',
     recoveryCodesWarning:
-      'Each code can be used once if you lose access to your authenticator app. Store them somewhere safe — they will not be shown again.',
+      'Each code can be used once if you lose access to your authenticator app. Store them somewhere safe, because they will not be shown again.',
     recoveryCodesDone: 'Done',
     copyAllButton: 'Copy all',
     downloadButton: 'Download',

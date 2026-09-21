@@ -122,7 +122,6 @@ export default function NotificationsView() {
       />
 
       <FilterToolbar
-        title={list.title}
         total={list.total}
         displayed={list.displayed}
         isFetching={list.isFetching}

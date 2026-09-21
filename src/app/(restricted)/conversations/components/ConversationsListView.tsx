@@ -268,7 +268,6 @@ export function ConversationsListView({ agentId: pinnedAgentId }: Props = {}) {
       ) : (
         <>
           <FilterToolbar
-            title={t.conversations.title}
             total={list.total}
             displayed={list.conversations.length}
             isFetching={list.isFetching}

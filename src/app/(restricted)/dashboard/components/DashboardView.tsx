@@ -7,6 +7,7 @@ import { useAgentsList } from '@/app/(restricted)/agents/hooks/useAgentsList';
 import { useUser } from '@/app/(restricted)/context/UserContext';
 import { EmptyState } from '@/components/common/EmptyState';
 import { MetricCard } from '@/components/common/MetricCard';
+import { LEAD_STATUS_TONE } from '@/app/(restricted)/leads/leadStatusTone';
 import { StatusBadge } from '@/components/common/StatusBadge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -248,7 +249,14 @@ export function DashboardView() {
                 <div key={lead.id} className="flex items-center justify-between gap-3 py-3">
                   <div className="min-w-0">
                     <p className="truncate text-sm font-medium">{lead.name || lead.email}</p>
-                    <p className="text-muted-foreground text-xs">{lead.status}</p>
+                    {/* The same badge and label the Leads table uses. This printed
+                        the raw enum ("new", "qualified") in lowercase, which was both
+                        untranslated and the only place a lead status was not a badge. */}
+                    <StatusBadge
+                      label={t.leads.status[lead.status]}
+                      tone={LEAD_STATUS_TONE[lead.status]}
+                      className="mt-1"
+                    />
                   </div>
                   <span className="text-muted-foreground shrink-0 text-xs">
                     {formatDate(lead.created_at)}

@@ -4,6 +4,7 @@ import { Plus, X } from 'lucide-react';
 import type { FieldValues, Path } from 'react-hook-form';
 import { useFieldArray, useFormContext } from 'react-hook-form';
 import { Button } from '@/components/ui/button';
+import { NativeSelect } from '@/components/common/NativeSelect';
 import { cn } from '@/lib/utils';
 import { fieldDescriptionCls, fieldInputCls, fieldLabelCls, getRhfError } from './fieldStyles';
 import type { SelectFieldOption } from './RHFSelectField';
@@ -129,20 +130,21 @@ export function RHFObjectListField<T extends FieldValues>({
                   const error = cellError(index, column.key);
                   const path = `${name}.${index}.${column.key}` as Path<T>;
                   return column.type === 'select' ? (
-                    <select
+                    <NativeSelect
                       key={column.key}
                       aria-label={column.label}
                       aria-invalid={error ? true : undefined}
                       disabled={isDisabled}
                       {...register(path)}
-                      className={cn(fieldInputCls, column.className, error && 'border-error')}
+                      containerClassName={cn('flex-1', column.className)}
+                      className={cn(error && 'border-error')}
                     >
                       {(column.options ?? []).map((option) => (
                         <option key={option.value} value={option.value}>
                           {option.label}
                         </option>
                       ))}
-                    </select>
+                    </NativeSelect>
                   ) : (
                     <input
                       key={column.key}

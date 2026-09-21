@@ -15,6 +15,7 @@ import {
 import { AnimatePresence, m } from 'motion/react';
 
 import { DateRangePicker } from './DateRangePicker';
+import { NativeSelect } from './NativeSelect';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { MotionPopover } from '@/components/motion/MotionPopover';
 import { chipTransition } from '@/components/motion/tokens';
@@ -30,7 +31,11 @@ export type SortOption = {
 };
 
 export type FilterToolbarProps = Readonly<{
-  title: string;
+  /** Omit on a page that already renders this same name in its `PageHeader`:
+   *  repeating it here is visual noise and a second h1 for a screen reader.
+   *  Only a list with no page header of its own (projects, agent knowledge)
+   *  passes it. Without it the row still shows the "showing X of Y" count. */
+  title?: string;
   total: number;
   displayed: number;
   isFetching: boolean;
@@ -81,7 +86,9 @@ export type FilterToolbarProps = Readonly<{
 // one edit. Semantic tokens only: a literal colour here would break dark mode.
 const CONTROL = 'border-input bg-background rounded-lg border';
 const FOCUS = 'focus-visible:ring-ring/50 focus-visible:outline-none focus-visible:ring-[3px]';
-const selectClass = `${CONTROL} ${FOCUS} text-foreground px-3 py-1 text-sm font-medium`;
+// Height matches the search input and the buttons beside it, so the whole row
+// sits on one baseline; `NativeSelect` already supplies border, radius and focus.
+const selectClass = 'text-foreground h-10 font-medium';
 const iconButton = `${CONTROL} ${FOCUS} text-muted-foreground hover:text-foreground hover:bg-accent flex h-10 w-10 shrink-0 items-center justify-center transition-colors`;
 
 type FilterOptionItemProps = {
@@ -241,8 +248,10 @@ export function FilterToolbar(props: FilterToolbarProps) {
       {/* ── Row 1: Title/count | view toggle + reset + dates ── */}
       <div className="flex flex-wrap items-start justify-between gap-3 sm:items-center">
         <div className="min-w-0">
-          <h1 className="text-xl font-semibold tracking-tight">{title}</h1>
-          <p className="text-muted-foreground mt-0.5 text-sm">
+          {/* h2, not h1: a page that does pass a title already has its own
+              page-level h1 above this, and two h1s is a screen-reader ambiguity. */}
+          {title && <h2 className="text-xl font-semibold tracking-tight">{title}</h2>}
+          <p className={`text-muted-foreground text-sm ${title ? 'mt-0.5' : ''}`}>
             {isFetching ? t.common.loading : format(t.common.showingOf, { displayed, total })}
           </p>
         </div>
@@ -446,7 +455,7 @@ export function FilterToolbar(props: FilterToolbarProps) {
             <span className="hidden sm:inline">{t.pagination.rowsPerPage}</span>
             <span className="sm:hidden">{t.common.pageShort}</span>
           </span>
-          <select
+          <NativeSelect
             value={limit}
             onChange={(e) => onLimitChange(Number(e.target.value))}
             aria-label={t.pagination.rowsPerPage}
@@ -457,7 +466,7 @@ export function FilterToolbar(props: FilterToolbarProps) {
                 {opt}
               </option>
             ))}
-          </select>
+          </NativeSelect>
         </div>
 
         {sortOptions.length > 0 && (
@@ -466,7 +475,7 @@ export function FilterToolbar(props: FilterToolbarProps) {
               <span className="hidden sm:inline">{t.common.sortBy}</span>
               <span className="sm:hidden">{t.common.sortShort}</span>
             </span>
-            <select
+            <NativeSelect
               value={sortField}
               onChange={(e) => onSortFieldChange(e.target.value)}
               aria-label={t.common.sortBy}
@@ -478,14 +487,14 @@ export function FilterToolbar(props: FilterToolbarProps) {
                   {opt.label}
                 </option>
               ))}
-            </select>
+            </NativeSelect>
             {sortField && (
               <button
                 type="button"
                 onClick={onSortDirectionToggle}
                 aria-label={t.common.sortDirection}
                 title={sortDirection === 'asc' ? t.common.asc : t.common.desc}
-                className={`${CONTROL} ${FOCUS} text-muted-foreground hover:bg-accent hover:text-foreground flex h-8 w-8 items-center justify-center transition-colors`}
+                className={`${CONTROL} ${FOCUS} text-muted-foreground hover:bg-accent hover:text-foreground flex h-10 w-10 items-center justify-center rounded-lg transition-colors`}
               >
                 {sortDirection === 'asc' ? (
                   <ArrowUp className="h-3.5 w-3.5" />

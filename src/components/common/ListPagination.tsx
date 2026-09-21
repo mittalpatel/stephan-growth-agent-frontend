@@ -1,5 +1,6 @@
 'use client';
 
+import { NativeSelect } from './NativeSelect';
 import { format } from '@/lib/i18n';
 import { t } from '@/locales';
 
@@ -40,18 +41,18 @@ export function ListPagination({
   const btnActive = 'bg-primary text-primary-foreground border-primary';
 
   const sizeSelect = (
-    <select
+    <NativeSelect
       value={limit}
       onChange={(e) => onLimitChange(Number(e.target.value))}
       aria-label={t.pagination.rowsPerPage}
-      className="border-input bg-background focus-visible:ring-ring/50 rounded-md border px-2 py-1 text-sm focus-visible:ring-[3px] focus-visible:outline-none"
+      className="h-8 py-0"
     >
       {limitOptions.map((opt) => (
         <option key={opt} value={opt}>
           {opt}
         </option>
       ))}
-    </select>
+    </NativeSelect>
   );
 
   return (
