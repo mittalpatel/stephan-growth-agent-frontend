@@ -3,7 +3,7 @@
 import { FormProvider } from 'react-hook-form';
 
 import { usePermissions } from '@/app/(restricted)/context/PermissionsContext';
-import { RHFTextField } from '@/components/common/form';
+import { RHFColorField, RHFTextField } from '@/components/common/form';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { t } from '@/locales';
@@ -46,7 +46,7 @@ export function BrandSettingsTab() {
           description={t.organizations.settingsTabs.brand.displayNameHint}
           disabled={!canManage}
         />
-        <RHFTextField<BrandSettingsFormValues>
+        <RHFColorField<BrandSettingsFormValues>
           name="color_primary"
           label={t.organizations.settingsTabs.brand.colorLabel}
           placeholder={t.organizations.settingsTabs.brand.colorPrimaryPlaceholder}

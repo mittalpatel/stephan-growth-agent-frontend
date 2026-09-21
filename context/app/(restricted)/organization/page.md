@@ -69,7 +69,8 @@ stay in the API because the widget and agent defaults still read them
   the form's reset keeps dirty values so an upload never wipes unsaved text), then
   `display_name` (client-validated as free text; a branding field rather than an edit
   to General's `name`, so rebranding never touches the slug), primary color
-  (client-validated hex, mirroring the backend's `_validate_hex`; emails and the
+  (`RHFColorField`: a color swatch plus a hex box, so it can be picked or pasted;
+  client-validated hex, mirroring the backend's `_validate_hex`; emails and the
   shell use it with the backend's readable text color) and `email_reply_to`.
 - **Domains** (`DomainsTab`/`useOrganizationDomains.ts`; hidden unless
   `NEXT_PUBLIC_CUSTOM_DOMAINS_ENABLED=true`, set together with the backend's

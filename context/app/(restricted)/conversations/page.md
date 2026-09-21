@@ -284,8 +284,11 @@ on `Lead`, a separate resource). `PreviewBanner` is gone from this page.
 
 ## Transcript scrolling (2026-09-15)
 
-The three-column box is `h-[min(760px,calc(100dvh-10rem))]` with
-`lg:grid-rows-[minmax(0,1fr)]`, and the middle column is `min-h-0` with a
+The three-column box is `lg:h-[min(760px,calc(100dvh-10rem))]` with
+`lg:grid-rows-[minmax(0,1fr)]` (the fixed height is `lg` and up only: below it the
+panes stack at natural height, the list capped at `max-h-72` and the open conversation
+at `h-[40rem]`, so the transcript still scrolls with its reply box in view, since a
+fixed height there squeezed three nested scrollers into one box), and the middle column is `min-h-0` with a
 `shrink-0` header and composer. Without those height floors the transcript grew
 past the box and `overflow-hidden` clipped the composer instead of the messages
 scrolling. The transcript is the only scroll region (thin scrollbar, stable

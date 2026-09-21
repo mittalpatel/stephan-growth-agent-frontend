@@ -87,6 +87,7 @@ export const conversations = {
   reply: {
     label: 'Reply as a human',
     placeholder: 'Type a reply to send to this visitor',
+    hint: 'Press Enter to send, Shift+Enter for a new line.',
     send: 'Send reply',
     sending: 'Sending…',
     takeOver: 'Take over conversation',

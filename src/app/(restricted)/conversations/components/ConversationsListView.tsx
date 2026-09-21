@@ -289,12 +289,22 @@ export function ConversationsListView({ agentId: pinnedAgentId }: Props = {}) {
             showDateRange={false}
           />
 
-          <div className="border-border bg-card grid h-[min(760px,calc(100dvh-10rem))] min-h-130 overflow-hidden rounded-2xl border lg:grid-cols-[300px_1fr_280px] lg:grid-rows-[minmax(0,1fr)]">
-            <div className="border-border min-h-0 overflow-y-auto border-r scrollbar-thin">
+          {/* Fixed-height three-pane layout from `lg` up, where each pane scrolls on
+              its own. Below that the panes stack, and a fixed height squeezed them into
+              nested scroll boxes (the transcript ended up 40px tall), so the stack
+              takes its natural height: only the list and the transcript are bounded,
+              and the details flow with the page. */}
+          <div className="border-border bg-card grid overflow-hidden rounded-2xl border lg:h-[min(760px,calc(100dvh-10rem))] lg:min-h-130 lg:grid-cols-[300px_1fr_280px] lg:grid-rows-[minmax(0,1fr)]">
+            <div className="border-border scrollbar-thin max-h-72 overflow-y-auto border-b lg:max-h-none lg:min-h-0 lg:border-r lg:border-b-0">
               {renderList()}
             </div>
 
-            <div className="flex min-h-0 min-w-0 flex-col">
+            <div
+              className={cn(
+                'flex min-h-0 min-w-0 flex-col',
+                activeId && !detailLoading && 'h-[40rem] lg:h-auto'
+              )}
+            >
               {!activeId || detailLoading ? (
                 <div className="flex flex-1 items-center justify-center p-8">
                   <p className="text-muted-foreground text-sm">
@@ -382,7 +392,12 @@ export function ConversationsListView({ agentId: pinnedAgentId }: Props = {}) {
               )}
             </div>
 
-            <div className="border-border flex min-w-0 flex-col gap-6 overflow-x-hidden overflow-y-auto border-l p-5">
+            <div
+              className={cn(
+                'border-border min-w-0 flex-col gap-6 overflow-hidden border-t p-5 lg:flex lg:overflow-y-auto lg:border-t-0 lg:border-l',
+                conversation ? 'flex' : 'hidden'
+              )}
+            >
               {conversation && (
                 <>
                   <section>

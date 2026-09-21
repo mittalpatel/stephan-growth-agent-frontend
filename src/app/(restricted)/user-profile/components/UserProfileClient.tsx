@@ -47,7 +47,11 @@ export function UserProfileClient() {
     <div className="flex flex-col gap-6">
       <PageHeader title={copy.title} description={copy.subtitle} />
 
-      <Tabs defaultValue="profile" orientation="vertical" className="items-start">
+      <Tabs
+        defaultValue="profile"
+        orientation="vertical"
+        className="flex-col items-start sm:flex-row"
+      >
         <TabsList className="border-input bg-card w-full shrink-0 gap-1 rounded-lg border p-2 sm:w-56">
           <TabsTrigger
             value="profile"
@@ -84,9 +88,9 @@ export function UserProfileClient() {
                   {profile.full_name || profile.email.split('@')[0]}
                 </h2>
                 {profile.role?.name && (
-                  <span className="mt-1 inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold uppercase text-primary-strong">
-                    <ShieldCheck className="h-3.5 w-3.5" />
-                    {profile.role.name}
+                  <span className="mt-1 inline-flex max-w-full items-center gap-1.5 rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold uppercase text-primary-strong">
+                    <ShieldCheck className="h-3.5 w-3.5 shrink-0" />
+                    <span className="truncate">{profile.role.name}</span>
                   </span>
                 )}
                 <p className="mt-2 flex items-center gap-1.5 text-sm text-muted-foreground">

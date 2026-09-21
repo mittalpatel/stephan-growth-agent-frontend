@@ -45,7 +45,7 @@ export default function HeaderOne({ onMenuClick }: Readonly<{ onMenuClick?: () =
         <Menu className="size-5" />
       </button>
 
-      <div className="min-w-0 shrink-0">
+      <div className="min-w-0 shrink">
         {organization && (
           <p className="text-muted-foreground truncate text-xs">{organization.name}</p>
         )}

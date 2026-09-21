@@ -94,7 +94,7 @@ export function DashboardView() {
           </h1>
           <p className="text-muted-foreground mt-1.5 text-[15px]">{t.dashboard.welcome}</p>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-3">
           <div className="bg-muted flex items-center gap-1 rounded-lg p-1">
             {(['7d', '30d', '90d'] as const).map((r) => (
               <button

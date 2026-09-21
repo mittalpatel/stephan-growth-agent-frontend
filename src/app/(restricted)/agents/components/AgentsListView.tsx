@@ -82,7 +82,7 @@ export function AgentsListView() {
       <div
         role="tablist"
         aria-label={t.agents.title}
-        className="bg-muted flex w-fit items-center gap-1 rounded-lg p-1"
+        className="bg-muted flex w-fit max-w-full items-center gap-1 overflow-x-auto overflow-y-hidden rounded-lg p-1"
       >
         {CATEGORY_TABS.map((tab) => {
           const active = catalog.category === tab;
@@ -94,7 +94,7 @@ export function AgentsListView() {
               aria-selected={active}
               onClick={() => catalog.onCategoryChange(tab)}
               className={cn(
-                'rounded-md px-3.5 py-1.5 text-sm font-semibold transition-colors',
+                'shrink-0 rounded-md px-3.5 py-1.5 text-sm font-semibold whitespace-nowrap transition-colors',
                 active
                   ? 'bg-background text-foreground shadow-sm'
                   : 'text-muted-foreground hover:text-foreground'

@@ -58,6 +58,10 @@ export function OperatorReplyComposer({
     try {
       await sendMessage(values.content);
       form.reset({ content: '' });
+      // The field disables itself while submitting, which drops focus. Restore it
+      // once it re-enables, so an operator can keep typing without reaching for
+      // the mouse.
+      setTimeout(() => form.setFocus('content'), 0);
     } catch (error) {
       applyApiError<OperatorMessageFormValues>(error, {
         setError: form.setError,
@@ -103,7 +107,9 @@ export function OperatorReplyComposer({
           name="content"
           label={t.conversations.reply.label}
           placeholder={t.conversations.reply.placeholder}
+          description={t.conversations.reply.hint}
           rows={2}
+          submitOnEnter
         />
         <div className="flex justify-end">
           <Button type="submit" size="sm" disabled={isSendingMessage || keepDraft}>
@@ -172,7 +178,7 @@ function TakeOverPrompt({ status, assignedOperatorEmail, isClaiming, onClaim }: 
         >
           <Icon className="size-4" aria-hidden />
         </span>
-        <div className="min-w-0 flex-1">
+        <div className="min-w-40 flex-1">
           <p className={cn('text-sm font-semibold', urgent && 'text-warning-foreground')}>
             {title}
           </p>

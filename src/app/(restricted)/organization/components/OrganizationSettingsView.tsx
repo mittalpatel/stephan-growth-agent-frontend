@@ -51,7 +51,7 @@ export default function OrganizationSettingsView() {
       <PageHeader title={t.organizations.title} description={t.organizations.description} />
 
       <Tabs defaultValue="general">
-        <TabsList className="max-w-full overflow-x-auto">
+        <TabsList className="max-w-full overflow-x-auto overflow-y-hidden">
           <TabsTrigger value="general">{t.organizations.settingsTabs.tabs.general}</TabsTrigger>
           <TabsTrigger value="brand">{t.organizations.settingsTabs.tabs.brand}</TabsTrigger>
           {CUSTOM_DOMAINS_ENABLED && (

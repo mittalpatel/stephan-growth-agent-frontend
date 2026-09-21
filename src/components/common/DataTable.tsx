@@ -77,7 +77,7 @@ export function DataTable({
   return (
     <div className={cn(DEFAULT_SHELL, className)}>
       {header}
-      <div className={cn('w-full overflow-x-auto', scrollClassName)}>
+      <div className={cn('w-full overflow-x-auto overflow-y-hidden', scrollClassName)}>
         <table className={cn('w-full', tableClassName)} style={minWidthStyle}>
           {children}
         </table>

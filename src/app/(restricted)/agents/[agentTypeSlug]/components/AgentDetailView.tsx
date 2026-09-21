@@ -237,7 +237,7 @@ export function AgentDetailView({ agentTypeSlug }: Props) {
             instead of leaving them at their natural width. */}
         <TabsList
           variant="line"
-          className="w-full justify-start overflow-x-auto rounded-none border-b [&>button]:flex-none"
+          className="w-full justify-start overflow-x-auto overflow-y-hidden rounded-none border-b [&>button]:flex-none"
         >
           <TabsTrigger value="overview">{t.agents.detail.tabs.overview}</TabsTrigger>
           {canViewConversations && (
