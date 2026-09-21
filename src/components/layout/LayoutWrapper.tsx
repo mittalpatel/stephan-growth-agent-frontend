@@ -9,6 +9,7 @@ import { PageTransition } from '@/components/motion/PageTransition';
 import { t } from '@/locales';
 import { RealtimeProvider } from '@/providers/RealtimeProvider';
 import { useOrgBranding } from '@/app/(restricted)/hooks/useOrgBranding';
+import { PLATFORM_FAVICON_HREF } from '@/lib/constants/brandAssets';
 
 /**
  * The app shell: a full-height sidebar rail (its own scroll region, pinned
@@ -21,19 +22,41 @@ import { useOrgBranding } from '@/app/(restricted)/hooks/useOrgBranding';
 export default function LayoutWrapper({ children }: Readonly<{ children: React.ReactNode }>) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const pathname = usePathname();
-  const { faviconUrl } = useOrgBranding();
+  const { faviconUrl, isBrandLoaded } = useOrgBranding();
 
-  // Swap the tab icon for the organization's own while it is set; the platform
-  // icon returns on cleanup. Same CSP `img-src` caveat as the sidebar logo: a
-  // blocked URL simply leaves the browser showing no icon change.
+  // Keep the tab icon in step with the organization's branding while the app shell is
+  // mounted. The server already renders the right icon (the restricted layout's
+  // `generateMetadata`); this is what updates it live when the Brand tab saves or
+  // clears one, with no reload.
+  //
+  // Two details this got wrong before. Any other icon link is detached rather than left
+  // alongside: a second `<link rel="icon">` only offers the browser a choice, and Chrome
+  // kept the platform `.ico` (it declares `sizes="256x256"` against an unsized PNG), so
+  // a saved favicon never appeared. And clearing a favicon has to put the platform icon
+  // back explicitly, because the link this displaced is the server-rendered organization
+  // one, which is exactly the icon that just stopped being correct.
+  //
+  // Nothing happens until the summary has actually loaded, so a slow response cannot
+  // flash the platform icon over the correct server-rendered one. Same CSP `img-src`
+  // caveat as the sidebar logo: a blocked URL leaves the browser showing no icon change.
   useEffect(() => {
-    if (!faviconUrl) return;
+    if (!isBrandLoaded) return;
+
+    const displaced = [...document.querySelectorAll<HTMLLinkElement>('link[rel~="icon"]')].map(
+      (node) => ({ node, parent: node.parentNode, before: node.nextSibling })
+    );
+    displaced.forEach(({ node }) => node.remove());
+
     const link = document.createElement('link');
     link.rel = 'icon';
-    link.href = faviconUrl;
+    link.href = faviconUrl ?? PLATFORM_FAVICON_HREF;
     document.head.appendChild(link);
-    return () => link.remove();
-  }, [faviconUrl]);
+
+    return () => {
+      link.remove();
+      displaced.forEach(({ node, parent, before }) => parent?.insertBefore(node, before));
+    };
+  }, [faviconUrl, isBrandLoaded]);
 
   // The realtime socket is mounted here, not on the Active Sessions page or the
   // notification bell alone, so a revocation/notification push is discovered

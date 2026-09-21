@@ -32,6 +32,9 @@ export function useOrgBranding() {
   const brand = query.data?.data;
 
   return {
+    // Distinguishes "still loading" from "loaded, and this organization has no
+    // favicon". Only the second should reset the tab icon to the platform's.
+    isBrandLoaded: query.isSuccess,
     displayName: brand?.display_name.trim() || t.common.appName,
     logoUrl: brand?.logo_url.trim() || null,
     faviconUrl: brand?.favicon_url.trim() || null,

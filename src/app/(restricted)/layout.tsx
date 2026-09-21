@@ -15,15 +15,25 @@ import ErrorContextProvider from './components/ErrorContext';
 import ImpersonationBanner from './components/ImpersonationBanner';
 
 /**
- * Tab titles carry the organization's white-label name instead of the platform's.
- * Overrides the root layout's `%s | YB Inspire` template for every page below this
- * layout. Resolved per request, so a rename shows on the next navigation or reload.
+ * Tab title and icon carry the organization's white-label identity instead of the
+ * platform's. Overrides the root layout's `%s | YB Inspire` template for every page
+ * below this layout. Resolved per request, so a rename shows on the next navigation.
+ *
+ * `icons` is set here rather than left to `LayoutWrapper`'s effect alone: an explicit
+ * `icons` replaces the file-based `src/app/favicon.ico` Next would otherwise emit,
+ * where appending a second `<link rel="icon">` client-side only leaves the browser to
+ * choose between them (Chrome keeps the `.ico`, which declares `sizes="256x256"`
+ * against an unsized PNG). Set server-side there is exactly one icon, in the first
+ * HTML, so the tab never shows the platform icon first.
  */
 export async function generateMetadata(): Promise<Metadata> {
   const brand = await getOrgBrandSummary(await getServerAccessToken());
   const name = brand?.display_name.trim();
-  if (!name) return {};
-  return { title: { default: name, template: `%s | ${name}` } };
+  const favicon = brand?.favicon_url.trim();
+  return {
+    ...(name ? { title: { default: name, template: `%s | ${name}` } } : {}),
+    ...(favicon ? { icons: { icon: favicon } } : {}),
+  };
 }
 
 export default async function RestrictedLayout({ children }: { children: React.ReactNode }) {

@@ -1,4 +1,6 @@
 import type { Metadata } from 'next';
+
+import { PLATFORM_FAVICON_HREF } from '@/lib/constants/brandAssets';
 import { JetBrains_Mono, Poppins, Work_Sans } from 'next/font/google';
 import { headers } from 'next/headers';
 import { Toaster } from 'sonner';
@@ -46,6 +48,13 @@ const jetbrainsMono = JetBrains_Mono({
 export const metadata: Metadata = {
   title: { default: t.common.appName, template: `%s | ${t.common.appName}` },
   description: t.common.appDescription,
+  // Declared here rather than as `src/app/favicon.ico`. The file convention emits its
+  // own `<link rel="icon">` on every route and cannot be overridden per segment ("favicons
+  // can only be set in the root /app segment" — Next's app-icons reference), so a tenant
+  // favicon set by the restricted layout only ever became a second link the browser chose
+  // between. As metadata it is an ordinary field a deeper segment can replace. The file
+  // now lives in `public/`, which is why the href has no build hash.
+  icons: { icon: PLATFORM_FAVICON_HREF },
 };
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {

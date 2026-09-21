@@ -6,6 +6,13 @@
  */
 export type BrandAssetKind = 'logo' | 'favicon';
 
+/**
+ * The platform's own tab icon, served from `public/`. Referenced by the root layout's
+ * `icons` metadata and by `LayoutWrapper`, which restores it the moment an organization
+ * clears its own favicon. Both must name the same file, so it is declared once here.
+ */
+export const PLATFORM_FAVICON_HREF = '/favicon.ico';
+
 export const BRAND_ASSET_RULES: Record<
   BrandAssetKind,
   { mimeTypes: readonly string[]; maxBytes: number }

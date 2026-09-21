@@ -41,9 +41,18 @@ hamburger button, closed by its own close button or the backdrop.
   primary color and readable text color (`orgAccentStyle`, an inline override of the
   `--brand-accent` token pair on that one element, the same sanctioned exception as
   `RHFColorField`, since the value is tenant data). A logo that fails to load falls
-  back to the tile. `LayoutWrapper` also swaps the tab favicon for `favicon_url`, and
-  the restricted layout's `generateMetadata` (server-only `getOrgBrandSummary`)
-  overrides the root `%s | YB Inspire` title template, resolved per request.
+  back to the tile. The restricted layout's `generateMetadata` (server-only
+  `getOrgBrandSummary`) sets both the tab title, overriding the root
+  `%s | YB Inspire` template, and `icons`, so the organization's favicon is in the
+  first HTML. The platform icon is declared as root `metadata.icons` pointing at
+  `public/favicon.ico` (`PLATFORM_FAVICON_HREF`), NOT through Next's favicon file
+  convention in the app root: that convention emits on every route and cannot be
+  overridden per segment, so it left two icon links and Chrome kept the `.ico`. `LayoutWrapper`'s effect keeps the
+  tab in step live, once `isBrandLoaded` is true so a slow read cannot flash the wrong
+  icon: it detaches every other icon link and appends one, falling back to
+  `PLATFORM_FAVICON_HREF` when the favicon is cleared — restoring the displaced link
+  is wrong there, since that link is the server-rendered organization icon that just
+  stopped being correct.
   Beyond the mark, org colors are NOT applied anywhere else in the dashboard.
 - **Signed-out pages** (`/`, `/login`, forgot-password, signup): branded by hostname,
   but **inert unless `CUSTOM_DOMAINS_ENABLED` is on**, which it is not by default.
