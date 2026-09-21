@@ -1,16 +1,14 @@
 import { describe, it, expect } from 'vitest';
 
-import { brandSettingsSchema, organizationDomainSchema } from '../schemas/settings';
+import {
+  brandSettingsSchema,
+  organizationDomainSchema,
+  organizationProfileSchema,
+} from '../schemas/settings';
 
 const valid = {
-  logo_url: 'https://example.com/logo.png',
-  favicon_url: 'https://example.com/favicon.ico',
   color_primary: '#0B1E3D',
-  color_secondary: '#C9A227',
-  tone_of_voice: 'Friendly',
-  company_description: 'We sell things.',
   display_name: 'Example',
-  email_from_name: 'Example Support',
   email_reply_to: 'replies@example.com',
 };
 
@@ -94,5 +92,31 @@ describe('organizationDomainSchema', () => {
   // alphabetic-only TLD, tighter than the previous alnum-labels check.
   it('rejects a numeric-only TLD, matching the backend', () => {
     expect(organizationDomainSchema.safeParse({ domain: 'example.123' }).success).toBe(false);
+  });
+});
+
+describe('organizationProfileSchema (website and contact email only)', () => {
+  it('accepts blanks, since both backend fields are blank-able', () => {
+    expect(organizationProfileSchema.safeParse({ website: '', contact_email: '' }).success).toBe(
+      true
+    );
+  });
+
+  it('rejects a malformed website or email', () => {
+    expect(
+      organizationProfileSchema.safeParse({ website: 'example', contact_email: '' }).success
+    ).toBe(false);
+    expect(
+      organizationProfileSchema.safeParse({ website: '', contact_email: 'nope' }).success
+    ).toBe(false);
+  });
+
+  it('accepts a real URL and address', () => {
+    expect(
+      organizationProfileSchema.safeParse({
+        website: 'https://example.com',
+        contact_email: 'hello@example.com',
+      }).success
+    ).toBe(true);
   });
 });

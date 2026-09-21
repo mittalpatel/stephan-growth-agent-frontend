@@ -30,10 +30,31 @@ hamburger button, closed by its own close button or the backdrop.
 - `w-64`, `bg-sidebar`, `border-r`. `lg:sticky lg:top-0 lg:h-screen` on desktop so
   it stays pinned while the content column scrolls past it; a `fixed` overlay
   drawer below `lg`.
-- **Header** (`h-16`, `border-b`): the brand mark — an icon tile
-  (`bg-brand-accent`) plus `t.common.appName` — replacing the old header-bar
-  wordmark. This is the one place the brand mark renders; `HeaderOne` no longer
-  has one.
+- **Header** (`h-16`, `border-b`): the brand mark (`BrandMark`) plus the organization's
+  white-label `display_name`, from `useOrgBranding` (falling back to the platform
+  glyph and `t.common.appName`), replacing the old header-bar wordmark. This is the
+  one place the brand mark renders in the shell; `HeaderOne` has none.
+  `useOrgBranding` (`src/app/(restricted)/hooks/useOrgBranding.ts`) reads
+  `GET /settings/brand/summary/`, open to any member (display name, logo, favicon,
+  both colors and the backend-computed readable `on_color_primary`); the Brand tab
+  invalidates that key on save. With no logo, the tile takes the organization's
+  primary color and readable text color (`orgAccentStyle`, an inline override of the
+  `--brand-accent` token pair on that one element, the same sanctioned exception as
+  `RHFColorField`, since the value is tenant data). A logo that fails to load falls
+  back to the tile. `LayoutWrapper` also swaps the tab favicon for `favicon_url`, and
+  the restricted layout's `generateMetadata` (server-only `getOrgBrandSummary`)
+  overrides the root `%s | YB Inspire` title template, resolved per request.
+  Beyond the mark, org colors are NOT applied anywhere else in the dashboard.
+- **Signed-out pages** (`/`, `/login`, forgot-password, signup): branded by hostname.
+  `getPublicBranding()` (server-only, `cache()`d per request) sends the request Host
+  to the unauthenticated `GET /public/branding/?host=` (outside `/api/v1/`), which
+  answers only for a domain that passed DNS verification; anything else, including
+  the platform's own host, is `null` and the pages stay platform-branded. The
+  `(public)` layout passes it to `PublicBrandingProvider` (read by `AuthHeroShell`)
+  and `/` hands it to `LandingPage` as a prop; both resolve it through
+  `resolvePublicBranding`. Name, logo, copyright line, favicon and tab title change;
+  the auth hero panel takes the org color via `orgSurfaceStyle`, which also inverts
+  the accent pair so marks on it stay visible. `BrandMark` is the shared tile.
 - **Nav** (`flex-1 overflow-y-auto`): sections from `NAV_ITEMS` grouped by
   `section` (Main / Workspace / Platform), each a flat list of pill rows —
   `bg-primary/10 text-primary` when active, `text-muted-foreground` otherwise. A

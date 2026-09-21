@@ -6,30 +6,18 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useAuthQuery } from '@/hooks/useAuthQuery';
 import { organizationDetailKey, type OrganizationDetail } from '@/services/organizations';
 import {
-  SETTINGS_AI_PREFERENCES_KEY,
   SETTINGS_BOOTSTRAP_ENDPOINT,
   SETTINGS_BOOTSTRAP_KEY,
   SETTINGS_BRAND_KEY,
-  SETTINGS_FEATURES_KEY,
   SETTINGS_PROFILE_KEY,
-  SETTINGS_SECURITY_KEY,
 } from '@/services/settings';
 import type { ApiMeta, ApiResponse } from '@/types/api';
-import type {
-  AiPreferences,
-  BrandSettings,
-  FeatureFlags,
-  OrganizationProfile,
-  SecuritySettings,
-} from '@/types/settings';
+import type { BrandSettings, OrganizationProfile } from '@/types/settings';
 
 type SettingsBootstrap = {
   organization: OrganizationDetail;
   branding: BrandSettings;
   profile: OrganizationProfile;
-  ai_preferences: AiPreferences;
-  security: SecuritySettings;
-  features: FeatureFlags;
 };
 
 /** Never read — `ApiResponse.meta` is pagination metadata a single-resource
@@ -44,7 +32,7 @@ const EMPTY_META: ApiMeta = {
 };
 
 /**
- * Prefetches every settings tab except Domains in one request
+ * Prefetches the Brand and contact settings in one request
  * (`GET /settings/bootstrap/`, backend 2026-09-06) and seeds each tab's own
  * query cache from it, so opening the Settings page costs one round trip
  * instead of one per tab clicked.
@@ -77,9 +65,6 @@ export function useOrganizationSettingsBootstrap(organizationId: string | undefi
 
     seed(SETTINGS_BRAND_KEY, bootstrap.branding);
     seed(SETTINGS_PROFILE_KEY, bootstrap.profile);
-    seed(SETTINGS_FEATURES_KEY, bootstrap.features);
-    seed(SETTINGS_AI_PREFERENCES_KEY, bootstrap.ai_preferences);
-    seed(SETTINGS_SECURITY_KEY, bootstrap.security);
     if (organizationId) {
       queryClient.setQueryData<ApiResponse<OrganizationDetail>>(
         organizationDetailKey(organizationId),

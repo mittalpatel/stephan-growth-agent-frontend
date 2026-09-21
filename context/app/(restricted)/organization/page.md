@@ -34,41 +34,53 @@ renders as "No plan assigned"; a `null` seat limit renders as "Unlimited" — bo
 the organization is currently unmetered on that dimension, not that the field failed
 to load.
 
-## Settings tabs (Sprint-1 gap closure)
+## Settings tabs (simplified 2026-09-21)
 
-`OrganizationSettingsView` now wraps its content in `Tabs`: the existing
-rename/danger-zone content moved unchanged into a "General" tab; seven other
-tabs each own one settings resource, resolved against the session tenant
-(`/api/v1/settings/{organization,brand,profile,features,domains,ai-preferences,security}/`
-— no organization id in the URL, unlike every other endpoint on this page).
-The `TabsList` scrolls horizontally: eight tabs no longer fit a narrow
-viewport, and wrapping them would push the panel below the fold on mobile.
+`OrganizationSettingsView` wraps its content in `Tabs`: **General**, **Branding**,
+**Data**, plus **Domains** only when `CUSTOM_DOMAINS_ENABLED` is on. Each tab owns
+one settings resource, resolved against the session tenant
+(`/api/v1/settings/{organization,brand,profile,domains}/` and `data/`; no
+organization id in the URL, unlike every other endpoint on this page). The
+`TabsList` still scrolls horizontally so a narrow viewport never wraps it.
 
-- **Brand** (`BrandSettingsTab`/`useBrandSettingsForm.ts`): logo and favicon
-  URLs, primary and secondary colors (client-validated hex, mirroring the
-  backend's `_validate_hex`), tone of voice, company description, plus a
-  white-label group added 2026-09-06 (`display_name`, `email_from_name`,
-  `email_reply_to`). `display_name` is deliberately a _branding_ field rather
-  than an edit to the General tab's `name`: the backend keeps them separate so
-  rebranding a tenant's public-facing name never touches its slug or anything
-  derived from the original name.
-- **Profile** (`OrganizationProfileTab`/`useOrganizationProfileForm.ts`):
-  contact and business details (legal name, website, contact email/phone,
-  address). Split from Brand on the backend because it is company information
-  with no bearing on rendering, and because the two are expected to diverge on
-  who may edit them.
-- **Features** (`FeatureFlagsTab`/`useFeatureFlagsForm.ts`): three switches
-  over `Organization.settings["features"]`. The backend enforces an allowlist
-  (`FEATURE_FLAG_KEYS`), so adding a flag is a two-sided change: an unknown
-  key is rejected outright. Its errors arrive as `non_field_errors`, which has
-  no field to bind to, so `applyApiError` toasts them.
-- **Domains** (`DomainsTab`/`useOrganizationDomains.ts`): claim, verify,
-  promote, and remove custom domains. **This is data-model groundwork on the
-  backend** — nothing routes on these rows, there is no TLS provisioning, and
-  `verify` flips a flag without performing a DNS lookup. The tab says so
-  rather than implying a working custom-domain feature. Verification tokens
-  are shown only while a domain is unverified, since republishing the record
-  after the fact changes nothing. Client-side shape validation
+Removed from the UI on 2026-09-21 because nothing on the backend reads them (the
+backend team confirmed, and is removing them from the API after this ships): the
+Features tab (feature flags), the AI preferences tab (approval-before-publishing,
+auto-CRM-updates; the outreach approval toggle too, approval is always required),
+the Security tab (`require_2fa`, `log_all_agent_actions`, so MFA is per user on the
+profile page only), the Profile tab's legal name, phone and address fields, and, from
+Branding, secondary color, tone of voice, company description and email sender name.
+The backend still returns and accepts them until it ships its side; the frontend
+neither sends nor reads them, and the PATCHes are partial. Secondary color and tone
+stay in the API because the widget and agent defaults still read them
+(`ThemeCascadeService`).
+
+- **General**: name, slug, plan and seats, then a **Contact details** section
+  (`OrganizationContactSection`/`useOrganizationProfileForm.ts`: website and contact
+  email, its own form because it saves to `/settings/profile/`), then the danger zone.
+- **Branding** (`BrandSettingsTab`/`useBrandSettingsForm.ts`; a save also invalidates the
+  member-readable `GET /settings/brand/summary/` the app shell reads): logo and favicon
+  images (`BrandImageField`/`useBrandImage.ts`: uploaded straight away to
+  `POST /settings/brand/{logo,favicon}/` as multipart, needing `organization:manage`;
+  logo PNG/JPEG/WebP up to 2 MB, favicon PNG/ICO up to 512 KB, SVG rejected, rules
+  mirrored in `src/lib/constants/brandAssets.ts` as a courtesy while the backend
+  re-checks the bytes; the backend stores the file and saves a backend-hosted URL,
+  which is why it passes the CSP; Remove clears the URL through the ordinary PATCH;
+  the form's reset keeps dirty values so an upload never wipes unsaved text), then
+  `display_name` (client-validated as free text; a branding field rather than an edit
+  to General's `name`, so rebranding never touches the slug), primary color
+  (client-validated hex, mirroring the backend's `_validate_hex`; emails and the
+  shell use it with the backend's readable text color) and `email_reply_to`.
+- **Domains** (`DomainsTab`/`useOrganizationDomains.ts`; hidden unless
+  `NEXT_PUBLIC_CUSTOM_DOMAINS_ENABLED=true`, set together with the backend's
+  `CUSTOM_DOMAIN_ROUTING_ENABLED`): claim, verify,
+  promote, and remove custom domains. `verify` is a real DNS TXT lookup: each
+  pending row shows the record to publish (`dns_record`: type, name, value) and a
+  "Check DNS record" button, which fails with the backend's own message until the
+  record resolves. One status badge per row from `activation_status`:
+  `pending_verification`, `awaiting_routing` (verified, but proxy/TLS serving is
+  not switched on for it, so the app is not served from it yet) and `active`. A
+  verified domain already brands the signed-out pages (see the layout doc). Client-side shape validation
   (`organizationDomainSchema` in `src/lib/schemas/settings.ts`) goes through
   the shared `isValidHostname()` in `src/lib/hostname.ts` (backend
   2026-09-07 extracted the equivalent `common/net/hostname.py` from what had
@@ -78,22 +90,16 @@ viewport, and wrapping them would push the panel below the fold on mobile.
   `agentDomainCreateSchema` (see
   `context/app/(restricted)/agents/[agentTypeSlug]/settings/page.md`), with
   `localhost` allowed there only, for local widget testing.
-- **AI preferences** (`AiPreferencesTab`/`useAiPreferencesForm.ts`): three
-  switches — require approval before outreach/publishing, allow
-  auto-CRM-updates.
-- **Security** (`SecuritySettingsTab`/`useSecuritySettingsForm.ts`): require
-  2FA, log all agent actions.
 - **Data** (`DataSettingsTab`/`useOrganizationDataSettings.ts`): export
   history + request (`GET`/`POST /api/v1/settings/data/export/`) and delete
   (`POST .../data/delete/` emails a confirmation link).
 
 ### The bootstrap endpoint prefetches, but never replaces, the per-tab reads (2026-09-09)
 
-`GET /api/v1/settings/bootstrap/` returns every tab except Domains in one
-response. `useOrganizationSettingsBootstrap(organizationId)` (called once from
+`GET /api/v1/settings/bootstrap/` returns the settings in one response (the frontend
+now reads only its `branding` and `profile`, and the organization detail). `useOrganizationSettingsBootstrap(organizationId)` (called once from
 `OrganizationSettingsView`, regardless of which tab is active) fetches it and
 seeds each tab's own query cache — `SETTINGS_BRAND_KEY`, `SETTINGS_PROFILE_KEY`,
-`SETTINGS_FEATURES_KEY`, `SETTINGS_AI_PREFERENCES_KEY`, `SETTINGS_SECURITY_KEY`,
 plus `organizationDetailKey` (the same cache `useOrganizationPlan` reads for
 plan tier/seat limit) — via `queryClient.setQueryData`, only when that key has
 no entry yet (`existing ?? …`), so it never clobbers a fresher value a tab's

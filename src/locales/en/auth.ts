@@ -12,7 +12,7 @@ export const auth = {
   noAccountPrompt: "Don't have an account?",
   createAccountLink: 'Sign up',
   // {year} is filled in at render time.
-  copyright: '© {year} YB Inspire. All rights reserved.',
+  copyright: '© {year} {name}. All rights reserved.',
   heroTagline: 'Your AI agent, always on.',
   heroBadge: 'AI-powered, built for teams',
   heroFeatures: [

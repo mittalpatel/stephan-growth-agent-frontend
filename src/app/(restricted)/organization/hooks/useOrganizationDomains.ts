@@ -28,9 +28,10 @@ import { t } from '@/locales';
 /**
  * The organization's claimed custom domains.
  *
- * The backend calls this data-model groundwork and means it: nothing routes
- * on these rows, and `verify` flips the flag without performing a DNS lookup.
- * The UI reflects that rather than implying a working custom-domain feature.
+ * `verify` performs a real DNS TXT lookup and fails with a message until the record
+ * is published. A verified domain is only "awaiting routing" until ops enable
+ * proxy/TLS serving for it, and the UI shows which state each domain is in rather
+ * than treating "verified" as "working".
  *
  * The list is an unpaginated `GET` returning a plain array, unlike the
  * paginated list endpoints elsewhere, so there is no toolbar or pagination

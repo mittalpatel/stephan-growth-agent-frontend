@@ -1,8 +1,8 @@
 /**
- * Organization settings DTOs — mirrors
- * `apps/organizations/api/v1/serializers/{settings,settings_data}.py` field
- * for field. Every settings resource carries a read-only `id`/`updated_at`
- * alongside its editable fields; the forms bind only the editable subset.
+ * Organization settings DTOs — the subset of
+ * `apps/organizations/api/v1/serializers/{settings,settings_data}.py` the UI reads.
+ * The backend returns more (tone, description, secondary color, address, and
+ * the feature/AI/security settings being retired), which is ignored here.
  */
 
 export type BrandSettings = {
@@ -10,9 +10,6 @@ export type BrandSettings = {
   logo_url: string;
   favicon_url: string;
   color_primary: string;
-  color_secondary: string;
-  tone_of_voice: string;
-  company_description: string;
   /**
    * White-label name shown in place of `organization.name`. Kept separate
    * from it on the backend so rebranding never touches the slug or anything
@@ -20,72 +17,60 @@ export type BrandSettings = {
    * rather than an edit to the General tab.
    */
   display_name: string;
-  email_from_name: string;
   email_reply_to: string;
   updated_at: string;
 };
 
-/** Contact and business details. Every field is blank-able, never null. */
+/** The slice of branding every member may read (`GET /settings/brand/summary/`). */
+export type BrandSummary = Pick<
+  BrandSettings,
+  'display_name' | 'logo_url' | 'favicon_url' | 'color_primary'
+> & {
+  /** Readable text color (near-black or white) for text drawn on `color_primary`,
+   * computed by the backend so the UI never guesses one. */
+  on_color_primary: string;
+};
+
+/** Branding for a verified custom domain (`GET /public/branding/?host=`). */
+export type PublicBranding = Pick<
+  BrandSummary,
+  'display_name' | 'logo_url' | 'favicon_url' | 'color_primary' | 'on_color_primary'
+>;
+
+/** The organization's public contact details. Every field is blank-able, never null. */
 export type OrganizationProfile = {
   id: string;
-  legal_name: string;
   website: string;
   contact_email: string;
-  contact_phone: string;
-  address_line1: string;
-  address_line2: string;
-  city: string;
-  state: string;
-  postal_code: string;
-  country: string;
   updated_at: string;
 };
 
-/**
- * `Organization.settings["features"]` — mirrors `FEATURE_FLAG_KEYS` in
- * `apps/organizations/constants.py`. The backend rejects any key outside its
- * allowlist, so this union is the contract, not a convenience.
- */
-export type FeatureFlagKey = 'agents_beta' | 'advanced_analytics' | 'level_2_outreach';
+/** Lifecycle of a custom domain, as `activation_status` reports it. */
+export type DomainActivationStatus = 'pending_verification' | 'awaiting_routing' | 'active';
 
-/**
- * `GET` always returns every allowlisted key, defaulted to `false`, so the
- * response shape never depends on which flags an org happens to have touched
- * before. `PATCH` merges, so a partial body is legal there.
- */
-export type FeatureFlags = Record<FeatureFlagKey, boolean>;
+/** The DNS record an organization publishes to prove it controls a domain. */
+export type DomainDnsRecord = { type: string; name: string; value: string };
 
 /**
  * A custom domain claimed by the organization.
  *
- * Data-model groundwork on the backend: nothing routes on these yet, and
- * `verify` flips the flag without performing a DNS lookup. The UI says so
- * rather than implying a working custom-domain feature.
+ * `verify` performs a real DNS TXT lookup and fails until the record in
+ * `dns_record` is published. A verified domain is `awaiting_routing` until ops
+ * enable proxy/TLS serving for it (`CUSTOM_DOMAIN_ROUTING_ENABLED`), and only then
+ * `active`. `is_verified` alone must not be read as "working".
  */
 export type OrganizationDomain = {
   id: string;
   domain: string;
-  /** DNS TXT value the org must publish. Generated once, never rotated. */
+  /** Raw token; the record to publish is `dns_record`. */
   verification_token: string;
+  dns_record: DomainDnsRecord;
   is_verified: boolean;
   verified_at: string | null;
   is_primary: boolean;
+  is_active: boolean;
+  activation_status: DomainActivationStatus;
   created_at: string;
-};
-
-export type AiPreferences = {
-  id: string;
-  require_approval_before_outreach: boolean;
-  require_approval_before_publishing: boolean;
-  allow_auto_crm_updates: boolean;
-  updated_at: string;
-};
-
-export type SecuritySettings = {
-  id: string;
-  require_2fa: boolean;
-  log_all_agent_actions: boolean;
-  updated_at: string;
 };
 
 /** Mirrors `OrgDataExportStatus` in `apps/organizations/models.py`. */

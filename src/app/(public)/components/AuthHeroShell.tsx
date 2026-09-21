@@ -1,6 +1,10 @@
 'use client';
 
-import { CheckCircle2, Sparkles } from 'lucide-react';
+import { CheckCircle2 } from 'lucide-react';
+
+import { BrandMark } from '@/components/common/BrandMark';
+import { orgSurfaceStyle } from '@/lib/orgColors';
+import { usePublicBranding } from '@/providers/PublicBrandingProvider';
 
 import { format } from '@/lib/i18n';
 import { t } from '@/locales';
@@ -31,10 +35,18 @@ export default function AuthHeroShell({
   children: React.ReactNode;
 }>) {
   const currentYear = new Date().getFullYear();
+  const brand = usePublicBranding();
+  const copyright = format(t.auth.copyright, {
+    year: String(currentYear),
+    name: brand.displayName,
+  });
 
   return (
     <main className="bg-muted/40 flex min-h-screen">
-      <div className="bg-brand-surface text-brand-surface-foreground relative hidden w-1/2 flex-col justify-between overflow-hidden p-12 md:flex">
+      <div
+        style={orgSurfaceStyle(brand.colorPrimary, brand.onColorPrimary)}
+        className="bg-brand-surface text-brand-surface-foreground relative hidden w-1/2 flex-col justify-between overflow-hidden p-12 md:flex"
+      >
         {/* A faint dot grid instead of a gradient blob: it reads as texture at
             any zoom level, so it can't band the way a blurred circle did. */}
         <span
@@ -43,10 +55,10 @@ export default function AuthHeroShell({
         />
 
         <div className="relative flex items-center gap-2.5">
-          <span className="bg-brand-accent text-brand-accent-foreground flex size-9 items-center justify-center rounded-lg">
-            <Sparkles className="size-5" />
-          </span>
-          <span className="font-display text-lg font-bold tracking-tight">{t.common.appName}</span>
+          {/* No org colors passed: on the org-colored panel the tile inherits the
+              inverted accent pair `orgSurfaceStyle` sets, so it stays visible. */}
+          <BrandMark logoUrl={brand.logoUrl} className="size-9" iconClassName="size-5" />
+          <span className="font-display text-lg font-bold tracking-tight">{brand.displayName}</span>
         </div>
 
         <div className="relative space-y-6">
@@ -66,9 +78,7 @@ export default function AuthHeroShell({
           </ul>
         </div>
 
-        <p className="text-brand-surface-foreground/70 relative text-xs">
-          {format(t.auth.copyright, { year: String(currentYear) })}
-        </p>
+        <p className="text-brand-surface-foreground/70 relative text-xs">{copyright}</p>
       </div>
 
       {/* `min-w-0` is load-bearing: this is a flex item, and a flex item's
@@ -80,11 +90,15 @@ export default function AuthHeroShell({
       <div className="flex min-w-0 flex-1 flex-col items-center justify-center px-4 py-12">
         <div className="w-full max-w-md">
           <div className="mb-6 flex items-center gap-2.5 md:hidden">
-            <span className="bg-brand-accent text-brand-accent-foreground flex size-9 items-center justify-center rounded-lg">
-              <Sparkles className="size-5" />
-            </span>
+            <BrandMark
+              logoUrl={brand.logoUrl}
+              colorPrimary={brand.colorPrimary}
+              onColorPrimary={brand.onColorPrimary}
+              className="size-9"
+              iconClassName="size-5"
+            />
             <span className="font-display text-lg font-bold tracking-tight">
-              {t.common.appName}
+              {brand.displayName}
             </span>
           </div>
 
@@ -96,9 +110,7 @@ export default function AuthHeroShell({
             {children}
           </div>
 
-          <p className="text-muted-foreground mt-6 text-center text-xs md:hidden">
-            {format(t.auth.copyright, { year: String(currentYear) })}
-          </p>
+          <p className="text-muted-foreground mt-6 text-center text-xs md:hidden">{copyright}</p>
         </div>
       </div>
     </main>

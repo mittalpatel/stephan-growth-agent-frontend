@@ -6,24 +6,35 @@ import { FormProvider } from 'react-hook-form';
 import { ConfirmDialog } from '@/components/common/ConfirmDialog';
 import { EmptyState } from '@/components/common/EmptyState';
 import { RHFTextField } from '@/components/common/form';
-import { StatusBadge } from '@/components/common/StatusBadge';
+import { StatusBadge, type StatusTone } from '@/components/common/StatusBadge';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { format } from '@/lib/i18n';
 import { t } from '@/locales';
 import type { OrganizationDomainFormValues } from '@/lib/schemas/settings';
-import type { OrganizationDomain } from '@/types/settings';
+import type { DomainActivationStatus, OrganizationDomain } from '@/types/settings';
 
 import { useOrganizationDomains } from '../hooks/useOrganizationDomains';
 import { SettingsTabError } from './SettingsTabError';
 
+const DOMAIN_STATUS_LABEL: Record<DomainActivationStatus, string> = {
+  pending_verification: t.organizations.settingsTabs.domains.statusPendingVerification,
+  awaiting_routing: t.organizations.settingsTabs.domains.statusAwaitingRouting,
+  active: t.organizations.settingsTabs.domains.statusActive,
+};
+
+const DOMAIN_STATUS_TONE: Record<DomainActivationStatus, StatusTone> = {
+  pending_verification: 'warning',
+  awaiting_routing: 'info',
+  active: 'success',
+};
+
 /**
  * Custom domains an organization has claimed.
  *
- * The notice at the top is not boilerplate: the backend is explicit that this
- * is data-model groundwork with no routing or TLS behind it, and that
- * "verify" sets a flag rather than checking DNS. Presenting it as a working
- * custom-domain feature would be the misleading choice.
+ * Verification is a real DNS TXT lookup, so the row shows the exact record to
+ * publish. "Verified" is not "working": a verified domain is only awaiting routing
+ * until ops enable proxy/TLS serving for it, and the badge says which it is.
  */
 export function DomainsTab() {
   const {
@@ -77,32 +88,46 @@ export function DomainsTab() {
               <div className="flex flex-wrap items-center gap-2">
                 <span className="font-mono text-sm">{domain.domain}</span>
                 <StatusBadge
-                  label={
-                    domain.is_verified
-                      ? t.organizations.settingsTabs.domains.verified
-                      : t.organizations.settingsTabs.domains.unverified
-                  }
-                  tone={domain.is_verified ? 'success' : 'warning'}
+                  label={DOMAIN_STATUS_LABEL[domain.activation_status]}
+                  tone={DOMAIN_STATUS_TONE[domain.activation_status]}
                 />
                 {domain.is_primary && (
                   <StatusBadge label={t.organizations.settingsTabs.domains.primary} tone="info" />
                 )}
               </div>
 
-              {/* The token is only actionable while unverified: once the flag
-                  is set, publishing the record again changes nothing. */}
-              {!domain.is_verified && (
-                <div className="bg-muted rounded-md p-3">
+              {/* The record is only actionable until the lookup finds it: once
+                  verified, publishing it again changes nothing. */}
+              {domain.activation_status === 'pending_verification' && (
+                <div className="bg-muted space-y-2 rounded-md p-3">
                   <p className="text-muted-foreground text-xs">
-                    {t.organizations.settingsTabs.domains.tokenHint}
+                    {t.organizations.settingsTabs.domains.recordTitle}
                   </p>
-                  <p className="mt-1 font-mono text-xs break-all">{domain.verification_token}</p>
+                  <dl className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 text-xs">
+                    <dt className="text-muted-foreground">
+                      {t.organizations.settingsTabs.domains.recordType}
+                    </dt>
+                    <dd className="font-mono">{domain.dns_record.type}</dd>
+                    <dt className="text-muted-foreground">
+                      {t.organizations.settingsTabs.domains.recordName}
+                    </dt>
+                    <dd className="font-mono break-all select-all">{domain.dns_record.name}</dd>
+                    <dt className="text-muted-foreground">
+                      {t.organizations.settingsTabs.domains.recordValue}
+                    </dt>
+                    <dd className="font-mono break-all select-all">{domain.dns_record.value}</dd>
+                  </dl>
                 </div>
+              )}
+              {domain.activation_status === 'awaiting_routing' && (
+                <p className="text-muted-foreground text-xs">
+                  {t.organizations.settingsTabs.domains.hintAwaitingRouting}
+                </p>
               )}
 
               {canManage && (
                 <div className="flex flex-wrap gap-2">
-                  {!domain.is_verified && (
+                  {domain.activation_status === 'pending_verification' && (
                     <Button
                       type="button"
                       variant="outline"

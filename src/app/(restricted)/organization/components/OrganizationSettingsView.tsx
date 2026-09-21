@@ -16,15 +16,13 @@ import { ConfirmDialog } from '@/components/common/ConfirmDialog';
 import { PageHeader } from '@/components/common/PageHeader';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { CUSTOM_DOMAINS_ENABLED } from '@/constants/features';
 import { t } from '@/locales';
 
-import { AiPreferencesTab } from './AiPreferencesTab';
 import { BrandSettingsTab } from './BrandSettingsTab';
 import { DataSettingsTab } from './DataSettingsTab';
 import { DomainsTab } from './DomainsTab';
-import { FeatureFlagsTab } from './FeatureFlagsTab';
-import { OrganizationProfileTab } from './OrganizationProfileTab';
-import { SecuritySettingsTab } from './SecuritySettingsTab';
+import { OrganizationContactSection } from './OrganizationContactSection';
 
 export default function OrganizationSettingsView() {
   const { can } = usePermissions();
@@ -53,38 +51,23 @@ export default function OrganizationSettingsView() {
       <PageHeader title={t.organizations.title} description={t.organizations.description} />
 
       <Tabs defaultValue="general">
-        {/* Horizontally scrollable: eight tabs no longer fit a narrow
-            viewport, and letting them wrap would push the panel below the
-            fold on mobile. */}
         <TabsList className="max-w-full overflow-x-auto">
           <TabsTrigger value="general">{t.organizations.settingsTabs.tabs.general}</TabsTrigger>
-          <TabsTrigger value="profile">{t.organizations.settingsTabs.tabs.profile}</TabsTrigger>
           <TabsTrigger value="brand">{t.organizations.settingsTabs.tabs.brand}</TabsTrigger>
-          <TabsTrigger value="features">{t.organizations.settingsTabs.tabs.features}</TabsTrigger>
-          <TabsTrigger value="domains">{t.organizations.settingsTabs.tabs.domains}</TabsTrigger>
-          <TabsTrigger value="ai">{t.organizations.settingsTabs.tabs.aiPreferences}</TabsTrigger>
-          <TabsTrigger value="security">{t.organizations.settingsTabs.tabs.security}</TabsTrigger>
+          {CUSTOM_DOMAINS_ENABLED && (
+            <TabsTrigger value="domains">{t.organizations.settingsTabs.tabs.domains}</TabsTrigger>
+          )}
           <TabsTrigger value="data">{t.organizations.settingsTabs.tabs.data}</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="profile">
-          <OrganizationProfileTab />
-        </TabsContent>
         <TabsContent value="brand">
           <BrandSettingsTab />
         </TabsContent>
-        <TabsContent value="features">
-          <FeatureFlagsTab />
-        </TabsContent>
-        <TabsContent value="domains">
-          <DomainsTab />
-        </TabsContent>
-        <TabsContent value="ai">
-          <AiPreferencesTab />
-        </TabsContent>
-        <TabsContent value="security">
-          <SecuritySettingsTab />
-        </TabsContent>
+        {CUSTOM_DOMAINS_ENABLED && (
+          <TabsContent value="domains">
+            <DomainsTab />
+          </TabsContent>
+        )}
         <TabsContent value="data">
           <DataSettingsTab />
         </TabsContent>
@@ -138,6 +121,8 @@ export default function OrganizationSettingsView() {
               </form>
             </FormProvider>
           </section>
+
+          <OrganizationContactSection />
 
           {canTransfer || canDelete ? (
             <section className="border-destructive/40 space-y-6 rounded-lg border p-6">

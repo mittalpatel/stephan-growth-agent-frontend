@@ -1,9 +1,12 @@
 import Link from 'next/link';
 import { Bot, Database, Globe, Inbox, MessagesSquare, Sparkles, UserPlus } from 'lucide-react';
 
+import { BrandMark } from '@/components/common/BrandMark';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { format } from '@/lib/i18n';
+import { resolvePublicBranding } from '@/lib/publicBranding';
+import type { PublicBranding } from '@/types/settings';
 import { t } from '@/locales';
 
 const FEATURE_ICONS = [Bot, Database, Globe, MessagesSquare, UserPlus, Inbox] as const;
@@ -18,19 +21,22 @@ const FEATURE_ICONS = [Bot, Database, Globe, MessagesSquare, UserPlus, Inbox] as
  * A server component throughout: nothing here needs client state, and
  * `Sign in` / `Get started` are just links to `/login` and `/signup/create`.
  */
-export default function LandingPage() {
+export default function LandingPage({ branding }: Readonly<{ branding: PublicBranding | null }>) {
   const currentYear = new Date().getFullYear();
+  const brand = resolvePublicBranding(branding);
 
   return (
     <div className="bg-background min-h-screen">
       <header className="bg-background/85 sticky top-0 z-30 border-b backdrop-blur-md">
         <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-4 px-4 sm:px-6">
           <div className="flex items-center gap-2.5">
-            <span className="bg-brand-accent text-brand-accent-foreground flex size-8 items-center justify-center rounded-lg">
-              <Sparkles className="size-4" />
-            </span>
+            <BrandMark
+              logoUrl={brand.logoUrl}
+              colorPrimary={brand.colorPrimary}
+              onColorPrimary={brand.onColorPrimary}
+            />
             <span className="font-display text-[15px] font-bold tracking-tight">
-              {t.common.appName}
+              {brand.displayName}
             </span>
           </div>
           <div className="flex items-center gap-2">
@@ -168,11 +174,15 @@ export default function LandingPage() {
       <footer className="border-t py-10">
         <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 px-4 text-sm sm:flex-row sm:px-6">
           <div className="flex items-center gap-2.5">
-            <span className="bg-brand-accent text-brand-accent-foreground flex size-7 items-center justify-center rounded-lg">
-              <Sparkles className="size-3.5" />
-            </span>
+            <BrandMark
+              logoUrl={brand.logoUrl}
+              colorPrimary={brand.colorPrimary}
+              onColorPrimary={brand.onColorPrimary}
+              className="size-7"
+              iconClassName="size-3.5"
+            />
             <div>
-              <p className="font-display font-bold">{t.common.appName}</p>
+              <p className="font-display font-bold">{brand.displayName}</p>
               <p className="text-muted-foreground text-xs">{t.marketing.footer.tagline}</p>
             </div>
           </div>
@@ -190,7 +200,9 @@ export default function LandingPage() {
             >
               {t.legal.termsLinkLabel}
             </Link>
-            <span>{format(t.auth.copyright, { year: String(currentYear) })}</span>
+            <span>
+              {format(t.auth.copyright, { year: String(currentYear), name: brand.displayName })}
+            </span>
           </div>
         </div>
       </footer>

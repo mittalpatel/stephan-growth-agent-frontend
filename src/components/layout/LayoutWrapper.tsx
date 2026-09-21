@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { usePathname } from 'next/navigation';
 import HeaderOne from '@/components/header/HeaderOne';
 import Sidebar from '@/components/sidebar/Sidebar';
@@ -8,6 +8,7 @@ import RestrictedBreadcrumb from '@/components/common/RestrictedBreadcrumb';
 import { PageTransition } from '@/components/motion/PageTransition';
 import { t } from '@/locales';
 import { RealtimeProvider } from '@/providers/RealtimeProvider';
+import { useOrgBranding } from '@/app/(restricted)/hooks/useOrgBranding';
 
 /**
  * The app shell: a full-height sidebar rail (its own scroll region, pinned
@@ -20,6 +21,19 @@ import { RealtimeProvider } from '@/providers/RealtimeProvider';
 export default function LayoutWrapper({ children }: Readonly<{ children: React.ReactNode }>) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const pathname = usePathname();
+  const { faviconUrl } = useOrgBranding();
+
+  // Swap the tab icon for the organization's own while it is set; the platform
+  // icon returns on cleanup. Same CSP `img-src` caveat as the sidebar logo: a
+  // blocked URL simply leaves the browser showing no icon change.
+  useEffect(() => {
+    if (!faviconUrl) return;
+    const link = document.createElement('link');
+    link.rel = 'icon';
+    link.href = faviconUrl;
+    document.head.appendChild(link);
+    return () => link.remove();
+  }, [faviconUrl]);
 
   // The realtime socket is mounted here, not on the Active Sessions page or the
   // notification bell alone, so a revocation/notification push is discovered

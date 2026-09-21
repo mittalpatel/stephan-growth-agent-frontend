@@ -15,7 +15,10 @@ const optionalHexColor = z
   });
 
 /**
- * Field names match `OrganizationBrandingSerializer` exactly.
+ * Field names match `OrganizationBrandingSerializer` exactly. Only the fields the UI
+ * exposes are here (the PATCH is partial): `logo_url`/`favicon_url` are set by the image
+ * upload endpoints (`useBrandImage`), and tone, description, secondary color and email
+ * sender name are deliberately not exposed.
  *
  * Every field is optional on the backend and blank-able, so each is a plain
  * (possibly empty) string rather than `.optional()`: the form always renders
@@ -29,14 +32,8 @@ const optionalHexColor = z
  * catching it here saves the round trip. Blank still passes.
  */
 export const brandSettingsSchema = z.object({
-  logo_url: z.string().trim(),
-  favicon_url: z.string().trim(),
   color_primary: optionalHexColor,
-  color_secondary: optionalHexColor,
-  tone_of_voice: z.string().trim(),
-  company_description: z.string().trim(),
   display_name: z.string().trim(),
-  email_from_name: z.string().trim(),
   email_reply_to: z
     .string()
     .trim()
@@ -46,47 +43,27 @@ export const brandSettingsSchema = z.object({
 });
 
 /**
- * Field names match `OrganizationProfileSerializer` exactly. `website` is a
+ * Field names match `OrganizationProfileSerializer` exactly. Only the two fields the UI
+ * exposes are here; the PATCH is partial. `website` is a
  * `URLField` and `contact_email` an `EmailField` on the backend; both are
  * blank-able, so both allow `''` and validate only a non-empty value.
  */
 export const organizationProfileSchema = z.object({
-  legal_name: z.string().trim(),
   website: z
     .string()
     .trim()
     .refine((value) => value === '' || z.string().url().safeParse(value).success, {
-      message: t.organizations.settingsTabs.profile.websiteInvalid,
+      message: t.organizations.settingsTabs.contact.websiteInvalid,
     }),
   contact_email: z
     .string()
     .trim()
     .refine((value) => value === '' || z.string().email().safeParse(value).success, {
-      message: t.organizations.settingsTabs.profile.emailInvalid,
+      message: t.organizations.settingsTabs.contact.emailInvalid,
     }),
-  contact_phone: z.string().trim(),
-  address_line1: z.string().trim(),
-  address_line2: z.string().trim(),
-  city: z.string().trim(),
-  state: z.string().trim(),
-  postal_code: z.string().trim(),
-  country: z.string().trim(),
 });
 
 export type OrganizationProfileFormValues = z.infer<typeof organizationProfileSchema>;
-
-/**
- * Field names match `FEATURE_FLAG_KEYS` in
- * `apps/organizations/constants.py`. The backend 400s on any key outside its
- * allowlist, so adding a flag means editing both sides.
- */
-export const featureFlagsSchema = z.object({
-  agents_beta: z.boolean(),
-  advanced_analytics: z.boolean(),
-  level_2_outreach: z.boolean(),
-});
-
-export type FeatureFlagsFormValues = z.infer<typeof featureFlagsSchema>;
 
 /**
  * `is_valid_hostname()` now backs both the agent allowed-domains and org
@@ -107,20 +84,3 @@ export const organizationDomainSchema = z.object({
 export type OrganizationDomainFormValues = z.infer<typeof organizationDomainSchema>;
 
 export type BrandSettingsFormValues = z.infer<typeof brandSettingsSchema>;
-
-/** Field names match `AiPreferencesSerializer` exactly. */
-export const aiPreferencesSchema = z.object({
-  require_approval_before_outreach: z.boolean(),
-  require_approval_before_publishing: z.boolean(),
-  allow_auto_crm_updates: z.boolean(),
-});
-
-export type AiPreferencesFormValues = z.infer<typeof aiPreferencesSchema>;
-
-/** Field names match `SecuritySettingsSerializer` exactly. */
-export const securitySettingsSchema = z.object({
-  require_2fa: z.boolean(),
-  log_all_agent_actions: z.boolean(),
-});
-
-export type SecuritySettingsFormValues = z.infer<typeof securitySettingsSchema>;

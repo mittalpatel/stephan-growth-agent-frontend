@@ -3,11 +3,13 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useState } from 'react';
-import { Building2, ChevronDown, ChevronRight, Sparkles, X } from 'lucide-react';
+import { Building2, ChevronDown, ChevronRight, X } from 'lucide-react';
+import { BrandMark } from '@/components/common/BrandMark';
 import { cn } from '@/lib/utils';
 import { NAV_ITEMS, ENABLED_HREFS, type NavItem } from '@/constants/navItems';
 import { usePermissions } from '@/app/(restricted)/context/PermissionsContext';
 import { useOrganization } from '@/app/(restricted)/context/OrganizationContext';
+import { useOrgBranding } from '@/app/(restricted)/hooks/useOrgBranding';
 import { useUser } from '@/app/(restricted)/context/UserContext';
 import { t } from '@/locales';
 
@@ -150,6 +152,7 @@ function initialsOf(fullName: string | undefined): string {
 type SidebarProps = Readonly<{ isOpen: boolean; onClose: () => void }>;
 
 export default function Sidebar({ isOpen, onClose }: SidebarProps) {
+  const branding = useOrgBranding();
   const pathname = usePathname();
   const { hasFunctional, role } = usePermissions();
   // Platform-admin items are gated on the account flag, not on a permission code
@@ -197,11 +200,13 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
       )}
     >
       <div className="flex h-16 shrink-0 items-center gap-2.5 border-b px-4">
-        <span className="bg-brand-accent text-brand-accent-foreground flex size-8 shrink-0 items-center justify-center rounded-lg">
-          <Sparkles className="size-4" />
-        </span>
+        <BrandMark
+          logoUrl={branding.logoUrl}
+          colorPrimary={branding.colorPrimary}
+          onColorPrimary={branding.onColorPrimary}
+        />
         <span className="font-display truncate text-[15px] font-bold tracking-tight">
-          {t.common.appName}
+          {branding.displayName}
         </span>
         <button
           type="button"

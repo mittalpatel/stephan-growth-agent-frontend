@@ -18,20 +18,12 @@ import type { OrganizationProfile } from '@/types/settings';
 import { t } from '@/locales';
 
 const EMPTY: OrganizationProfileFormValues = {
-  legal_name: '',
   website: '',
   contact_email: '',
-  contact_phone: '',
-  address_line1: '',
-  address_line2: '',
-  city: '',
-  state: '',
-  postal_code: '',
-  country: '',
 };
 
 /**
- * The organization's contact and business details.
+ * The organization's website and contact email.
  *
  * Same shape as `useBrandSettingsForm` deliberately: one query per settings
  * tab, each with its own cache key, so saving one tab never invalidates
@@ -55,16 +47,8 @@ export function useOrganizationProfileForm() {
   useEffect(() => {
     if (!profile) return;
     form.reset({
-      legal_name: profile.legal_name,
       website: profile.website,
       contact_email: profile.contact_email,
-      contact_phone: profile.contact_phone,
-      address_line1: profile.address_line1,
-      address_line2: profile.address_line2,
-      city: profile.city,
-      state: profile.state,
-      postal_code: profile.postal_code,
-      country: profile.country,
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [profile]);
@@ -72,7 +56,7 @@ export function useOrganizationProfileForm() {
   const submit = form.handleSubmit(async (values) => {
     try {
       await mutateAsync({ url: SETTINGS_PROFILE_ENDPOINT, method: 'patch', body: values });
-      toast.success(t.organizations.settingsTabs.profile.saved);
+      toast.success(t.organizations.settingsTabs.contact.saved);
       await query.refetch();
     } catch (error) {
       applyApiError<OrganizationProfileFormValues>(error, {

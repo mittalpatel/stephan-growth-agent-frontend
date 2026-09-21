@@ -1,9 +1,11 @@
+import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth/authOptions';
 import { getMyPermissions } from '@/lib/auth/getMyPermissions';
 import { getMyOrganizations } from '@/lib/auth/getMyOrganizations';
 import { getServerAccessToken } from '@/lib/auth/getServerAccessToken';
+import { getOrgBrandSummary } from '@/lib/auth/getOrgBrandSummary';
 import LayoutWrapper from '@/components/layout/LayoutWrapper';
 import UserContextProvider from './context/UserContext';
 import PermissionsProvider from './context/PermissionsContext';
@@ -11,6 +13,18 @@ import OrganizationProvider from './context/OrganizationContext';
 import PermissionGuard from './components/PermissionGuard';
 import ErrorContextProvider from './components/ErrorContext';
 import ImpersonationBanner from './components/ImpersonationBanner';
+
+/**
+ * Tab titles carry the organization's white-label name instead of the platform's.
+ * Overrides the root layout's `%s | YB Inspire` template for every page below this
+ * layout. Resolved per request, so a rename shows on the next navigation or reload.
+ */
+export async function generateMetadata(): Promise<Metadata> {
+  const brand = await getOrgBrandSummary(await getServerAccessToken());
+  const name = brand?.display_name.trim();
+  if (!name) return {};
+  return { title: { default: name, template: `%s | ${name}` } };
+}
 
 export default async function RestrictedLayout({ children }: { children: React.ReactNode }) {
   const session = await getServerSession(authOptions);
