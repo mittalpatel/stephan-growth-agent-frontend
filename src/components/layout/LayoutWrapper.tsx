@@ -42,19 +42,50 @@ export default function LayoutWrapper({ children }: Readonly<{ children: React.R
   useEffect(() => {
     if (!isBrandLoaded) return;
 
-    const displaced = [...document.querySelectorAll<HTMLLinkElement>('link[rel~="icon"]')].map(
-      (node) => ({ node, parent: node.parentNode, before: node.nextSibling })
-    );
-    displaced.forEach(({ node }) => node.remove());
+    const href = faviconUrl ?? PLATFORM_FAVICON_HREF;
+    const existing = [...document.querySelectorAll<HTMLLinkElement>('link[rel~="icon"]')];
 
-    const link = document.createElement('link');
-    link.rel = 'icon';
-    link.href = faviconUrl ?? PLATFORM_FAVICON_HREF;
-    document.head.appendChild(link);
+    // Retarget the links already in the head rather than detaching them. The
+    // earlier version removed them and re-inserted them on cleanup, but those
+    // nodes belong to React (Next renders the icon through the restricted
+    // layout's `generateMetadata`). Detaching a node React still holds a
+    // reference to makes its next commit throw
+    // `Cannot read properties of null (reading 'removeChild')`, which kills the
+    // in-flight navigation: the URL has already changed, the new page never
+    // renders, and every later navigation is dead too. Setting an attribute is
+    // safe — the worst React does is write its own value back.
+    //
+    // `sizes` has to go with it: the platform `.ico` declares
+    // `sizes="256x256"`, and Chrome prefers a sized candidate, which is how a
+    // saved favicon went missing in the first place.
+    const previous = existing.map((node) => ({
+      node,
+      href: node.getAttribute('href'),
+      sizes: node.getAttribute('sizes'),
+    }));
+    existing.forEach((node) => {
+      node.removeAttribute('sizes');
+      node.setAttribute('href', href);
+    });
+
+    // Nothing server-rendered to retarget (no metadata icon on this route):
+    // add our own, which React does not own and is therefore safe to remove.
+    let added: HTMLLinkElement | null = null;
+    if (existing.length === 0) {
+      added = document.createElement('link');
+      added.rel = 'icon';
+      added.href = href;
+      document.head.appendChild(added);
+    }
 
     return () => {
-      link.remove();
-      displaced.forEach(({ node, parent, before }) => parent?.insertBefore(node, before));
+      added?.remove();
+      previous.forEach(({ node, href: prevHref, sizes }) => {
+        if (prevHref === null) node.removeAttribute('href');
+        else node.setAttribute('href', prevHref);
+        if (sizes === null) node.removeAttribute('sizes');
+        else node.setAttribute('sizes', sizes);
+      });
     };
   }, [faviconUrl, isBrandLoaded]);
 
