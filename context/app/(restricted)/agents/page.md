@@ -172,6 +172,19 @@ reference draws them. Configure switches to the Settings tab, which is why
 self-serve upgrade to run and a dialog saying "contact us" is a longer route to
 the same page.
 
+Which tab is open is React state seeded from `?tab=`, and the URL is kept in
+step with `window.history.replaceState` rather than `router.replace`. The
+earlier version derived the tab straight from `useSearchParams`, which meant
+every click was a client-side navigation: Next re-requests the route from the
+server, that request passes through the auth proxy in `src/proxy.ts`, and the
+new tab only renders once the response commits. On a deployed server that
+round-trip is slow enough to see, and on an expired session it never commits at
+all, so the address bar showed the new tab while the panel stayed on the old
+one. Locally it is instant, which is why it only ever reproduced on the server.
+An effect still follows the URL back into state, so Back/Forward and a
+permission gate retiring the open tab both behave. Any other tab strip added
+here should be wired the same way.
+
 The tab row uses `TabsList variant="line"` — the full-width underlined row the
 reference uses, not the segmented pill. Its triggers need `flex-none`: the
 stock `line` variant still inherits `flex-1`, which stretches eight tabs across

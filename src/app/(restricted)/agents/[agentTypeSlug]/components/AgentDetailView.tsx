@@ -1,8 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 import Link from 'next/link';
-import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
 import { AlertTriangle, ArrowLeft, ArrowUpCircle, Bot, Settings2 } from 'lucide-react';
 
 import { usePermissions } from '@/app/(restricted)/context/PermissionsContext';
@@ -85,8 +85,6 @@ function isAgentTab(value: string | null): value is AgentTab {
 export function AgentDetailView({ agentTypeSlug }: Props) {
   const { agent, isLoading, isError, isNotFound, refetch } = useAgentDetail(agentTypeSlug);
   const { can } = usePermissions();
-  const router = useRouter();
-  const pathname = usePathname();
   const searchParamsTab = useSearchParams().get('tab');
   const canViewKnowledge = can('knowledge', 'view');
   const canViewConversations = can('conversation', 'view');
@@ -98,14 +96,31 @@ export function AgentDetailView({ agentTypeSlug }: Props) {
     knowledge: canViewKnowledge,
   };
   const isTabVisible = (candidate: AgentTab) => gatedTabs[candidate] ?? true;
-  /* Kept in the URL, not `useState`, so refreshing or sharing the link keeps
-     whichever tab was open — the eight tabs here are effectively eight
-     screens, and losing the current one on every reload was the reported
-     complaint. Falls back to Overview for a missing, stale, or unpermitted
+  /* Mirrored into the URL so refreshing or sharing the link keeps whichever
+     tab was open — the eight tabs here are effectively eight screens, and
+     losing the current one on every reload was the reported complaint. Falls
+     back to Overview for a missing, stale, or unpermitted
      `?tab=` value (an old bookmark, a typo, a link shared by someone with
      broader access) rather than rendering a tab with no content mounted. */
-  const tab: AgentTab =
+  const urlTab: AgentTab =
     isAgentTab(searchParamsTab) && isTabVisible(searchParamsTab) ? searchParamsTab : 'overview';
+  /* The open tab is client state seeded from the URL, not read straight off it.
+     `router.replace` re-requests the route from the server on every tab click,
+     and `useSearchParams` only reports the new `?tab=` once that response
+     commits. Deployed, that round-trip goes through the auth proxy and can be
+     slow, or fail outright on an expired session, so the address bar changed
+     while the panel stayed on the old tab. Locally the round-trip is instant,
+     which is why it only ever showed on the server. */
+  const [tab, setTab] = useState<AgentTab>(urlTab);
+  /* Keeps the panel honest when the URL moves on its own: Back/Forward, or a
+     permission gate retiring the tab that was open. Adjusted during render
+     rather than in an effect, which is React's own answer for state that has
+     to follow an external value (and what the lint rule asks for). */
+  const [syncedUrlTab, setSyncedUrlTab] = useState<AgentTab>(urlTab);
+  if (urlTab !== syncedUrlTab) {
+    setSyncedUrlTab(urlTab);
+    setTab(urlTab);
+  }
   /* Radix unmounts the inactive tab's content, so leaving Draft with edits in
      flight discards them silently. The draft form reports its dirty state up
      here so the switch can be confirmed first — the natural next step after
@@ -114,13 +129,19 @@ export function AgentDetailView({ agentTypeSlug }: Props) {
   const [isDraftDirty, setIsDraftDirty] = useState(false);
   const [pendingTab, setPendingTab] = useState<string | null>(null);
 
-  const goToTab = (next: string) => {
+  const goToTab = useCallback((next: string) => {
+    if (!isAgentTab(next)) return;
+    setTab(next);
     const params = new URLSearchParams(window.location.search);
     params.set('tab', next);
-    // `replace`, not `push`: switching tabs is a view change, not a new page —
-    // pushing would mean every tab click adds a Back-button stop.
-    router.replace(`${pathname}?${params.toString()}`, { scroll: false });
-  };
+    /* `history.replaceState`, not `router.replace`: the tab is already switched
+       above, so this only has to leave a shareable, reload-proof URL behind.
+       Next syncs its own router state from the native History API, and no
+       server request is made. `replaceState`, not `pushState`, because
+       switching tabs is a view change, not a new page — pushing would add a
+       Back-button stop per tab click. */
+    window.history.replaceState(null, '', `${window.location.pathname}?${params.toString()}`);
+  }, []);
 
   const requestTab = (next: string) => {
     if (tab === 'draft' && next !== 'draft' && isDraftDirty) {
