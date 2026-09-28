@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useState } from 'react';
-import { Building2, ChevronDown, ChevronRight, X } from 'lucide-react';
+import { BookOpen, Building2, ChevronDown, ChevronRight, X } from 'lucide-react';
 import { BrandMark } from '@/components/common/BrandMark';
 import { cn } from '@/lib/utils';
 import { NAV_ITEMS, ENABLED_HREFS, type NavItem } from '@/constants/navItems';
@@ -233,6 +233,18 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
       </nav>
 
       <div className="border-t py-2.5">
+        {/* A plain help link, not a NAV_ITEMS entry: `/guide` is a public page
+            outside `(restricted)` with its own chrome, not a gated internal
+            route, so it doesn't belong in the permission-filtered nav list
+            above or need an active/pathname state. */}
+        <Link
+          href="/guide"
+          className="text-muted-foreground hover:bg-accent hover:text-foreground mx-3 mb-2 flex items-center gap-2.5 rounded-md px-3 py-2 text-sm transition-colors"
+        >
+          <BookOpen className="size-4 shrink-0" aria-hidden />
+          <span className="min-w-0 flex-1 truncate font-medium">{t.navigation.guideLink}</span>
+        </Link>
+
         {/* A single organization per user (no switcher, no "create another"):
             a plain link to its settings, not a dropdown with nothing to
             switch between. `ai-agents-platform`'s own equivalent box isn't a

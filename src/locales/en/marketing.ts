@@ -6,6 +6,7 @@
  */
 export const marketing = {
   nav: {
+    guide: 'Guide',
     signIn: 'Sign in',
     getStarted: 'Get started',
   },

@@ -73,15 +73,20 @@ hamburger button, closed by its own close button or the backdrop.
   `bg-primary/10 text-primary` when active, `text-muted-foreground` otherwise. A
   row with `children` (only `Organization`, currently) expands into an indented
   sub-list instead of navigating.
-- **Footer** (`border-t`): a plain `Link` to `/organization` showing the org
-  name (no dropdown — one user is only ever in one organization, so there is
-  nothing to switch between; `OrganizationSwitcher.tsx` was deleted, not
-  hidden), then a second, read-only identity card below it (avatar,
-  `session.user.full_name`, `usePermissions().role`) — matching the prototype's
-  stacked org-box-over-user-card footer. Display-only: `ProfilePopup` in the
-  topbar is still the one control that actually signs out or links to the
-  profile page. An org-less user's path to `/organization/new` is unaffected —
-  `/no-role` carries that link independently of this footer.
+- **Footer** (`border-t`): a plain `Link` to `/guide` (the public setup guide,
+  see `context/app/guide/page.md`) above the organization card, not a
+  `NAV_ITEMS` entry — it's a public page outside `(restricted)` with no
+  permission gate and no pathname-active state to track, so it doesn't belong
+  in the permission-filtered nav list. Below it, a plain `Link` to
+  `/organization` showing the org name (no dropdown — one user is only ever in
+  one organization, so there is nothing to switch between;
+  `OrganizationSwitcher.tsx` was deleted, not hidden), then a second,
+  read-only identity card below it (avatar, `session.user.full_name`,
+  `usePermissions().role`) — matching the prototype's stacked
+  org-box-over-user-card footer. Display-only: `ProfilePopup` in the topbar is
+  still the one control that actually signs out or links to the profile page.
+  An org-less user's path to `/organization/new` is unaffected — `/no-role`
+  carries that link independently of this footer.
 
 There is deliberately no collapsed/icon-only rail mode. One was built, then
 removed the same session on direct feedback — see `context/changelog.md`,

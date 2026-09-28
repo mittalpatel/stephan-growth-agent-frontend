@@ -41,6 +41,9 @@ export default function LandingPage({ branding }: Readonly<{ branding: PublicBra
           </div>
           <div className="flex items-center gap-2">
             <Button variant="ghost" asChild>
+              <Link href="/guide">{t.marketing.nav.guide}</Link>
+            </Button>
+            <Button variant="ghost" asChild>
               <Link href="/login">{t.marketing.nav.signIn}</Link>
             </Button>
             <Button asChild>
@@ -188,6 +191,12 @@ export default function LandingPage({ branding }: Readonly<{ branding: PublicBra
           </div>
 
           <div className="text-muted-foreground flex items-center gap-4 text-xs">
+            <Link
+              href="/guide"
+              className="underline-offset-4 hover:underline hover:text-foreground"
+            >
+              {t.marketing.nav.guide}
+            </Link>
             <Link
               href="/legal/privacy-policy"
               className="underline-offset-4 hover:underline hover:text-foreground"

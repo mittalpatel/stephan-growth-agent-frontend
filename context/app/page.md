@@ -8,7 +8,9 @@ with the legal links. Copy lives in its own `t.marketing` namespace so a future
 homepage rewrite never touches auth copy by accident.
 
 A server component throughout — nothing on it needs client state. `Sign in` /
-`Get started` are plain links to `/login` and `/signup/create`.
+`Get started` are plain links to `/login` and `/signup/create`. A `Guide` link
+(header nav and footer) points at `/guide`, the public setup-guide page — see
+`context/app/guide/page.md`.
 
 ## Reachable only when signed out
 

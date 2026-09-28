@@ -107,6 +107,7 @@ export const navigation = {
   integrations: 'Integrations',
   billing: 'Billing',
   impersonation: 'Impersonation',
+  guideLink: 'Setup guide',
   sections: {
     main: 'Main',
     workspace: 'Workspace',
