@@ -59,6 +59,19 @@ whether that route's first submission succeeds, so this is a link to an opt-in
 feature, not a promise that it's on. `/signup` (no `/create` suffix) is the separate,
 always-available admin-issued invite flow.
 
+## Hero CTA
+
+`AuthHeroShell` takes an optional `cta: { label, href }` prop, off by default so the
+other pages sharing the shell (signup, forgot-password, MFA) are unaffected. Only
+`SignIn.tsx` passes one — `t.auth.startFreeCta` ("Start for Free") to
+`/signup/create` — rendered twice from the same prop: in the desktop branding panel
+(next to the tagline and feature list) and, since that panel is `hidden` below `md`,
+again above the card on small screens. Styled with the `--brand-accent` /
+`--brand-accent-foreground` tokens directly on the default `Button` (this branch
+predates the `cta` variant added in the YB Inspire accent-only rebrand; once that
+lands, this should switch to `variant="cta"` and drop the manual classes). Same
+`PUBLIC_SIGNUP_ENABLED` caveat as the sign-up link above applies to where it points.
+
 ## Flow
 
 `signIn('credentials')` → NextAuth `authorize()` → backend login → JWT stored in the
