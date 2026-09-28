@@ -8,6 +8,7 @@ import { conversations } from './conversations';
 import { integrations } from './integrations';
 import { dashboard } from './dashboard';
 import { errors } from './errors';
+import { guide } from './guide';
 import { header } from './header';
 import { knowledge } from './knowledge';
 import { leads } from './leads';
@@ -54,4 +55,5 @@ export const en = {
   approvals,
   integrations,
   billing,
+  guide,
 } as const;
