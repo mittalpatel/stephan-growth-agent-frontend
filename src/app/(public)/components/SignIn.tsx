@@ -10,7 +10,11 @@ import LoginForm from './LoginForm';
 /** The login page — credentials only, no social sign-in. */
 export default function SignIn() {
   return (
-    <AuthHeroShell title={t.auth.signInTitle} subtitle={t.auth.signInSubtitle}>
+    <AuthHeroShell
+      title={t.auth.signInTitle}
+      subtitle={t.auth.signInSubtitle}
+      cta={{ label: t.auth.startFreeCta, href: '/signup/create' }}
+    >
       {/* Reads search params (callbackUrl), so it needs the boundary. */}
       <Suspense>
         <LoginForm />

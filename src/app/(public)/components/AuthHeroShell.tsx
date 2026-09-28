@@ -1,8 +1,10 @@
 'use client';
 
+import Link from 'next/link';
 import { CheckCircle2 } from 'lucide-react';
 
 import { BrandMark } from '@/components/common/BrandMark';
+import { Button } from '@/components/ui/button';
 import { orgSurfaceStyle } from '@/lib/orgColors';
 import { usePublicBranding } from '@/providers/PublicBrandingProvider';
 
@@ -24,14 +26,20 @@ import { t } from '@/locales';
  * There is deliberately no mount-fade. An auth page is the first thing a user
  * sees, and animating it in puts an animation frame between them and the only
  * control they came for.
+ *
+ * `cta` is optional and off by default — every page using this shell shares it,
+ * but a "start for free" style prompt only belongs on `/login`, so only
+ * `SignIn.tsx` passes it.
  */
 export default function AuthHeroShell({
   title,
   subtitle,
+  cta,
   children,
 }: Readonly<{
   title: string;
   subtitle?: string;
+  cta?: { label: string; href: string };
   children: React.ReactNode;
 }>) {
   const currentYear = new Date().getFullYear();
@@ -76,6 +84,12 @@ export default function AuthHeroShell({
               </li>
             ))}
           </ul>
+
+          {cta && (
+            <Button asChild variant="cta" className="h-11 px-6 text-base font-semibold">
+              <Link href={cta.href}>{cta.label}</Link>
+            </Button>
+          )}
         </div>
 
         <p className="text-brand-surface-foreground/70 relative text-xs">{copyright}</p>
@@ -101,6 +115,16 @@ export default function AuthHeroShell({
               {brand.displayName}
             </span>
           </div>
+
+          {cta && (
+            <Button
+              asChild
+              variant="cta"
+              className="mb-6 h-11 w-full text-base font-semibold md:hidden"
+            >
+              <Link href={cta.href}>{cta.label}</Link>
+            </Button>
+          )}
 
           <div className="bg-card text-card-foreground border-border rounded-xl border p-6 shadow-sm sm:p-8">
             <div className="mb-6 space-y-1.5">

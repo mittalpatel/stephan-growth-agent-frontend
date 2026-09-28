@@ -11,6 +11,7 @@ export const auth = {
   signingIn: 'Signing in...',
   noAccountPrompt: "Don't have an account?",
   createAccountLink: 'Sign up',
+  startFreeCta: 'Start for Free',
   // {year} is filled in at render time.
   copyright: '© {year} {name}. All rights reserved.',
   heroTagline: 'Your AI agent, always on.',
