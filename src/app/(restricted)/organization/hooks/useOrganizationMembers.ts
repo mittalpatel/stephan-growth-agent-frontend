@@ -37,6 +37,8 @@ export interface AssignableRole {
   id: string;
   name: string;
   slug: string;
+  /** Backend 2026-10-07: seeded for every system role, free text on custom ones. */
+  description: string;
   is_system: boolean;
   permissions: string[];
 }

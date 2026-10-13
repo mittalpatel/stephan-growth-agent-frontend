@@ -638,8 +638,12 @@ of validation already tracked here.
   RHF+Zod form (`agentTestQuestionSchema`, field `question` matching
   `AgentTestAskRequestSerializer`); Enter asks, Shift+Enter adds a newline.
   States: no `agent:execute` shows a locked empty state instead of a form that
-  would 403; no draft (normal right after a publish) offers "Create draft"
-  through `useAgentDraft.createDraft`.
+  would 403; with no draft but a published version (normal right after a
+  publish) the console tests the live version, loaded through
+  `useAgentVersion` (`GET /agents/{id}/versions/{version_id}/`), with a
+  "Testing the live version" badge, matching the backend's
+  `tested_version` fallback (2026-10-07). Only an agent with neither version
+  shows the "Create draft" empty state.
 
   **Markdown rendering (2026-09-11)**: `result.answer` and each citation's
   `excerpt` are markdown (the answer's own formatting, and — since the
@@ -759,3 +763,15 @@ seeds `qualification_form_required_fields` the same way and
 `buildQualificationConfigPayload` always sends both: saving an untouched form
 never changes what the widget asks for. The form checkbox group is disabled
 when lead capture is switched off.
+
+## Updates 2026-10-07
+
+- **Catalog:** category tabs are hidden while the catalog has 4 or fewer
+  entries (`useAgentCatalog().showCategoryFilter`), and a hidden filter no
+  longer filters.
+- **Agent detail:** a one-line purpose is shown under the tab row for Draft,
+  Publish and Test (`t.agents.detail.tabPurpose`).
+- **Agent setup checklist:** the draft step counts as done once a version is
+  published (publishing clears `draft_version`, which capped the list at 4 of
+  5). Done steps keep a "Review" button, and the knowledge step explains what
+  completes it.

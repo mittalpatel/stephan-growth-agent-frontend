@@ -1,7 +1,16 @@
 'use client';
 
 import Link from 'next/link';
-import { ArrowRight, Bot, Circle, CircleCheck, Sparkles, TrendingUp } from 'lucide-react';
+import {
+  ArrowRight,
+  Bot,
+  Circle,
+  CircleCheck,
+  CircleHelp,
+  ShieldCheck,
+  Sparkles,
+  TrendingUp,
+} from 'lucide-react';
 
 import { useAgentsList } from '@/app/(restricted)/agents/hooks/useAgentsList';
 import { useUser } from '@/app/(restricted)/context/UserContext';
@@ -19,13 +28,16 @@ import type { ApiResponse } from '@/types/api';
 import type { LeadListItem } from '@/types/lead';
 
 import { useDashboardAnalytics } from '../hooks/useDashboardAnalytics';
+import { useSecurityTip } from '../hooks/useSecurityTip';
 import { useSetupChecklist, type SetupChecklistItemKey } from '../hooks/useSetupChecklist';
 
 /**
  * Where each outstanding setup step is actually completed. A checklist that
  * only reports state makes the user hunt for the page; these turn each
  * remaining step into one click. `organization_created` has no entry: it is
- * always already done by the time anyone can see this.
+ * always already done by the time anyone can see this. The knowledge step is
+ * resolved per render (see `knowledgeHref`) because it belongs on an agent's
+ * Knowledge tab, not on the catalog.
  */
 const CHECKLIST_HREF: Partial<Record<SetupChecklistItemKey, string>> = {
   team_member_invited: '/organization/members',
@@ -69,7 +81,17 @@ export function DashboardView() {
     isLoading: checklistLoading,
     isComplete,
     completedCount,
+    requiredCount,
   } = useSetupChecklist();
+  const securityTip = useSecurityTip();
+  // Knowledge is added on an agent's Knowledge tab. Sending the step to the
+  // catalog left the user one page short of the form, with no hint of where
+  // to go next.
+  const firstAgentSlug = perAgent[0]?.agent.agent_type.slug;
+  const checklistHref = (key: SetupChecklistItemKey) =>
+    key === 'knowledge_source_added' && firstAgentSlug
+      ? `/agents/${firstAgentSlug}?tab=knowledge`
+      : CHECKLIST_HREF[key];
 
   const recentLeadsQuery = useAuthQuery<ApiResponse<LeadListItem[]>>(
     [LEADS_LIST_KEY, buildLeadListParams(RECENT_LEADS_QUERY)],
@@ -127,37 +149,63 @@ export function DashboardView() {
       {!checklistLoading && !isComplete && checklistItems.length > 0 && (
         <Card>
           <CardContent>
-            <h3 className="font-display mb-1 font-bold">{t.dashboard.checklist.title}</h3>
-            <p className="text-muted-foreground mb-4 text-sm">
-              {format(t.dashboard.checklist.progress, {
-                done: completedCount,
-                total: checklistItems.length,
-              })}
-            </p>
+            <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
+              <div>
+                <h3 className="font-display mb-1 font-bold">{t.dashboard.checklist.title}</h3>
+                <p className="text-muted-foreground text-sm">
+                  {format(t.dashboard.checklist.progress, {
+                    done: completedCount,
+                    total: requiredCount,
+                  })}
+                </p>
+              </div>
+              <Link
+                href="/guide"
+                className="text-primary-strong inline-flex items-center gap-1 text-sm font-semibold hover:underline"
+              >
+                <CircleHelp className="size-4" aria-hidden />
+                {t.dashboard.checklist.guideLink}
+              </Link>
+            </div>
             <div className="flex flex-col divide-y">
               {checklistItems.map((item) => {
-                const href = CHECKLIST_HREF[item.key];
+                const href = checklistHref(item.key);
                 return (
-                  <div key={item.key} className="flex items-center gap-3 py-2.5">
+                  <div key={item.key} className="flex items-start gap-3 py-2.5">
                     {item.done ? (
                       <CircleCheck
-                        className="text-success-foreground size-4 shrink-0"
+                        className="text-success-foreground mt-0.5 size-4 shrink-0"
                         aria-hidden
                       />
                     ) : (
-                      <Circle className="text-muted-foreground size-4 shrink-0" aria-hidden />
+                      <Circle
+                        className="text-muted-foreground mt-0.5 size-4 shrink-0"
+                        aria-hidden
+                      />
                     )}
-                    {/* A done step is a record, not an action, so only the
-                        outstanding ones link anywhere. */}
-                    {item.done || !href ? (
-                      <span className="text-muted-foreground text-sm line-through">
-                        {t.dashboard.checklist.items[item.key]}
-                      </span>
-                    ) : (
-                      <Link href={href} className="text-sm font-medium hover:underline">
-                        {t.dashboard.checklist.items[item.key]}
-                      </Link>
-                    )}
+                    <div className="min-w-0">
+                      <div className="flex flex-wrap items-center gap-2">
+                        {/* A done step is a record, not an action, so only the
+                            outstanding ones link anywhere. */}
+                        {item.done || !href ? (
+                          <span className="text-muted-foreground text-sm line-through">
+                            {t.dashboard.checklist.items[item.key]}
+                          </span>
+                        ) : (
+                          <Link href={href} className="text-sm font-medium hover:underline">
+                            {t.dashboard.checklist.items[item.key]}
+                          </Link>
+                        )}
+                        {item.optional && (
+                          <StatusBadge label={t.dashboard.checklist.optional} tone="neutral" />
+                        )}
+                      </div>
+                      {/* Says why an untouched step is ticked, what an optional
+                          one is for, and what actually completes the rest. */}
+                      <p className="text-muted-foreground mt-0.5 text-xs">
+                        {t.dashboard.checklist.hints[item.key]}
+                      </p>
+                    </div>
                   </div>
                 );
               })}
@@ -166,10 +214,39 @@ export function DashboardView() {
         </Card>
       )}
 
-      <div className="grid grid-cols-2 gap-4 lg:grid-cols-5">
-        {metrics.map(({ label, value }) => (
-          <MetricCard key={label} label={label} value={value} isLoading={analyticsLoading} />
-        ))}
+      {securityTip.show && (
+        <Card>
+          <CardContent className="flex flex-wrap items-center gap-4">
+            <span className="bg-muted flex size-10 shrink-0 items-center justify-center rounded-xl">
+              <ShieldCheck className="size-5" aria-hidden />
+            </span>
+            <div className="min-w-0 flex-1">
+              <p className="font-semibold">{t.dashboard.securityTip.title}</p>
+              <p className="text-muted-foreground text-sm">{t.dashboard.securityTip.description}</p>
+            </div>
+            <div className="flex gap-2">
+              <Button variant="ghost" size="sm" onClick={securityTip.dismiss}>
+                {t.dashboard.securityTip.dismiss}
+              </Button>
+              <Button size="sm" asChild>
+                <Link href="/user-profile">{t.dashboard.securityTip.action}</Link>
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      <div className="flex flex-col gap-2">
+        <div className="grid grid-cols-2 gap-4 lg:grid-cols-5">
+          {metrics.map(({ label, value }) => (
+            <MetricCard key={label} label={label} value={value} isLoading={analyticsLoading} />
+          ))}
+        </div>
+        {/* A row of bare zeros on a new account read as broken. Says when the
+            numbers will start moving instead of inventing demo figures. */}
+        {!analyticsLoading && summary.conversation_count === 0 && (
+          <p className="text-muted-foreground text-sm">{t.dashboard.metricsEmpty}</p>
+        )}
       </div>
 
       <div>

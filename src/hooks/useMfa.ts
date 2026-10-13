@@ -21,7 +21,7 @@ import {
 
 const copy = t.userProfile.mfa;
 
-const MFA_STATUS_KEY = ['mfa', 'status'];
+export const MFA_STATUS_KEY = ['mfa', 'status'];
 
 /**
  * Product MFA: status, enrollment, confirm, disable, recovery-code regeneration.

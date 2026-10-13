@@ -169,3 +169,15 @@ visible with its role intact.
 ## Status
 
 Complete.
+
+## Invite dialog role descriptions (2026-10-07)
+
+The invite dialog shows what the selected role can do, from
+`t.organizations.invite.roleDescriptions` keyed by system role slug; a custom
+role falls back to its API `description` (backend 2026-10-07). Added because testers could not tell eight roles apart,
+Owner versus Tenant Administrator in particular.
+
+The invite form preselects the "Member" role (`RECOMMENDED_ROLE_SLUG` in
+`useInviteMemberForm`), labelled "(recommended)", once the roles list loads;
+it never overrides a role already picked. Client testing found no recommended
+default among eight roles.

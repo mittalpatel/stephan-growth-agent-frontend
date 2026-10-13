@@ -2,13 +2,14 @@
 
 import { useMemo, useState } from 'react';
 import Link from 'next/link';
-import { AlertTriangle, ArrowLeft, Loader2, Search, X } from 'lucide-react';
+import { AlertTriangle, ArrowLeft, ChevronDown, Info, Loader2, Search, X } from 'lucide-react';
 
 import { usePermissions } from '@/app/(restricted)/context/PermissionsContext';
 import { EmptyState } from '@/components/common/EmptyState';
 import { StatusBadge, type StatusTone } from '@/components/common/StatusBadge';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Input } from '@/components/ui/input';
 import { format, formatNumber, formatRelativeTime } from '@/lib/i18n';
 import { t } from '@/locales';
@@ -30,8 +31,11 @@ const PAGE_STATUS_TONES: Record<PageStatus, StatusTone> = {
   duplicate: 'warning',
 };
 
-/** Only the two outcomes whose reason isn't self-evident from the label. */
+/** The outcomes whose meaning isn't self-evident from the label. "Not
+ * extracted yet" is here because client testing (29 Sep 2026) found even
+ * the product owner could not tell what to do about it. */
 const PAGE_STATUS_HINTS: Partial<Record<PageStatus, string>> = {
+  discovered: t.knowledge.pages.pageStatusHint.discovered,
   low_quality: t.knowledge.pages.pageStatusHint.low_quality,
   duplicate: t.knowledge.pages.pageStatusHint.duplicate,
 };
@@ -105,6 +109,21 @@ export function KnowledgeSourcePagesView({ agentTypeSlug, websiteSourceId }: Pro
     ? sortedPages.filter((page) => page.url.toLowerCase().includes(query))
     : sortedPages;
   const isFiltered = query.length > 0;
+  // Scoped to the filtered rows, so "search, then select all" picks exactly
+  // what the search shows (same rule as `KnowledgeTargetsPanel`).
+  const allVisibleSelected =
+    visiblePages.length > 0 && visiblePages.every((page) => selectedIds.has(page.id));
+  const someVisibleSelected = visiblePages.some((page) => selectedIds.has(page.id));
+  const toggleAllVisible = (checked: boolean) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      for (const page of visiblePages) {
+        if (checked) next.add(page.id);
+        else next.delete(page.id);
+      }
+      return next;
+    });
+  };
 
   const countByStatus = (status: PageStatus) =>
     pages.filter((page) => page.status === status).length;
@@ -143,7 +162,7 @@ export function KnowledgeSourcePagesView({ agentTypeSlug, websiteSourceId }: Pro
     <div className="flex flex-col gap-6">
       <div>
         <Link
-          href={`/agents/${agentTypeSlug}`}
+          href={`/agents/${agentTypeSlug}?tab=knowledge`}
           className="text-muted-foreground hover:text-foreground inline-flex items-center gap-1.5 text-sm"
         >
           <ArrowLeft className="size-4" aria-hidden />
@@ -199,6 +218,35 @@ export function KnowledgeSourcePagesView({ agentTypeSlug, websiteSourceId }: Pro
             ))}
           </dl>
 
+          {/* Client testing found the page had no stated purpose: selecting a
+              row looked like it should do something, auto-skipped pages were
+              unexplained, and there was no hint of what to leave out. */}
+          <Collapsible className="bg-card rounded-lg border">
+            <CollapsibleTrigger className="group flex w-full items-center justify-between gap-2 px-4 py-3 text-left text-sm font-semibold">
+              <span className="inline-flex items-center gap-2">
+                <Info className="text-muted-foreground size-4" aria-hidden />
+                {t.knowledge.pages.guide.title}
+              </span>
+              <ChevronDown
+                className="text-muted-foreground size-4 transition-transform group-data-[state=open]:rotate-180"
+                aria-hidden
+              />
+            </CollapsibleTrigger>
+            <CollapsibleContent className="space-y-3 px-4 pb-4 text-sm">
+              <ul className="text-muted-foreground list-disc space-y-1.5 pl-5">
+                {t.knowledge.pages.guide.steps.map((step) => (
+                  <li key={step}>{step}</li>
+                ))}
+              </ul>
+              <p className="font-medium">{t.knowledge.pages.guide.excludeTitle}</p>
+              <ul className="text-muted-foreground list-disc space-y-1.5 pl-5">
+                {t.knowledge.pages.guide.excludeExamples.map((example) => (
+                  <li key={example}>{example}</li>
+                ))}
+              </ul>
+            </CollapsibleContent>
+          </Collapsible>
+
           {/* One max-size page is read at a time, so a source larger than that
               would otherwise present a partial list as the whole thing. */}
           {isTruncated && (
@@ -230,9 +278,23 @@ export function KnowledgeSourcePagesView({ agentTypeSlug, websiteSourceId }: Pro
             </p>
           ) : (
             <div className="divide-y rounded-md border">
+              {canRecrawl && (
+                <label className="bg-muted/40 flex items-center gap-3 px-4 py-2.5 text-sm font-medium">
+                  <Checkbox
+                    checked={
+                      allVisibleSelected ? true : someVisibleSelected ? 'indeterminate' : false
+                    }
+                    onCheckedChange={(checked) => toggleAllVisible(checked === true)}
+                  />
+                  {t.knowledge.pages.selectAllLabel}
+                </label>
+              )}
               {visiblePages.map((page) => {
                 const isFailedStatus = (page.http_status ?? 200) >= 400;
-                const hint = PAGE_STATUS_HINTS[page.status];
+                // The backend's own reason beats a guess from the status.
+                const hint = page.exclusion_reason
+                  ? t.knowledge.pages.exclusionReason[page.exclusion_reason]
+                  : PAGE_STATUS_HINTS[page.status];
                 return (
                   <div
                     key={page.id}
@@ -363,11 +425,15 @@ export function KnowledgeSourcePagesView({ agentTypeSlug, websiteSourceId }: Pro
 
       {canView && canRecrawl && pages.length > 0 && (
         <div className="bg-card/95 border-border sticky bottom-4 flex items-center justify-between gap-4 rounded-lg border px-4 py-3 shadow-sm backdrop-blur">
-          <p className="text-muted-foreground text-sm">
-            {format(t.knowledge.pages.selectedCount, { count: selectedIds.size })}
-          </p>
+          <div className="min-w-0">
+            <p className="text-sm font-medium">
+              {format(t.knowledge.pages.selectedCount, { count: selectedIds.size })}
+            </p>
+            <p className="text-muted-foreground text-xs">{t.knowledge.pages.selectionHint}</p>
+          </div>
           <Button
             type="button"
+            className="shrink-0"
             disabled={selectedIds.size === 0 || isRecrawling}
             onClick={() => recrawlSelected(Array.from(selectedIds))}
           >

@@ -160,6 +160,10 @@ outside the one-time wizard. Replaced by
   level, following `AgentSettingsView`'s `noPermissionTitle`/
   `noPermissionDescription` pattern) moved here since there's no longer a
   parent panel-opener to gate.
+- **Why a page was left out**: a row's hint comes from the backend's
+  `exclusion_reason` (`media`, `duplicate`, `low_content`, `robots`,
+  `path_filter`, `not_fetched`; backend 2026-10-07) via
+  `t.knowledge.pages.exclusionReason`, falling back to the status hint.
 - **Already-indexed pages sort first** (`STATUS_SORT_PRIORITY`:
   ready → failed → low_quality/duplicate → discovered), a client-side sort
   since the backend endpoint returns a plain `url`-ordered list with no
@@ -751,3 +755,18 @@ All/Selected/Not selected tab, section shortcuts, derived rows) in
   address is rejected inline instead of posted.
 - Loading is a skeleton shaped like the list; a failed read shows a retry;
   `isTruncated` shows how many of the server's pages are listed.
+
+## Updates 2026-10-07
+
+- `knowledge/page.tsx` now exists and redirects to `/agents/<slug>?tab=knowledge`.
+  The breadcrumb links every path segment, so the "Knowledge" crumb on a
+  source's pages view returned a 404. The pages view's back link also goes to
+  the Knowledge tab now, not Overview.
+- Knowledge tab: `KnowledgeTipsPanel` (what can be added, example content,
+  best practices, link to guide chapter 4) is open by default while the org
+  has no sources. Empty-state copy names concrete examples, and pending or
+  processing sources show a time hint.
+- Source pages view: a "How this page works" panel (selection vs extraction,
+  Exclude vs Remove, auto-skipped pages, what to exclude), a select-all row
+  scoped to the filtered list, a hint on "Not extracted yet", and the
+  primary action renamed to "Extract selected pages".

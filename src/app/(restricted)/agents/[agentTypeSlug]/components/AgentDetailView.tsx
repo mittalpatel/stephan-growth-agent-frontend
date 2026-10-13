@@ -275,6 +275,9 @@ export function AgentDetailView({ agentTypeSlug }: Props) {
           <TabsTrigger value="publish">{t.agents.detail.tabs.publish}</TabsTrigger>
           <TabsTrigger value="test">{t.agents.detail.tabs.test}</TabsTrigger>
         </TabsList>
+        {t.agents.detail.tabPurpose[tab] && (
+          <p className="text-muted-foreground mt-1 text-sm">{t.agents.detail.tabPurpose[tab]}</p>
+        )}
 
         <TabsContent value="overview">
           <AgentOverviewTab agent={agent} />

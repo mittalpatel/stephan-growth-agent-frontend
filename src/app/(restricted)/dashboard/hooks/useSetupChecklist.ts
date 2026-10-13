@@ -17,7 +17,13 @@ export type SetupChecklistItemKey =
   | 'agent_published'
   | 'knowledge_source_added';
 
-export type SetupChecklistItem = { key: SetupChecklistItemKey; done: boolean };
+/**
+ * `optional` (backend 2026-10-07) marks a step that never blocks "set up";
+ * today only `team_member_invited`. Client review (06 Oct 2026): inviting a
+ * teammate is "more a question than an action", and listing it as required
+ * made a solo tester believe she had to invite someone before exploring.
+ */
+export type SetupChecklistItem = { key: SetupChecklistItemKey; done: boolean; optional: boolean };
 
 /**
  * Onboarding checklist for the dashboard, never cached server-side.
@@ -38,13 +44,18 @@ export function useSetupChecklist() {
     { enabled: Boolean(organizationId) && can('organization', 'view') }
   );
 
-  const items = query.data?.data ?? [];
-  const completedCount = items.filter((item) => item.done).length;
-  const isComplete = items.length > 0 && completedCount === items.length;
+  const rows = query.data?.data ?? [];
+  // Optional steps sit last and stay out of the count, so "4 of 4" is
+  // reachable without inviting anyone.
+  const items = [...rows.filter((row) => !row.optional), ...rows.filter((row) => row.optional)];
+  const required = items.filter((item) => !item.optional);
+  const completedCount = required.filter((item) => item.done).length;
+  const isComplete = required.length > 0 && completedCount === required.length;
 
   return {
     items,
     completedCount,
+    requiredCount: required.length,
     // A failed read yields no items, so the card simply does not render — an
     // onboarding hint is not worth an error state on the app's home page.
     isLoading: query.isLoading,

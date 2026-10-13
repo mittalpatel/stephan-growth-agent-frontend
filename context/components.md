@@ -217,19 +217,6 @@ renders. The conversations pane owns its own height and keeps the fill; the
 lead detail sheet is already scrolling, so it passes a bounded `max-h-80`
 instead.
 
-## PreviewBanner
-
-`src/components/common/PreviewBanner.tsx`. Takes one already-translated `note`.
-Renders a dashed-border strip with a "Preview" `Badge` — the visible marker on a
-Sprint 1 static-preview page (see `context/app/(restricted)/agents/page.md` and its
-siblings for `conversations`/`leads`/`analytics`/`dashboard`): real app layout, inline
-mock data, no hook, no service call.
-
-The rule that keeps it meaningful: removing `PreviewBanner` from a page is the same
-change that wires that page to a real endpoint, never a separate cleanup pass — a
-preview page with the banner already removed is a silent lie about what the numbers
-on screen mean.
-
 ## PageHeader
 
 `src/components/common/PageHeader.tsx`. `{ eyebrow?, title, description?, actions? }`

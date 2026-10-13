@@ -1,8 +1,11 @@
 'use client';
 
 import Link from 'next/link';
+import { Controller } from 'react-hook-form';
+import { Eye, EyeOff } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Spinner } from '@/components/ui/spinner';
@@ -11,8 +14,26 @@ import { t } from '@/locales';
 
 import { usePublicSignupForm } from '../hooks/usePublicSignupForm';
 import AuthHeroShell from './AuthHeroShell';
+import { PasswordStrengthMeter } from './PasswordStrengthMeter';
 
 const copy = t.auth.publicSignupFlow;
+
+/** Same control as the login form's, so both password fields toggle together. */
+function PasswordVisibilityToggle({
+  visible,
+  onToggle,
+}: Readonly<{ visible: boolean; onToggle: () => void }>) {
+  return (
+    <button
+      type="button"
+      onClick={onToggle}
+      aria-label={visible ? t.auth.hidePassword : t.auth.showPassword}
+      className="text-muted-foreground hover:text-foreground focus-visible:ring-ring/50 absolute inset-y-0 right-0 flex w-10 items-center justify-center rounded-md transition-colors focus-visible:ring-[3px] focus-visible:outline-none"
+    >
+      {visible ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+    </button>
+  );
+}
 
 /**
  * Open self-registration: details, then an emailed OTP confirms the address
@@ -27,6 +48,9 @@ export default function PublicSignupForm() {
     email,
     isLoading,
     isResending,
+    showPassword,
+    toggleShowPassword,
+    strength,
     detailsForm,
     otpForm,
     onDetailsSubmit,
@@ -96,36 +120,87 @@ export default function PublicSignupForm() {
 
           <div className="space-y-1.5">
             <Label htmlFor="password">{copy.passwordLabel}</Label>
-            <Input
-              id="password"
-              type="password"
-              autoComplete="new-password"
-              disabled={isLoading}
-              aria-invalid={Boolean(detailsForm.formState.errors.password)}
-              className="h-11 rounded-lg text-base"
-              {...detailsForm.register('password')}
-            />
+            <div className="relative">
+              <Input
+                id="password"
+                type={showPassword ? 'text' : 'password'}
+                autoComplete="new-password"
+                disabled={isLoading}
+                aria-invalid={Boolean(detailsForm.formState.errors.password)}
+                className="h-11 rounded-lg pr-10 text-base"
+                {...detailsForm.register('password')}
+              />
+              <PasswordVisibilityToggle visible={showPassword} onToggle={toggleShowPassword} />
+            </div>
             {detailsForm.formState.errors.password && (
               <p className="text-destructive text-xs">
                 {detailsForm.formState.errors.password.message}
               </p>
             )}
+            <PasswordStrengthMeter score={strength} />
           </div>
 
           <div className="space-y-1.5">
             <Label htmlFor="confirm_password">{copy.confirmPasswordLabel}</Label>
-            <Input
-              id="confirm_password"
-              type="password"
-              autoComplete="new-password"
-              disabled={isLoading}
-              aria-invalid={Boolean(detailsForm.formState.errors.confirm_password)}
-              className="h-11 rounded-lg text-base"
-              {...detailsForm.register('confirm_password')}
-            />
+            <div className="relative">
+              <Input
+                id="confirm_password"
+                type={showPassword ? 'text' : 'password'}
+                autoComplete="new-password"
+                disabled={isLoading}
+                aria-invalid={Boolean(detailsForm.formState.errors.confirm_password)}
+                className="h-11 rounded-lg pr-10 text-base"
+                {...detailsForm.register('confirm_password')}
+              />
+              <PasswordVisibilityToggle visible={showPassword} onToggle={toggleShowPassword} />
+            </div>
             {detailsForm.formState.errors.confirm_password && (
               <p className="text-destructive text-xs">
                 {detailsForm.formState.errors.confirm_password.message}
+              </p>
+            )}
+          </div>
+
+          <div className="space-y-1.5">
+            <div className="flex items-start gap-2.5">
+              <Controller
+                control={detailsForm.control}
+                name="accepted_terms"
+                render={({ field }) => (
+                  <Checkbox
+                    id="accepted_terms"
+                    className="mt-0.5"
+                    checked={field.value}
+                    onCheckedChange={(checked) => field.onChange(checked === true)}
+                    disabled={isLoading}
+                    aria-invalid={Boolean(detailsForm.formState.errors.accepted_terms)}
+                  />
+                )}
+              />
+              <Label htmlFor="accepted_terms" className="text-sm leading-snug font-normal">
+                <span>
+                  {copy.termsPrefix}{' '}
+                  <Link
+                    href="/legal/terms-conditions"
+                    target="_blank"
+                    className="underline underline-offset-4"
+                  >
+                    {copy.termsLink}
+                  </Link>{' '}
+                  {copy.termsJoin}{' '}
+                  <Link
+                    href="/legal/privacy-policy"
+                    target="_blank"
+                    className="underline underline-offset-4"
+                  >
+                    {copy.privacyLink}
+                  </Link>
+                </span>
+              </Label>
+            </div>
+            {detailsForm.formState.errors.accepted_terms && (
+              <p className="text-destructive text-xs">
+                {detailsForm.formState.errors.accepted_terms.message}
               </p>
             )}
           </div>

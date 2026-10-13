@@ -1,10 +1,14 @@
 'use client';
 
 import { useState } from 'react';
-import { FormProvider } from 'react-hook-form';
+import { FormProvider, useWatch, type Control } from 'react-hook-form';
 import { UserPlus } from 'lucide-react';
 import type { AssignableRole } from '../../hooks/useOrganizationMembers';
-import { useInviteMemberForm, type InviteMemberFormValues } from '../../hooks/useInviteMemberForm';
+import {
+  RECOMMENDED_ROLE_SLUG,
+  useInviteMemberForm,
+  type InviteMemberFormValues,
+} from '../../hooks/useInviteMemberForm';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -14,6 +18,7 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog';
 import { RHFSelectField, RHFTextField } from '@/components/common/form';
+import { format } from '@/lib/i18n';
 import { t } from '@/locales';
 
 type Props = Readonly<{
@@ -21,9 +26,33 @@ type Props = Readonly<{
   onInvited: () => void;
 }>;
 
+/**
+ * What the chosen role can do, in plain words. Client testing (29 Sep 2026)
+ * found eight role names with nothing to tell them apart, Owner versus Tenant
+ * Administrator in particular.
+ */
+function RoleDescription({
+  roles,
+  control,
+}: Readonly<{ roles: AssignableRole[]; control: Control<InviteMemberFormValues> }>) {
+  const roleId = useWatch({ control, name: 'role_id' });
+  const role = roles.find((candidate) => candidate.id === roleId);
+  // System roles use the translated copy; a custom role falls back to the
+  // description its admin wrote.
+  const description = role
+    ? (t.organizations.invite.roleDescriptions[role.slug] ?? role.description)
+    : undefined;
+  if (!description) return null;
+  return (
+    <p className="bg-muted text-muted-foreground rounded-md px-3 py-2 text-sm">{description}</p>
+  );
+}
+
 export default function InviteMemberDialog({ roles, onInvited }: Props) {
   const [open, setOpen] = useState(false);
+  const recommendedRoleId = roles.find((role) => role.slug === RECOMMENDED_ROLE_SLUG)?.id;
   const { form, isPending, submit } = useInviteMemberForm({
+    defaultRoleId: recommendedRoleId,
     onSuccess: () => {
       setOpen(false);
       onInvited();
@@ -54,9 +83,17 @@ export default function InviteMemberDialog({ roles, onInvited }: Props) {
             <RHFSelectField<InviteMemberFormValues>
               name="role_id"
               label={t.organizations.invite.roleLabel}
-              options={roles.map((role) => ({ label: role.name, value: role.id }))}
+              description={t.organizations.invite.roleHelp}
+              options={roles.map((role) => ({
+                label:
+                  role.id === recommendedRoleId
+                    ? format(t.organizations.invite.recommendedRole, { name: role.name })
+                    : role.name,
+                value: role.id,
+              }))}
               required
             />
+            <RoleDescription roles={roles} control={form.control} />
             <Button type="submit" className="w-full" disabled={isPending}>
               {t.organizations.invite.submit}
             </Button>

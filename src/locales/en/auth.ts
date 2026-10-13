@@ -125,10 +125,19 @@ export const auth = {
     otpSent: 'A verification code has been sent to your email.',
     accountVerified: 'Email verified successfully.',
     backToLogin: 'Back to login',
+    strength: {
+      label: 'Password strength: {level}',
+      levels: ['Too weak', 'Weak', 'Fair', 'Good', 'Strong'],
+    },
+    termsPrefix: 'I agree to the',
+    termsLink: 'Terms and Conditions',
+    termsJoin: 'and the',
+    privacyLink: 'Privacy Policy',
     validation: {
       firstNameRequired: 'First name is required',
       passwordMatch: 'Passwords do not match',
       otpLength: 'Enter the 6-digit code',
+      termsRequired: 'Please accept the Terms and Conditions to continue',
     },
   },
 } as const;

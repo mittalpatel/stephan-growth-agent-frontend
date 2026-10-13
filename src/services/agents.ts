@@ -58,6 +58,14 @@ export const agentRollbackEndpoint = (id: string) => `${agentDetailEndpoint(id)}
  */
 export const agentVersionsEndpoint = (id: string) => `${agentDetailEndpoint(id)}versions/`;
 export const agentVersionsKey = (id: string) => ['agent-versions', id];
+/** One version's full record (backend 2026-10-07, `AgentVersionDetailView`). */
+export const agentVersionDetailEndpoint = (id: string, versionId: string) =>
+  `${agentVersionsEndpoint(id)}${versionId}/`;
+export const agentVersionDetailKey = (id: string, versionId: string) => [
+  'agent-version',
+  id,
+  versionId,
+];
 
 export const agentDomainsEndpoint = (id: string) => `${agentDetailEndpoint(id)}domains/`;
 export const agentDomainDeleteEndpoint = (id: string, domainId: string) =>

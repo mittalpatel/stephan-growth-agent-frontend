@@ -5,7 +5,7 @@ import { AxiosError, AxiosHeaders } from 'axios';
 import axiosPublic from '@/client/axiosPublic';
 import { DEFAULT_LANDING } from '@/constants/navItems';
 
-import { usePublicSignupForm } from '../usePublicSignupForm';
+import { passwordStrength, usePublicSignupForm } from '../usePublicSignupForm';
 
 const mockPush = vi.fn();
 vi.mock('next/navigation', () => ({
@@ -32,6 +32,7 @@ const detailsValues = {
   email: 'new@example.com',
   password: 'Passw0rd!',
   confirm_password: 'Passw0rd!',
+  accepted_terms: true,
 };
 
 describe('usePublicSignupForm', () => {
@@ -160,5 +161,33 @@ describe('usePublicSignupForm', () => {
 
     expect(result.current.step).toBe('otp');
     expect(axiosPublic.post).toHaveBeenCalledTimes(2);
+  });
+
+  it('blocks submission until the terms are accepted', async () => {
+    const { result } = renderHook(() => usePublicSignupForm());
+
+    act(() => {
+      Object.entries({ ...detailsValues, accepted_terms: false }).forEach(([key, value]) => {
+        result.current.detailsForm.setValue(key as keyof typeof detailsValues, value);
+      });
+    });
+
+    await act(() => result.current.onDetailsSubmit({ preventDefault: vi.fn() }));
+
+    expect(axiosPublic.post).not.toHaveBeenCalled();
+    expect(result.current.detailsForm.getFieldState('accepted_terms').error).toBeDefined();
+  });
+});
+
+describe('passwordStrength', () => {
+  it('never rates a password the schema rejects above Fair', () => {
+    expect(passwordStrength('')).toBe(0);
+    expect(passwordStrength('abc')).toBe(1);
+    expect(passwordStrength('alllowercase-and-long')).toBeLessThanOrEqual(2);
+  });
+
+  it('rates passwords that meet every rule as Good or Strong', () => {
+    expect(passwordStrength('Passw0rd')).toBe(3);
+    expect(passwordStrength('Passw0rd!')).toBe(4);
   });
 });

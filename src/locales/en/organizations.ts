@@ -359,6 +359,24 @@ export const organizations = {
     emailLabel: 'Email address',
     emailPlaceholder: 'person@example.com',
     roleLabel: 'Role',
+    roleHelp: 'Choose what this person can see and change. You can change it later.',
+    recommendedRole: '{name} (recommended)',
+    // Keyed by system role slug (`apps/rbac/seed_data.py`). A custom role has
+    // no entry and simply shows no description.
+    roleDescriptions: {
+      owner:
+        'Full control, including billing, deleting the organization and transferring ownership.',
+      admin:
+        'Runs the organization day to day: members, agents, knowledge and settings. Unlike the Owner, cannot pay, delete the organization or transfer ownership.',
+      agent_manager:
+        'Sets up agents and their knowledge, and can read conversations to improve answers. No access to members or billing.',
+      billing_manager:
+        'Manages the plan, invoices and payment details. No access to conversations.',
+      operator: 'Handles visitor conversations, leads and hand-offs to a human.',
+      member: 'Basic access to the organization. Cannot see or change agents.',
+      analyst: 'Can view agents, conversations, leads and analytics, without changing anything.',
+      'read-only': 'Can see the organization only. Cannot see agents or conversations.',
+    } as Record<string, string>,
     submit: 'Send invitation',
     // Both outcomes are now "invited, not yet a member" — an existing account
     // accepts in-app (see myInvites below), a new one gets an emailed signup link.

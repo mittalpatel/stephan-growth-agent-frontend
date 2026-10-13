@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -23,19 +24,36 @@ const schema = z.object({
 
 export type InviteMemberFormValues = z.infer<typeof schema>;
 
+/**
+ * The role a new invite starts on. Client testing (29 Sep 2026) found no
+ * recommended default among eight roles; "Member" is the least-privileged
+ * role that can still work with agents.
+ */
+export const RECOMMENDED_ROLE_SLUG = 'member';
+
 type Options = Readonly<{
   onSuccess: () => void;
+  /** Preselected once known; the roles list loads after the form mounts. */
+  defaultRoleId?: string;
 }>;
 
 /** Owns the "invite member" mutation and request-body construction. */
-export function useInviteMemberForm({ onSuccess }: Options) {
+export function useInviteMemberForm({ onSuccess, defaultRoleId = '' }: Options) {
   const { organization } = useOrganization();
   const { mutateAsync, isPending } = useAuthMutation();
 
   const form = useForm<InviteMemberFormValues>({
     resolver: zodResolver(schema),
-    defaultValues: { email: '', role_id: '' },
+    defaultValues: { email: '', role_id: defaultRoleId },
   });
+
+  // Fills the default only while nothing is chosen, so it never overrides
+  // a role the user picked.
+  useEffect(() => {
+    if (defaultRoleId && !form.getValues('role_id')) {
+      form.setValue('role_id', defaultRoleId);
+    }
+  }, [defaultRoleId, form]);
 
   const submit = form.handleSubmit(async (values) => {
     if (!organization) return;
@@ -53,7 +71,7 @@ export function useInviteMemberForm({ onSuccess }: Options) {
       // accepts in-app (see /invites), a new one gets an emailed signup link.
       // Neither is added on the spot, so one message covers both.
       toast.success(t.organizations.invite.sent);
-      form.reset();
+      form.reset({ email: '', role_id: defaultRoleId });
       onSuccess();
     } catch (error) {
       // `fields` is what stops a backend key that isn't a form field producing a

@@ -49,7 +49,6 @@ export const common = {
   openMenu: 'Open menu',
   closeMenu: 'Close menu',
   breadcrumb: 'Breadcrumb',
-  previewBadge: 'Preview',
   passwordRequirements:
     'Password does not meet the requirements. Requirements: at least 8 characters, a lowercase letter, an uppercase letter, and a number.',
 } as const;

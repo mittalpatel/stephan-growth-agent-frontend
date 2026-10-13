@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useState } from 'react';
-import { useForm } from 'react-hook-form';
+import { useForm, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { toast } from 'sonner';
@@ -36,6 +36,7 @@ const detailsSchema = z
       .refine((v) => /[A-Z]/.test(v), { message: t.common.passwordRequirements })
       .refine((v) => /\d/.test(v), { message: t.common.passwordRequirements }),
     confirm_password: z.string().trim().min(8, { message: t.common.passwordRequirements }),
+    accepted_terms: z.boolean().refine((v) => v, { message: copy.validation.termsRequired }),
   })
   .superRefine((data, ctx) => {
     if (data.password !== data.confirm_password) {
@@ -50,6 +51,26 @@ const detailsSchema = z
 const otpSchema = z.object({ otp: z.string().trim().length(6, copy.validation.otpLength) });
 
 export type DetailsStepValues = z.infer<typeof detailsSchema>;
+
+/**
+ * 0 to 4, one point per rule the schema enforces (length, lower, upper,
+ * digit) plus one for real length or a symbol. Mirrors the schema so a
+ * "Strong" password can never fail validation; it is guidance, not a gate.
+ */
+export function passwordStrength(value: string): number {
+  if (!value) return 0;
+  const rules = [
+    value.length >= 8,
+    /[a-z]/.test(value),
+    /[A-Z]/.test(value),
+    /\d/.test(value),
+    value.length >= 12 || /[^A-Za-z0-9]/.test(value),
+  ];
+  // Four of the five rules are required, so anything short of them caps at
+  // "Fair": the bar should never call a password the form rejects "Good".
+  const passed = rules.filter(Boolean).length;
+  return rules.slice(0, 4).every(Boolean) ? Math.min(passed - 1, 4) : Math.min(passed, 2);
+}
 export type OtpStepValues = z.infer<typeof otpSchema>;
 
 export function usePublicSignupForm() {
@@ -59,11 +80,20 @@ export function usePublicSignupForm() {
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isResending, setIsResending] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   const detailsForm = useForm<DetailsStepValues>({
     resolver: zodResolver(detailsSchema),
-    defaultValues: { first_name: '', last_name: '', email: '', password: '', confirm_password: '' },
+    defaultValues: {
+      first_name: '',
+      last_name: '',
+      email: '',
+      password: '',
+      confirm_password: '',
+      accepted_terms: false,
+    },
   });
+  const strength = passwordStrength(useWatch({ control: detailsForm.control, name: 'password' }));
   const otpForm = useForm<OtpStepValues>({
     resolver: zodResolver(otpSchema),
     defaultValues: { otp: '' },
@@ -100,6 +130,9 @@ export function usePublicSignupForm() {
             password: values.password,
             first_name: values.first_name.trim(),
             last_name: values.last_name?.trim() || '',
+            // Recorded server-side once the backend stores consent; until
+            // then DRF ignores the unknown field.
+            accepted_terms: values.accepted_terms,
           });
           setEmail(values.email);
           setPassword(values.password);
@@ -115,7 +148,14 @@ export function usePublicSignupForm() {
         } catch (err) {
           applyApiError<DetailsStepValues>(err, {
             setError: detailsForm.setError,
-            fields: ['first_name', 'last_name', 'email', 'password', 'confirm_password'],
+            fields: [
+              'first_name',
+              'last_name',
+              'email',
+              'password',
+              'confirm_password',
+              'accepted_terms',
+            ],
           });
         } finally {
           setIsLoading(false);
@@ -168,6 +208,9 @@ export function usePublicSignupForm() {
     email,
     isLoading,
     isResending,
+    showPassword,
+    toggleShowPassword: () => setShowPassword((value) => !value),
+    strength,
     detailsForm,
     otpForm,
     onDetailsSubmit,

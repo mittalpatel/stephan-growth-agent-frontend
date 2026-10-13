@@ -79,32 +79,34 @@ export function AgentsListView() {
         description={t.agents.marketplace.description}
       />
 
-      <div
-        role="tablist"
-        aria-label={t.agents.title}
-        className="bg-muted flex w-fit max-w-full items-center gap-1 overflow-x-auto overflow-y-hidden rounded-lg p-1"
-      >
-        {CATEGORY_TABS.map((tab) => {
-          const active = catalog.category === tab;
-          return (
-            <button
-              key={tab}
-              type="button"
-              role="tab"
-              aria-selected={active}
-              onClick={() => catalog.onCategoryChange(tab)}
-              className={cn(
-                'shrink-0 rounded-md px-3.5 py-1.5 text-sm font-semibold whitespace-nowrap transition-colors',
-                active
-                  ? 'bg-background text-foreground shadow-sm'
-                  : 'text-muted-foreground hover:text-foreground'
-              )}
-            >
-              {t.agents.marketplace.categories[tab]}
-            </button>
-          );
-        })}
-      </div>
+      {catalog.showCategoryFilter && (
+        <div
+          role="tablist"
+          aria-label={t.agents.title}
+          className="bg-muted flex w-fit max-w-full items-center gap-1 overflow-x-auto overflow-y-hidden rounded-lg p-1"
+        >
+          {CATEGORY_TABS.map((tab) => {
+            const active = catalog.category === tab;
+            return (
+              <button
+                key={tab}
+                type="button"
+                role="tab"
+                aria-selected={active}
+                onClick={() => catalog.onCategoryChange(tab)}
+                className={cn(
+                  'shrink-0 rounded-md px-3.5 py-1.5 text-sm font-semibold whitespace-nowrap transition-colors',
+                  active
+                    ? 'bg-background text-foreground shadow-sm'
+                    : 'text-muted-foreground hover:text-foreground'
+                )}
+              >
+                {t.agents.marketplace.categories[tab]}
+              </button>
+            );
+          })}
+        </div>
+      )}
 
       {renderBody()}
 

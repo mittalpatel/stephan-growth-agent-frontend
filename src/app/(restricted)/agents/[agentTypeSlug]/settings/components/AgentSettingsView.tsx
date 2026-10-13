@@ -70,7 +70,7 @@ export function AgentSettingsView({ agent }: Props) {
           <AllowedDomainsSection agentId={agent.id} />
         </Step>
         <Step number={2}>
-          <EmbedSnippetSection agentId={agent.id} />
+          <EmbedSnippetSection agent={agent} />
         </Step>
       </section>
 

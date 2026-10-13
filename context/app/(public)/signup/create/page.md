@@ -62,3 +62,12 @@ would let an unauthenticated caller enumerate which emails are registered (see
 therefore the same generic message for all of these; a user stuck here is expected
 to use "resend code" from this flow rather than be routed there automatically from
 a failed login attempt.
+
+## Updates 2026-10-07
+
+Details step: both password fields have the login form's show/hide toggle, the
+password has a strength bar (`PasswordStrengthMeter`, scored by
+`passwordStrength` in the hook so a "Good"/"Strong" password always passes
+the schema), and a required `accepted_terms` checkbox links to
+`/legal/terms-conditions` and `/legal/privacy-policy`. `accepted_terms` is
+sent in the signup body; the backend ignores it until it stores consent.

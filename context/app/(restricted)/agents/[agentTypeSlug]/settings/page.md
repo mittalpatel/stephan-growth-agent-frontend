@@ -147,3 +147,17 @@ below as the audit list.
 - Domain and key rows are bordered lists with labelled dates ("Added",
   "Created", "Revoked"); active keys sort above revoked ones.
 - The domains description no longer contains an em-dash.
+
+## Route redirect (2026-10-07)
+
+`settings/page.tsx` redirects `/agents/<slug>/settings` to `?tab=settings`, so
+old links and the breadcrumb no longer 404 (same fix as Knowledge).
+
+## Widget preview on the embed step (2026-10-13)
+
+`EmbedSnippetSection` now takes the `agent` and offers "Preview widget" once a
+version is published. `usePublishedWidgetPreview` fetches that version only
+when opened (`useAgentVersion`) and maps it with `versionToFormValues`
+(exported from `useAgentDraftForm`) into `WidgetPreviewView`, the form-free
+half of the draft tab's `WidgetPreview`, opened by default in the screen
+corner. Client review (06 Oct 2026) asked to see the widget before embedding.

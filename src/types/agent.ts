@@ -270,6 +270,8 @@ export type AgentTestAskResult = {
   answer: string;
   citations: AgentTestAskCitation[];
   confidence_decision: 'answered' | 'clarify' | 'fallback' | 'handoff';
+  /** Which version answered: the draft if one exists, else the published one. */
+  tested_version: 'draft' | 'published';
 };
 
 /**

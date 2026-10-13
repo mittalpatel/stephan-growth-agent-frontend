@@ -3,7 +3,7 @@
 import { useState, useSyncExternalStore } from 'react';
 import { createPortal } from 'react-dom';
 import { MessageCircle, Send, X } from 'lucide-react';
-import { useWatch } from 'react-hook-form';
+import { useWatch, type DeepPartial } from 'react-hook-form';
 
 import { checkContrast, isValidHexColor } from '@/lib/contrast';
 import { t } from '@/locales';
@@ -100,15 +100,34 @@ function panelAnchor(positionKey: string) {
   };
 }
 
-export function WidgetPreview({
+type PreviewProps = Readonly<{ defaultLanguage: string; agentName: string }>;
+
+/** The draft tab's preview: follows the form as it is typed. */
+export function WidgetPreview(props: PreviewProps) {
+  const values = useWatch<AgentDraftFormValues>();
+  return <WidgetPreviewView {...props} values={values} />;
+}
+
+/**
+ * The widget for a given set of form-shaped values, with no form attached.
+ * The embed step feeds it the published version (`versionToFormValues`) so
+ * the operator sees the style before installing the snippet.
+ */
+export function WidgetPreviewView({
   defaultLanguage,
   agentName,
-}: Readonly<{ defaultLanguage: string; agentName: string }>) {
-  const [open, setOpen] = useState(false);
+  values,
+  defaultOpen = false,
+}: PreviewProps &
+  Readonly<{
+    // Form-shaped, possibly partial (`useWatch` deep-partials it); read loosely below.
+    values: DeepPartial<AgentDraftFormValues>;
+    defaultOpen?: boolean;
+  }>) {
+  const [open, setOpen] = useState(defaultOpen);
   // The launcher renders through a portal so the draft card's own overflow and
   // sticky context can't clip it; that portal needs a client-side `document`.
   const mounted = useIsHydrated();
-  const values = useWatch<AgentDraftFormValues>();
   const v = values as Record<string, unknown>;
 
   const color = (key: keyof typeof FALLBACK_COLORS) => {

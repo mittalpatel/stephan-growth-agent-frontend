@@ -17,6 +17,9 @@ import { useAgentTypes } from './useAgentTypes';
 const NAMESPACE = 'agents';
 const CATEGORY_PARAM = 'category';
 
+/** At or below this many agent kinds, the category tabs are not shown. */
+const CATEGORY_FILTER_MIN_ENTRIES = 4;
+
 /** The category tab bar's own value for "don't filter". Not a category. */
 export const ALL_CATEGORIES = 'all';
 
@@ -99,17 +102,23 @@ export function useAgentCatalog() {
     });
   }, [types.agentTypes, provisioned.agents]);
 
+  // Category tabs only earn their place once the catalog is long enough to
+  // need narrowing. Client review (06 Oct 2026) found them of little use over
+  // four cards. Hidden tabs also stop filtering, so a stale `?category=` in a
+  // shared link cannot hide cards behind a control nobody can see.
+  const showCategoryFilter = entries.length > CATEGORY_FILTER_MIN_ENTRIES;
   const visible = useMemo(
     () =>
-      category === ALL_CATEGORIES
+      !showCategoryFilter || category === ALL_CATEGORIES
         ? entries
         : entries.filter((entry) => entry.category === category),
-    [entries, category]
+    [entries, category, showCategoryFilter]
   );
 
   return {
     entries: visible,
     category,
+    showCategoryFilter,
     onCategoryChange: (next: CatalogCategory) =>
       setParam(CATEGORY_PARAM, next === ALL_CATEGORIES ? null : next),
     isLoading: types.isLoading || provisioned.isLoading,

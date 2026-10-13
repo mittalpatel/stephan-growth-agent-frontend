@@ -129,12 +129,12 @@ describe('useAgentCatalog', () => {
     expect(sevo?.capabilities.length).toBeGreaterThan(0);
   });
 
-  it('filters to one category when the URL asks for one', () => {
+  it('hides the category filter, and ignores a category in the URL, at four kinds', () => {
     categoryParam = 'growth';
     const { result } = renderHook(() => useAgentCatalog());
 
-    expect(result.current.category).toBe('growth');
-    expect(result.current.entries.map((entry) => entry.slug)).toEqual(['sevo']);
+    expect(result.current.showCategoryFilter).toBe(false);
+    expect(result.current.entries).toHaveLength(4);
   });
 
   it('ignores a category the catalog has never heard of', () => {

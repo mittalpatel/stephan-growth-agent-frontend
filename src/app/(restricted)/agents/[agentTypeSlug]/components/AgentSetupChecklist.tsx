@@ -41,12 +41,21 @@ export function AgentSetupChecklist({ agent, onNavigate }: Props) {
   const copy = t.agents.detail.checklist;
 
   const steps = [
-    { key: 'draft', label: copy.stepDraft, done: agent.draft_version !== null, tab: 'draft' },
+    // Publishing clears `draft_version` (the draft *becomes* the published
+    // version), so a published agent has finished this step too. Checking
+    // the draft alone un-ticked it on publish and capped the list at 4 of 5.
+    {
+      key: 'draft',
+      label: copy.stepDraft,
+      done: agent.draft_version !== null || agent.published_version !== null,
+      tab: 'draft',
+    },
     ...(canViewKnowledge
       ? [
           {
             key: 'knowledge',
             label: copy.stepKnowledge,
+            hint: copy.stepKnowledgeHint,
             done: hasReadyKnowledge,
             tab: 'knowledge',
           },
@@ -122,19 +131,24 @@ export function AgentSetupChecklist({ agent, onNavigate }: Props) {
                     {index + 1}
                   </span>
                 )}
-                <span className={cn('text-sm', step.done && 'text-muted-foreground line-through')}>
-                  {step.label}
-                </span>
+                <div className="min-w-0">
+                  <p className={cn('text-sm', step.done && 'text-muted-foreground line-through')}>
+                    {step.label}
+                  </p>
+                  {'hint' in step && !step.done && (
+                    <p className="text-muted-foreground text-xs">{step.hint}</p>
+                  )}
+                </div>
               </div>
-              {!step.done && (
-                <Button
-                  variant={step.key === nextKey ? 'default' : 'ghost'}
-                  size="sm"
-                  onClick={() => onNavigate(step.tab)}
-                >
-                  {copy.goTo}
-                </Button>
-              )}
+              {/* Finished steps stay reachable: client testing asked to be
+                  able to go back to a step once it was done. */}
+              <Button
+                variant={step.key === nextKey ? 'default' : 'ghost'}
+                size="sm"
+                onClick={() => onNavigate(step.tab)}
+              >
+                {step.done ? copy.review : copy.goTo}
+              </Button>
             </li>
           ))}
         </ol>

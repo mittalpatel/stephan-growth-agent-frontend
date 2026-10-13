@@ -249,10 +249,13 @@ export const agents = {
       description: 'What is left before this agent can answer visitors on your site.',
       stepDraft: 'Edit your draft',
       stepKnowledge: 'Add knowledge for it to answer from',
+      stepKnowledgeHint:
+        'Done when at least one source has finished processing. A website can take a few minutes.',
       stepPublish: 'Publish it',
       stepDomain: 'Allow your website domain',
       stepEmbed: 'Get your embed code',
       goTo: 'Go',
+      review: 'Review',
       progress: '{done} of {total} done',
       allDone: 'All set. This agent is ready to embed on your site.',
     },
@@ -266,6 +269,13 @@ export const agents = {
       publish: 'Publish',
       test: 'Test',
     },
+    // One line under the tab row saying what the open tab is for. Client
+    // testing (06 Oct 2026) could not tell Draft, Publish and Test apart.
+    tabPurpose: {
+      draft: 'Edit what your agent says and how it looks. Changes stay private until you publish.',
+      publish: 'Make your latest draft live on your website, or go back to an earlier version.',
+      test: 'Ask your agent questions to check its answers. It uses your draft, or the live version if there is no draft.',
+    } as Partial<Record<string, string>>,
     overview: {
       title: 'Overview',
       slugLabel: 'Slug',
@@ -568,6 +578,9 @@ export const agents = {
       description:
         'Ask the questions your visitors would. Answers come from your unpublished draft, and nothing here is saved or shown to visitors.',
       draftVersion: 'Draft v{version}',
+      liveDescription:
+        'There is no draft, so you are testing the live version visitors see. Nothing here is saved or shown to visitors.',
+      liveVersion: 'Testing the live version v{version}',
       clear: 'Clear',
       questionLabel: 'Your question',
       questionPlaceholder: 'Type a question a visitor might ask…',
@@ -675,6 +688,11 @@ export const agents = {
     embed: {
       title: 'Get your embed code',
       description: 'Follow these steps to add the chat widget to your site.',
+      previewShow: 'Preview widget',
+      previewHide: 'Hide preview',
+      previewLoading: 'Loading the preview…',
+      previewHint:
+        'This is your live widget, in the corner of the screen as visitors will see it. Change its look on the Draft tab, then publish.',
       steps: [
         'Click "Generate embed code" below. It creates a ready-to-paste script tag with its own credential built in.',
         "Copy the snippet right away. It contains a secret key that's only shown once.",

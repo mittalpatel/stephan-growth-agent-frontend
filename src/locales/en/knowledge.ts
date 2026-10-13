@@ -28,11 +28,41 @@ export const knowledge = {
     errorTitle: 'Could not load knowledge sources',
     errorDescription: 'Something went wrong while loading these sources. Please try again.',
     emptyTitle: 'No knowledge sources yet',
-    emptyDescription: 'Add a website or upload a PDF to give your agents something to answer from.',
+    emptyDescription:
+      'Upload a PDF, such as your FAQ or price list, or add your website address. Your agents answer only from what you add here.',
+    pendingHint: 'Usually ready in a few minutes. Large websites with many images can take longer.',
     sharedNotice:
       'Knowledge sources are shared across your whole organization. Every agent can read them unless you narrow it to a subset below.',
     emptyFilteredTitle: 'No sources match your filters',
     emptyFilteredDescription: 'Try adjusting or clearing your filters.',
+  },
+  processing: {
+    one: 'Reading "{name}". You can keep working, we will let you know when it is ready.',
+    many: 'Reading {count} knowledge sources. You can keep working, we will let you know when they are ready.',
+    readyToast: '"{name}" is ready. Your agents can now answer from it.',
+    failedToast: '"{name}" could not be processed. Open Knowledge to see what went wrong.',
+  },
+  tips: {
+    title: 'What can I add, and what works best?',
+    whatTitle: 'What you can add',
+    what: [
+      'Your website: we read its pages for you. Just paste the address, for example https://yourcompany.com.',
+      'PDF files: an FAQ, price list, brochure, menu, product sheets or terms and conditions.',
+    ],
+    examplesTitle: 'Good content to start with',
+    examples: [
+      'Frequently asked questions and their answers',
+      'Services or products, with prices if you share them publicly',
+      'Opening hours, locations and contact details',
+      'Booking, delivery, cancellation and refund rules',
+    ],
+    practicesTitle: 'Best practices',
+    practices: [
+      'Keep it up to date. Your agent repeats what it reads, including old prices.',
+      'Plain text works best. Scanned images of text cannot be read.',
+      'Leave out pages that should not be quoted, such as login pages or old offers. You can exclude them after the website is read.',
+    ],
+    guideLink: 'Read the step-by-step guide',
   },
   actions: {
     addWebsite: 'Add website',
@@ -43,7 +73,7 @@ export const knowledge = {
     recrawl: 'Recrawl',
     viewPages: 'View pages',
     moreActions: 'More actions for {name}',
-    recrawlSelected: 'Recrawl selected pages',
+    recrawlSelected: 'Extract selected pages',
     disable: 'Disable',
     enable: 'Enable',
   },
@@ -252,10 +282,40 @@ export const knowledge = {
       duplicate: 'Duplicate content',
     },
     pageStatusHint: {
+      discovered:
+        'We found this page but have not read its text yet. Tick it and click "Extract selected pages" to add it.',
       low_quality: 'This page had too little text to be worth indexing, so it was skipped.',
       duplicate: 'This page’s content matches another page on this site, so it was skipped.',
     },
+    exclusionReason: {
+      media: 'This is an image, video or file, not a web page, so it was left out.',
+      duplicate: 'This page’s content matches another page on this site, so it was left out.',
+      low_content: 'This page had too little text to be useful, so it was left out.',
+      robots: 'This website’s robots.txt asks crawlers not to read this page.',
+      path_filter: 'This page matches one of the paths you chose to exclude.',
+      not_fetched:
+        'We could not read this page during the last crawl. Tick it and click "Extract selected pages" to try again.',
+    },
     selectedCount: '{count} selected',
+    selectAllLabel: 'Select all shown pages',
+    selectionHint:
+      'Ticking a page only selects it. Nothing happens until you click "Extract selected pages".',
+    guide: {
+      title: 'How this page works',
+      steps: [
+        'Every page we found on your website is listed here. "Indexed" pages are the ones your agent answers from.',
+        'To add or refresh pages, tick them and click "Extract selected pages". Ticking alone changes nothing.',
+        "Use Exclude to keep a page out of your agent's answers without deleting it. Include brings it back.",
+        'Some pages are skipped automatically because they have almost no text or repeat another page. You do not need to do anything about them.',
+      ],
+      excludeTitle: 'What should I exclude?',
+      excludeExamples: [
+        'Login, account, cart and checkout pages',
+        'Old news, past events and expired offers',
+        'Legal pages you do not want quoted, such as cookie policies',
+        'Pages about other companies or unrelated topics',
+      ],
+    },
     searchPlaceholder: 'Search these pages',
     noMatches: 'No pages match "{query}".',
     filterCount: 'Showing {shown} of {total} pages.',

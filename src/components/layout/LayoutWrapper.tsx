@@ -8,6 +8,7 @@ import RestrictedBreadcrumb from '@/components/common/RestrictedBreadcrumb';
 import { PageTransition } from '@/components/motion/PageTransition';
 import { t } from '@/locales';
 import { RealtimeProvider } from '@/providers/RealtimeProvider';
+import { KnowledgeProcessingBar } from '@/app/(restricted)/components/KnowledgeProcessingBar';
 import { useOrgBranding } from '@/app/(restricted)/hooks/useOrgBranding';
 import { PLATFORM_FAVICON_HREF } from '@/lib/constants/brandAssets';
 
@@ -111,6 +112,7 @@ export default function LayoutWrapper({ children }: Readonly<{ children: React.R
         <div className="flex min-w-0 flex-1 flex-col">
           <HeaderOne onMenuClick={() => setSidebarOpen(true)} />
           <RestrictedBreadcrumb />
+          <KnowledgeProcessingBar />
           <main className="flex-1">
             <div className="mx-auto flex w-full max-w-[1400px] flex-col px-4 py-7">
               {/* Global page-entrance motion: keyed by route so every restricted page

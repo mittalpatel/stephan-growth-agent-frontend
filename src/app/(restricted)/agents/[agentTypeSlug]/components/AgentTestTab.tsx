@@ -31,6 +31,7 @@ import { t } from '@/locales';
 import type { Agent, AgentTestAskCitation, AgentTestAskResult } from '@/types/agent';
 
 import { useAgentDraft } from '../hooks/useAgentDraft';
+import { useAgentVersion } from '../hooks/useAgentVersion';
 import { useAgentTestAsk, type TestTurn } from '../hooks/useAgentTestAsk';
 
 const copy = t.agents.detail.test;
@@ -45,14 +46,22 @@ const DECISION_TONE: Record<AgentTestAskResult['confidence_decision'], StatusTon
 type Props = Readonly<{ agent: Agent }>;
 
 /**
- * A test console for the draft. Every state is designed: no permission, no
- * draft (right after a publish), draft loading, an empty session with
- * the greeting and suggested questions, and the running session itself.
+ * A test console for the draft, or for the live version when there is no
+ * draft. Client review (06 Oct 2026): publishing clears the draft, and the
+ * tab then refused to test anything, which read as "testing stops once you
+ * go live". The backend's test-ask falls back to the published version the
+ * same way (`tested_version`). The empty state is left for an agent with
+ * neither version.
  */
 export function AgentTestTab({ agent }: Props) {
   const { can } = usePermissions();
   const canExecute = can('agent', 'execute');
   const draftState = useAgentDraft(agent.id);
+  // Only fetched once the draft has settled as missing.
+  const live = useAgentVersion(
+    agent.id,
+    !draftState.isLoading && !draftState.draft ? agent.published_version?.id : undefined
+  );
 
   if (!canExecute) {
     return (
@@ -66,7 +75,7 @@ export function AgentTestTab({ agent }: Props) {
     );
   }
 
-  if (draftState.isLoading) {
+  if (draftState.isLoading || live.isLoading) {
     return (
       <Card className="space-y-4 p-6">
         <Skeleton className="h-6 w-48" />
@@ -78,8 +87,9 @@ export function AgentTestTab({ agent }: Props) {
   }
 
   // `useAgentDraft` reads any settled error as "no draft", which after a
-  // publish is the expected state, so this is the one non-loading fallback.
-  if (!draftState.draft) {
+  // publish is the expected state.
+  const version = draftState.draft ?? live.version;
+  if (!version) {
     return (
       <Card>
         <EmptyState
@@ -100,25 +110,26 @@ export function AgentTestTab({ agent }: Props) {
     );
   }
 
-  const draft = draftState.draft;
   return (
     <TestConsole
       agentId={agent.id}
-      versionNumber={draft.version_number}
-      greeting={draft.localized_text[agent.default_language]?.greeting ?? ''}
-      suggestions={draft.behavior_config.suggested_questions ?? []}
+      isLive={!draftState.draft}
+      versionNumber={version.version_number}
+      greeting={version.localized_text[agent.default_language]?.greeting ?? ''}
+      suggestions={version.behavior_config.suggested_questions ?? []}
     />
   );
 }
 
 type ConsoleProps = Readonly<{
   agentId: string;
+  isLive: boolean;
   versionNumber: number;
   greeting: string;
   suggestions: string[];
 }>;
 
-function TestConsole({ agentId, versionNumber, greeting, suggestions }: ConsoleProps) {
+function TestConsole({ agentId, isLive, versionNumber, greeting, suggestions }: ConsoleProps) {
   const { turns, ask, retry, clear, isPending } = useAgentTestAsk(agentId);
   const form = useForm<AgentTestQuestionFormValues>({
     resolver: zodResolver(agentTestQuestionSchema),
@@ -144,11 +155,15 @@ function TestConsole({ agentId, versionNumber, greeting, suggestions }: ConsoleP
           <div className="flex flex-wrap items-center gap-2">
             <h2 className="font-display text-lg font-bold">{copy.title}</h2>
             <StatusBadge
-              label={format(copy.draftVersion, { version: versionNumber })}
-              tone="neutral"
+              label={format(isLive ? copy.liveVersion : copy.draftVersion, {
+                version: versionNumber,
+              })}
+              tone={isLive ? 'success' : 'neutral'}
             />
           </div>
-          <p className="text-muted-foreground max-w-2xl text-sm">{copy.description}</p>
+          <p className="text-muted-foreground max-w-2xl text-sm">
+            {isLive ? copy.liveDescription : copy.description}
+          </p>
         </div>
         {turns.length > 0 && (
           <Button variant="ghost" size="sm" onClick={clear} disabled={isPending}>

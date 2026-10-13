@@ -74,3 +74,25 @@ them (no billing/trial system, no pipeline-value metric) — both are deleted
 rather than left rendering static data next to real numbers, which would
 misrepresent which parts of the page are live. `PreviewBanner` is gone from
 this page.
+
+## Get set up checklist (2026-10-07)
+
+`useSetupChecklist` reads each item's `optional` flag from the backend (only
+`team_member_invited` is optional, backend 2026-10-07). An optional step is sorted
+last, carries an "Optional" badge and is left out of the `done of total`
+count, so the list completes without inviting anyone (client: "more a
+question than an action"). Every row shows a hint from
+`t.dashboard.checklist.hints`, which explains the two steps the platform ticks
+on signup ("Done for you") and what completes knowledge. The knowledge step
+links to the first agent's `?tab=knowledge` instead of the catalog, and the
+card links to `/guide`. A line under the metric cards explains the zeros on a
+new account.
+
+Still backend-side: the selector counts any knowledge source as done, even a
+pending one, while the agent checklist waits for `ready`.
+
+## Two-step verification tip (2026-10-13)
+
+`useSecurityTip` reads `GET /auth/mfa/status/` and shows a dismissible card
+linking to `/user-profile` while MFA is off. Dismissal is a per-browser
+`localStorage` flag; the tip stays hidden during server render.

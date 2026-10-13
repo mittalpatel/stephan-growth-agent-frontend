@@ -418,6 +418,26 @@ function bindQualificationError(
  * `qualification_config`'s equivalents are carried through untouched by
  * `buildQualificationConfigPayload` rather than being exposed at all.
  */
+/**
+ * A saved version as this form's flat values. Shared with the embed step's
+ * widget preview, which renders the published version through the same
+ * `WidgetPreview` the draft tab uses.
+ */
+export function versionToFormValues(
+  version: AgentVersionDetail,
+  enabledLanguages: string[]
+): AgentDraftFormValues {
+  return {
+    instructions: version.instructions,
+    disclosure_enabled: version.disclosure_enabled,
+    display_name: version.display_name,
+    localized_text: buildLocalizedTextDefaults(enabledLanguages, version.localized_text),
+    ...themeFieldsFromConfig(version.theme_config),
+    ...behaviorFieldsFromConfig(version.behavior_config),
+    ...qualificationFieldsFromConfig(version.qualification_config ?? {}),
+  };
+}
+
 export function useAgentDraftForm(
   agentId: string,
   draft: AgentVersionDetail | undefined,
@@ -452,15 +472,7 @@ export function useAgentDraftForm(
   // reflects the server's current values instead of staying blank.
   useEffect(() => {
     if (!draft) return;
-    form.reset({
-      instructions: draft.instructions,
-      disclosure_enabled: draft.disclosure_enabled,
-      display_name: draft.display_name,
-      localized_text: buildLocalizedTextDefaults(enabledLanguages, draft.localized_text),
-      ...themeFieldsFromConfig(draft.theme_config),
-      ...behaviorFieldsFromConfig(draft.behavior_config),
-      ...qualificationFieldsFromConfig(draft.qualification_config ?? {}),
-    });
+    form.reset(versionToFormValues(draft, enabledLanguages));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [draft, enabledLanguages.join(',')]);
 

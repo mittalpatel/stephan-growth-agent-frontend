@@ -103,7 +103,18 @@ export type DiscoveredUrl = {
   content_changed_at: string | null;
   http_status: number | null;
   content_hash: string | null;
+  /** Why the page was left out of the index; `''` when it was not. */
+  exclusion_reason: PageExclusionReason | '';
 };
+
+/** Mirrors `PageExclusionReason` in `apps/knowledge/constants.py`. */
+export type PageExclusionReason =
+  | 'media'
+  | 'duplicate'
+  | 'low_content'
+  | 'robots'
+  | 'path_filter'
+  | 'not_fetched';
 
 /** Body for `PATCH /knowledge/website/{id}/discovered-urls/`. */
 export type DiscoveredUrlBulkActionInput = Partial<{

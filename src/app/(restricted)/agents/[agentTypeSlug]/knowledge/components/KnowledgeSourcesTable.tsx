@@ -82,6 +82,13 @@ export function KnowledgeSourcesTable({ agentTypeSlug, sources }: Props) {
                     label={t.knowledge.status[source.status]}
                     tone={STATUS_TONE[source.status]}
                   />
+                  {/* A bare "Pending" left testers unsure whether anything was
+                      happening, or for how long. */}
+                  {(source.status === 'pending' || source.status === 'processing') && (
+                    <p className="text-muted-foreground mt-1 max-w-56 text-xs">
+                      {t.knowledge.list.pendingHint}
+                    </p>
+                  )}
                 </td>
                 <td className={`${dataTableTd} text-muted-foreground hidden text-sm md:table-cell`}>
                   {formatDate(source.updated_at)}

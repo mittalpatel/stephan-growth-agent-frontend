@@ -1,18 +1,21 @@
 'use client';
 
 import { useState } from 'react';
-import { AlertTriangle, Check, Copy } from 'lucide-react';
+import { AlertTriangle, Check, Copy, Eye, EyeOff } from 'lucide-react';
 import { toast } from 'sonner';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { t } from '@/locales';
+import type { Agent } from '@/types/agent';
 
+import { WidgetPreviewView } from '../../components/WidgetPreview';
 import { useAgentEmbedCode } from '../hooks/useAgentEmbedCode';
+import { usePublishedWidgetPreview } from '../hooks/usePublishedWidgetPreview';
 
 const copy = t.agents.settings.embed;
 
-type Props = Readonly<{ agentId: string }>;
+type Props = Readonly<{ agent: Agent }>;
 
 /**
  * The single place a deployment key gets created (2026-09-09). Mints a fresh
@@ -20,8 +23,9 @@ type Props = Readonly<{ agentId: string }>;
  * real install snippet it returns, with a copy affordance and a one-time
  * warning since the secret embedded in it is never shown again.
  */
-export function EmbedSnippetSection({ agentId }: Props) {
-  const { canManage, embedCode, generate, isGenerating } = useAgentEmbedCode(agentId);
+export function EmbedSnippetSection({ agent }: Props) {
+  const { canManage, embedCode, generate, isGenerating } = useAgentEmbedCode(agent.id);
+  const preview = usePublishedWidgetPreview(agent);
   const [copied, setCopied] = useState(false);
 
   const handleCopy = async () => {
@@ -48,18 +52,44 @@ export function EmbedSnippetSection({ agentId }: Props) {
               ))}
             </ol>
           </div>
-          {canManage && (
-            <Button
-              onClick={() => {
-                setCopied(false);
-                void generate();
-              }}
-              disabled={isGenerating}
-            >
-              {copy.generate}
-            </Button>
-          )}
+          <div className="flex shrink-0 flex-wrap justify-end gap-2">
+            {preview.canPreview && (
+              <Button variant="outline" onClick={preview.toggle} aria-pressed={preview.isOpen}>
+                {preview.isOpen ? (
+                  <EyeOff className="size-4" aria-hidden />
+                ) : (
+                  <Eye className="size-4" aria-hidden />
+                )}
+                {preview.isOpen ? copy.previewHide : copy.previewShow}
+              </Button>
+            )}
+            {canManage && (
+              <Button
+                onClick={() => {
+                  setCopied(false);
+                  void generate();
+                }}
+                disabled={isGenerating}
+              >
+                {copy.generate}
+              </Button>
+            )}
+          </div>
         </div>
+
+        {preview.isOpen && (
+          <p className="text-muted-foreground text-sm">
+            {preview.isLoading ? copy.previewLoading : copy.previewHint}
+          </p>
+        )}
+        {preview.isOpen && preview.values && (
+          <WidgetPreviewView
+            values={preview.values}
+            defaultLanguage={agent.default_language}
+            agentName={agent.name}
+            defaultOpen
+          />
+        )}
 
         {embedCode && (
           <div className="space-y-3">

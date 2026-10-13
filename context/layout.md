@@ -156,3 +156,15 @@ Derives `{ title, subtitle }` for the topbar from `NAV_ITEMS` automatically —
 title = the nav item's own label, subtitle = its child's label when the route is
 a child. A route reachable only outside the sidebar (a user-menu link, a direct
 link) needs a manual entry in this file's `EXTRA` map instead.
+
+## KnowledgeProcessingBar
+
+`src/app/(restricted)/components/KnowledgeProcessingBar.tsx`, rendered by
+`LayoutWrapper` directly under the breadcrumb on every restricted page. Shows
+a one-line "Reading <source>…" status while any knowledge source is `pending`
+or `processing`, and renders nothing otherwise. Driven by
+`useKnowledgeProcessing` (`app/(restricted)/hooks/`), which shares the
+org-wide sources query key with `useAllKnowledgeSources`, polls every 10s
+only while something is in progress, and toasts each source as it becomes
+`ready` or `failed`. Added 2026-10-07 because users could close the
+add-website dialog with no sign the crawl was still running.

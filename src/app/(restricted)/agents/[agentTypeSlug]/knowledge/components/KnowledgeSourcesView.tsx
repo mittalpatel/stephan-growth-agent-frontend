@@ -18,6 +18,7 @@ import { KnowledgeHealthPanel } from './KnowledgeHealthPanel';
 import { KnowledgeSourcesSkeleton } from './KnowledgeSourcesSkeleton';
 import { KnowledgeSourcesTable } from './KnowledgeSourcesTable';
 import { KnowledgeTargetsPanel } from './KnowledgeTargetsPanel';
+import { KnowledgeTipsPanel } from './KnowledgeTipsPanel';
 
 type Props = Readonly<{ agentId: string; agentTypeSlug: string }>;
 
@@ -114,6 +115,15 @@ export function KnowledgeSourcesView({ agentId, agentTypeSlug }: Props) {
             </div>
           )}
         </div>
+
+        {/* Keyed on the first load so `defaultOpen` reflects whether the org
+            has any sources yet, rather than the loading-state guess. */}
+        {!list.isLoading && (
+          <KnowledgeTipsPanel
+            key={String(list.total === 0)}
+            defaultOpen={list.total === 0 && !list.hasActiveFilters}
+          />
+        )}
 
         <FilterToolbar
           title={list.title}
