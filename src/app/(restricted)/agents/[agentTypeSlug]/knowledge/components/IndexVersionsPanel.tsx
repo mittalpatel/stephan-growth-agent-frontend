@@ -1,6 +1,6 @@
 'use client';
 
-import { Database } from 'lucide-react';
+import { Database, Loader2 } from 'lucide-react';
 
 import { usePermissions } from '@/app/(restricted)/context/PermissionsContext';
 import { StatusBadge, type StatusTone } from '@/components/common/StatusBadge';
@@ -36,6 +36,7 @@ export function IndexVersionsPanel({ agentId }: Props) {
     onPageChange,
     buildIndex,
     isBuilding,
+    buildingVersion,
   } = useIndexVersions(agentId);
 
   function renderBody() {
@@ -116,11 +117,21 @@ export function IndexVersionsPanel({ agentId }: Props) {
         </div>
         {canBuild && (
           <Button onClick={() => buildIndex()} disabled={isBuilding} variant="outline" size="sm">
+            {isBuilding && <Loader2 className="size-4 animate-spin" aria-hidden />}
             {isBuilding ? copy.building : copy.buildAction}
           </Button>
         )}
       </CardHeader>
       <CardContent className="space-y-3">
+        {buildingVersion !== null && (
+          <p
+            role="status"
+            className="bg-info text-info-foreground flex items-start gap-2 rounded-md px-3 py-2 text-xs"
+          >
+            <Loader2 className="mt-0.5 size-3.5 shrink-0 animate-spin" aria-hidden />
+            {format(copy.buildingNotice, { number: buildingVersion })}
+          </p>
+        )}
         {renderBody()}
 
         {/* Page size is fixed by the hook, so this is a plain pager rather

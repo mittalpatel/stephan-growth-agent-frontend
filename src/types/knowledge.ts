@@ -48,12 +48,29 @@ export type IndexVersionStatus = 'building' | 'ready' | 'failed';
  * `website_source_id`, never `id`. `null` for a `pdf` source, which has no
  * `WebsiteSource` row at all.
  */
+/** Mirrors `SourceProgressStage` in `apps/knowledge/constants.py`. */
+export type SourceProgressStage = 'waiting' | 'finding' | 'choosing' | 'reading';
+
+/**
+ * Where an in-progress source is (backend 2026-10-13). `null` on the row once
+ * it is ready, failed or disabled. Counts are `null` where the backend has
+ * none to give: a PDF reports no page counts, and `pages_done` exists only
+ * while reading.
+ */
+export type SourceProgress = {
+  stage: SourceProgressStage;
+  pages_found: number | null;
+  pages_done: number | null;
+  pages_total: number | null;
+};
+
 export type KnowledgeSourceListItem = {
   id: string;
   source_type: KnowledgeSourceType;
   status: KnowledgeSourceStatus;
   display_name: string;
   website_source_id: string | null;
+  progress: SourceProgress | null;
   created_at: string;
   updated_at: string;
 };
@@ -76,6 +93,8 @@ export type KnowledgeSourceUpdateInput = { display_name: string };
 export type WebsiteDiscoverInput = {
   root_url: string;
   scope_config?: Record<string, unknown>;
+  /** Read every found page without a review step. The backend defaults to `false`. */
+  auto_extract?: boolean;
 };
 
 /** Response of `POST /knowledge/website/discover/`. */
@@ -144,6 +163,7 @@ export type CrawlJob = {
   failed_count: number;
   removed_count: number;
   requeued_count: number;
+  auto_extract: boolean;
   error_summary: string;
   created_at: string;
   updated_at: string;
@@ -189,3 +209,9 @@ export type AgentKnowledgeTargetSetInput = { source_ids: string[] };
 
 /** A crawl job is done polling once it leaves these two states. */
 export const CRAWL_JOB_ACTIVE_STATUSES: readonly CrawlJobStatus[] = ['pending', 'running'];
+
+/** `GET /knowledge/upload-limits/`: what a PDF upload is checked against. */
+export type KnowledgeUploadLimits = {
+  max_pdf_size_mb: number;
+  max_pdf_pages: number;
+};

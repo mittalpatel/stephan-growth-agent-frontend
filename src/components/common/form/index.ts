@@ -4,6 +4,7 @@ export { RHFTextField } from './RHFTextField';
 export { RHFTextareaField } from './RHFTextareaField';
 export { RHFSelectField, type SelectFieldOption } from './RHFSelectField';
 export { RHFSwitchField } from './RHFSwitchField';
+export { RHFRadioCardField, type RadioCardOption } from './RHFRadioCardField';
 export { RHFColorField } from './RHFColorField';
 export { RHFStringListField } from './RHFStringListField';
 export { RHFObjectListField, type ObjectListColumn } from './RHFObjectListField';

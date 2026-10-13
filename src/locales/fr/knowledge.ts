@@ -33,17 +33,45 @@ export const knowledge = {
       'Importez un PDF, comme votre FAQ ou votre grille tarifaire, ou ajoutez l’adresse de votre site. Vos agents répondent uniquement à partir de ce que vous ajoutez ici.',
     pendingHint:
       'Généralement prête en quelques minutes. Les grands sites riches en images peuvent prendre plus de temps.',
+    failedHint:
+      'Nous n’avons pu lire aucune page à cette adresse. Vérifiez qu’elle s’ouvre dans un navigateur, puis réessayez.',
+    retry: 'Réessayer',
+    choosePages: 'Choisir les pages',
     sharedNotice:
       'Les sources de connaissances sont partagées dans toute votre organisation. Chaque agent peut les lire, sauf si vous en limitez la liste ci-dessous.',
     emptyFilteredTitle: 'Aucune source ne correspond à vos filtres',
     emptyFilteredDescription: 'Essayez de modifier ou d’effacer vos filtres.',
   },
   processing: {
+    line: {
+      waiting: 'En attente',
+      finding: 'Recherche des pages…',
+      findingCount: {
+        one: 'Recherche des pages… {count} trouvée pour l’instant',
+        other: 'Recherche des pages… {count} trouvées pour l’instant',
+      },
+      choosing: {
+        one: '{count} page trouvée. Choisissez celles à lire.',
+        other: '{count} pages trouvées. Choisissez celles à lire.',
+      },
+      choosingNoCount: 'Pages trouvées. Choisissez celles à lire.',
+      reading: {
+        one: 'Lecture des pages : {done} sur {count}',
+        other: 'Lecture des pages : {done} sur {count}',
+      },
+      readingNoCount: 'Lecture des pages…',
+    },
+    hint: 'Cela peut prendre quelques minutes. Vous pouvez continuer à travailler.',
+    openSource: 'Ouvrir',
     one: 'Lecture de « {name} » en cours. Vous pouvez continuer à travailler, nous vous préviendrons quand ce sera prêt.',
     many: 'Lecture de {count} sources de connaissances en cours. Vous pouvez continuer à travailler, nous vous préviendrons quand elles seront prêtes.',
     readyToast: '« {name} » est prête. Vos agents peuvent maintenant s’en servir pour répondre.',
     failedToast:
       '« {name} » n’a pas pu être traitée. Ouvrez Connaissances pour voir ce qui s’est passé.',
+    choosePages: 'Choisir les pages',
+    found: { one: '{count} page trouvée', other: '{count} pages trouvées' },
+    read: { one: '{done} page lue sur {count}', other: '{done} pages lues sur {count}' },
+    more: '{count} de plus',
   },
   tips: {
     title: 'Que puis-je ajouter, et qu’est-ce qui fonctionne le mieux ?',
@@ -73,10 +101,10 @@ export const knowledge = {
     edit: 'Renommer',
     delete: 'Supprimer la source',
     reprocess: 'Retraiter',
-    recrawl: 'Explorer à nouveau',
+    recrawl: 'Chercher de nouvelles pages',
     viewPages: 'Voir les pages',
     moreActions: 'Plus d’actions pour {name}',
-    recrawlSelected: 'Extraire les pages sélectionnées',
+    recrawlSelected: 'Lire les pages sélectionnées',
     disable: 'Désactiver',
     enable: 'Activer',
   },
@@ -97,31 +125,54 @@ export const knowledge = {
     renamed: 'Source renommée.',
     deleted: 'Source supprimée.',
     reprocessStarted: 'Retraitement lancé.',
-    recrawlStarted: 'Nouvelle exploration lancée.',
-    recrawlAlreadyRunning: 'Une découverte est déjà en cours pour cette source.',
-    recrawlPagesStarted: 'Nouvelle exploration lancée pour les pages sélectionnées.',
+    recrawlStarted: 'Recherche de nouvelles pages lancée.',
+    recrawlAlreadyRunning: 'Nous cherchons déjà des pages sur ce site.',
+    recrawlPagesStarted: 'Lecture des pages sélectionnées lancée.',
     disabled: 'Source désactivée.',
     enabled: 'Source activée.',
   },
   addWebsite: {
     title: 'Ajouter un site web',
-    description: 'L’agent va explorer ce site et vous laisser choisir les pages à inclure.',
+    description:
+      'Saisissez l’adresse de votre site. Nous trouvons ses pages et les lisons pour votre agent.',
+    readMode: {
+      label: 'Comment le lire ?',
+      allLabel: 'Lire tout le site',
+      allBadge: 'Recommandé',
+      allDescription: 'Nous lisons toutes les pages trouvées. Vous pourrez en exclure ensuite.',
+      chooseLabel: 'Choisir les pages moi-même',
+      chooseDescription: 'Nous trouvons d’abord les pages, puis vous choisissez celles à lire.',
+    },
+    reading: {
+      title: 'Lecture de votre site…',
+      backgroundNotice:
+        'Vous pouvez fermer cette fenêtre. Nous continuons et vous prévenons quand c’est prêt.',
+      close: 'Fermer',
+    },
+    closeReview: {
+      title: 'Lire maintenant les {count} pages sélectionnées ?',
+      description:
+        'La lecture n’a pas encore commencé. Nous pouvons lire les pages sélectionnées maintenant, ou vous pourrez choisir plus tard depuis la liste des connaissances.',
+      titleNoCount: 'Lire maintenant les pages sélectionnées ?',
+      readAll: 'Lire les pages sélectionnées',
+      later: 'Je choisirai plus tard',
+    },
     rootUrlLabel: 'URL du site',
     rootUrlPlaceholder: 'https://exemple.fr',
     viewExistingSource: 'Ouvrir la source qui couvre déjà ce site',
     scope: {
-      toggle: 'Options d’exploration avancées',
+      toggle: 'Options avancées',
       maxPagesLabel: 'Nombre maximal de pages',
       maxPagesDescription:
-        'Limitez le nombre de pages que cette exploration peut découvrir. Laissez vide pour utiliser la limite de votre offre.',
+        'Limitez le nombre de pages que nous cherchons. Laissez vide pour utiliser la limite de votre offre.',
       maxPagesPlaceholder: 'ex. 100',
       maxDepthLabel: 'Profondeur maximale des liens',
       maxDepthDescription:
-        'Le nombre de liens suivis depuis la page de départ. 0 n’explore que la page de départ.',
+        'Le nombre de liens suivis depuis la page de départ. 0 ne lit que la page de départ.',
       maxDepthPlaceholder: 'ex. 3',
-      includePathsLabel: 'N’explorer que ces chemins',
+      includePathsLabel: 'Ne lire que ces sections',
       includePathsDescription:
-        'Limitez l’exploration aux URL situées sous ces chemins. La correspondance se fait par segment complet : « /blog » couvre « /blog/article-1 » mais pas « /blogger-inscription ». Laissez vide pour explorer tout le site.',
+        'Ne lisez que les adresses situées sous ces chemins. La correspondance se fait par segment complet : « /blog » couvre « /blog/article-1 » mais pas « /blogger-inscription ». Laissez vide pour lire tout le site.',
       excludePathsLabel: 'Exclure ces chemins',
       excludePathsDescription:
         'Ignorez les URL situées sous ces chemins. La correspondance se fait par segment complet : « /blog » exclut « /blog/article-1 » mais pas « /blogger-inscription ».',
@@ -129,18 +180,18 @@ export const knowledge = {
       removePath: 'Retirer',
       pathPlaceholder: '/blog',
     },
-    submit: 'Lancer la découverte',
+    submit: 'Commencer',
     discovering: {
-      title: 'Découverte des pages…',
+      title: 'Recherche des pages…',
       description:
-        'Recherche des pages de ce site. Les sites sans plan de site exploitable sont parcourus lien par lien, ce qui peut prendre jusqu’à 10 minutes.',
+        'Nous suivons les liens de ce site pour lister ses pages. Cela peut prendre jusqu’à 10 minutes.',
       elapsed: 'En cours depuis {duration}',
       backgroundNotice:
-        'Vous pouvez fermer cette fenêtre et continuer à travailler. L’exploration continue, et les pages apparaîtront sous cette source une fois terminée.',
+        'Vous pouvez fermer cette fenêtre et continuer à travailler. Nous continuons, et la barre en haut de l’écran indique où nous en sommes.',
     },
     discoveryFailed: {
-      title: 'Échec de la découverte',
-      description: 'Une erreur est survenue lors de la découverte des pages de ce site.',
+      title: 'Nous n’avons pas pu lire ce site',
+      description: 'Une erreur est survenue lors de la recherche des pages de ce site.',
     },
     review: {
       title: 'Choisissez les pages à inclure',
@@ -172,10 +223,10 @@ export const knowledge = {
       deselectDuplicates: 'Ignorer les doublons',
       truncatedNotice: 'Affichage des {shown} premières pages sur {total} trouvées.',
       loadError: 'Impossible de charger les pages trouvées.',
-      extract: 'Extraire les pages sélectionnées',
+      extract: 'Lire les pages sélectionnées',
       extractCount: {
-        one: 'Extraire {count} page',
-        other: 'Extraire {count} pages',
+        one: 'Lire {count} page',
+        other: 'Lire {count} pages',
       },
       nothingSelected: 'Sélectionnez au moins une page pour continuer.',
       slowWarning:
@@ -190,33 +241,34 @@ export const knowledge = {
       removeUrlLabel: 'Retirer {url} de la liste',
     },
     extracting: {
-      title: 'Extraction des pages sélectionnées…',
-      description:
-        'Chaque page sélectionnée est récupérée et lue séparément, cela prend donc un peu de temps.',
-      progress: '{done} pages traitées sur {total}',
+      title: 'Lecture de vos pages…',
+      description: 'Nous lisons chaque page choisie, une par une.',
+      progress: '{done} pages lues sur {total}',
       elapsed: 'En cours depuis {duration}',
       backgroundNotice:
-        'Vous pouvez fermer cette fenêtre et continuer à travailler. L’extraction continue, et les pages apparaîtront sous cette source une fois terminée.',
+        'Vous pouvez fermer cette fenêtre et continuer à travailler. Nous continuons, et la barre en haut de l’écran indique où nous en sommes.',
     },
     extractionFailed: {
-      title: 'Échec de l’extraction',
-      description: 'Une erreur est survenue lors de l’extraction des pages sélectionnées.',
+      title: 'Nous n’avons pas pu lire ces pages',
+      description: 'Une erreur est survenue lors de la lecture des pages sélectionnées.',
     },
     closeWhileRunning: {
       title: 'Fermer et laisser le traitement se terminer en arrière-plan ?',
       description:
-        'L’exploration continue sur le serveur. Cette source est déjà enregistrée, vous pourrez la retrouver depuis sa ligne dans la liste.',
+        'Nous continuons sans vous. La barre en haut de chaque écran indique où nous en sommes.',
       confirm: 'Fermer',
       cancel: 'Continuer à suivre',
     },
     done: {
       title: 'Site web ajouté',
-      description: 'Les pages ci-dessous ont été lues et mises en file pour l’indexation.',
-      indexedLabel: 'Pages ajoutées',
+      description:
+        'Vos pages ont été lues. Votre agent pourra s’en servir dans moins d’une minute.',
+      indexedLabel: 'Pages lues',
       failedLabel: 'Pages illisibles',
       skippedLabel: 'Pages ignorées car vides ou en double',
-      wherePages:
-        'Pour voir toutes les pages ou en explorer certaines à nouveau plus tard, ouvrez cette source depuis la liste et choisissez « Voir les pages ».',
+      failedListTitle: 'Pages que nous n’avons pas pu lire',
+      moreFailed: 'Et {count} autres. Retrouvez-les toutes dans la liste des pages.',
+      reviewPages: 'Voir les pages',
       close: 'Terminé',
     },
     close: 'Annuler',
@@ -227,6 +279,9 @@ export const knowledge = {
     dropzoneHint: 'Glissez un PDF ici',
     dropzoneActive: 'Déposez pour joindre ce PDF',
     dropzoneWrongType: 'Seuls les fichiers PDF peuvent être importés.',
+    limitsHint: 'PDF uniquement, jusqu’à {size} Mo et {pages} pages.',
+    tooLarge:
+      'Ce fichier fait {size}. La limite est de {limit} Mo. Essayez un fichier plus petit, ou découpez-le en plusieurs parties.',
     submit: 'Importer',
     uploading: 'Import en cours…',
     duplicateSource: 'Ce PDF a déjà été importé sous le nom « {name} ».',
@@ -234,6 +289,7 @@ export const knowledge = {
   validation: {
     rootUrlRequired: 'Saisissez l’URL d’un site web.',
     rootUrlInvalid: 'Saisissez une URL valide.',
+    rootUrlScheme: 'Saisissez une adresse de site qui commence par http:// ou https://.',
     nameRequired: 'Le nom est obligatoire.',
     maxPagesRange: 'Saisissez un nombre entre 1 et 1000.',
     maxDepthRange: 'Saisissez un nombre entre 0 et 10.',
@@ -262,37 +318,52 @@ export const knowledge = {
   },
   pages: {
     title: 'Pages',
-    description: 'Les pages explorées par cette source pour « {name} ».',
+    description: 'Toutes les pages trouvées sur « {name} ».',
     backToKnowledge: 'Retour aux sources de connaissances',
     errorTitle: 'Impossible de charger les pages',
     errorDescription:
       'Une erreur est survenue lors du chargement de ces pages. Veuillez réessayer.',
-    empty: 'Aucune page n’a encore été explorée.',
+    empty: 'Aucune page trouvée pour l’instant.',
     noPermissionTitle: 'Autorisation de consultation requise',
     noPermissionDescription: 'Vous n’avez pas l’autorisation de voir les pages de cette source.',
+    alreadyListed: 'Cette page est déjà dans la liste.',
+    failureReason: {
+      notFound: 'Cette page n’existe plus sur le site (erreur {status}).',
+      blocked:
+        'Le site a refusé l’accès à cette page (erreur {status}). Elle demande peut-être une connexion.',
+      rateLimited: 'Le site nous a demandé de ralentir. Réessayez de lire cette page plus tard.',
+      serverError:
+        'Le site a eu un problème pour afficher cette page (erreur {status}). Réessayez plus tard.',
+      httpError: 'Le site a renvoyé une erreur pour cette page (erreur {status}).',
+      unknown: 'Nous n’avons pas pu joindre cette page. Réessayez plus tard.',
+    },
+    reading: {
+      description: 'Vous pouvez quitter cette page. Nous continuons.',
+      badge: 'Lecture en cours',
+    },
     summary: {
       total: 'Pages trouvées',
-      indexed: 'Ajoutées à cet agent',
-      notExtracted: 'Pas encore extraites',
+      indexed: 'Lues',
+      notExtracted: 'Pas encore lues',
       failed: 'Illisibles',
       skipped: 'Ignorées car vides ou en double',
-      excluded: 'Exclues de l’index',
+      excluded: 'Exclues',
     },
     lastChangedLabel: 'Dernière modification {when}',
     neverChanged: 'jamais',
     httpStatusLabel: 'HTTP {status}',
     pageStatus: {
-      discovered: 'Pas encore extraite',
-      ready: 'Indexée',
+      discovered: 'Pas encore lue',
+      ready: 'Lue',
       failed: 'Échec du traitement',
       low_quality: 'Contenu insuffisant',
       duplicate: 'Contenu en double',
     },
     pageStatusHint: {
       discovered:
-        'Nous avons trouvé cette page mais pas encore lu son texte. Cochez-la et cliquez sur « Extraire les pages sélectionnées » pour l’ajouter.',
+        'Nous avons trouvé cette page mais pas encore lu son texte. Cochez-la et cliquez sur « Lire les pages sélectionnées » pour l’ajouter.',
       low_quality:
-        'Cette page contenait trop peu de texte pour être indexée, elle a donc été ignorée.',
+        'Cette page contenait trop peu de texte pour être utile, elle a donc été ignorée.',
       duplicate:
         'Le contenu de cette page correspond à une autre page de ce site, elle a donc été ignorée.',
     },
@@ -303,20 +374,20 @@ export const knowledge = {
         'Le contenu de cette page correspond à une autre page de ce site, elle a donc été écartée.',
       low_content:
         'Cette page contenait trop peu de texte pour être utile, elle a donc été écartée.',
-      robots: 'Le fichier robots.txt de ce site demande aux robots de ne pas lire cette page.',
+      robots: 'Ce site demande aux robots de ne pas lire cette page.',
       path_filter: 'Cette page correspond à l’un des chemins que vous avez choisi d’exclure.',
       not_fetched:
-        'Nous n’avons pas pu lire cette page lors de la dernière exploration. Cochez-la et cliquez sur « Extraire les pages sélectionnées » pour réessayer.',
+        'Nous n’avons pas pu lire cette page la dernière fois. Cochez-la et cliquez sur « Lire les pages sélectionnées » pour réessayer.',
     },
     selectedCount: '{count} sélectionnées',
     selectAllLabel: 'Sélectionner toutes les pages affichées',
     selectionHint:
-      'Cocher une page la sélectionne seulement. Rien ne se passe tant que vous ne cliquez pas sur « Extraire les pages sélectionnées ».',
+      'Cocher une page la sélectionne seulement. Rien ne se passe tant que vous ne cliquez pas sur « Lire les pages sélectionnées ».',
     guide: {
       title: 'Comment fonctionne cette page',
       steps: [
-        'Toutes les pages trouvées sur votre site sont listées ici. Les pages « Indexées » sont celles dont votre agent se sert pour répondre.',
-        'Pour ajouter ou actualiser des pages, cochez-les et cliquez sur « Extraire les pages sélectionnées ». Cocher seul ne change rien.',
+        'Toutes les pages trouvées sur votre site sont listées ici. Les pages « Lues » sont celles dont votre agent se sert pour répondre.',
+        'Pour ajouter ou actualiser des pages, cochez-les et cliquez sur « Lire les pages sélectionnées ». Cocher seul ne change rien.',
         'Utilisez Exclure pour retirer une page des réponses de votre agent sans la supprimer. Inclure la réintègre.',
         'Certaines pages sont ignorées automatiquement parce qu’elles n’ont presque pas de texte ou en répètent une autre. Vous n’avez rien à faire.',
       ],
@@ -334,19 +405,19 @@ export const knowledge = {
     addUrlHint: 'Il manque une page ? Ajoutez son adresse ici.',
     addUrlPlaceholder: 'https://exemple.fr/autre-page',
     addUrlAction: 'Ajouter l’URL',
-    excludedBadge: 'Exclue de l’index',
+    excludedBadge: 'Exclue',
     excludedHint:
-      'Cette page a été explorée, mais son contenu ne fait pas partie de l’index et l’agent ne peut pas s’en servir. Incluez-la pour la réintégrer lors de la prochaine reconstruction.',
+      'Votre agent ne se sert pas de cette page. Cliquez sur Inclure pour l’utiliser de nouveau après la prochaine construction de l’index.',
     includeAction: 'Inclure',
     excludeAction: 'Exclure',
-    includeTitle: 'Réintégrer cette page dans l’index lors de la prochaine reconstruction.',
+    includeTitle: 'Utiliser cette page de nouveau après la prochaine construction de l’index.',
     excludeTitle:
-      'Garder cette page dans la liste mais retirer son contenu de l’index. Le texte exploré est conservé, vous pourrez donc l’inclure de nouveau plus tard.',
+      'Garder cette page dans la liste sans que votre agent s’en serve. Vous pourrez l’inclure de nouveau plus tard.',
     removeAction: 'Retirer',
     removeTitle:
-      'Supprimer complètement cette page de la liste. Une exploration ultérieure devra la redécouvrir. Pour garder la ligne mais la retirer de l’index, utilisez Exclure.',
+      'Supprimer cette page de la liste. Pour la garder listée sans l’utiliser, utilisez Exclure.',
     removeRowLabel: 'Retirer {url} de cette source',
-    recrawlRowLabel: 'Sélectionner {url} pour une nouvelle exploration',
+    recrawlRowLabel: 'Sélectionner {url} pour la lire',
     truncatedNotice:
       'Cette source compte {total} pages, et seules les {shown} premières sont affichées. La recherche et les compteurs ci-dessus ne portent que sur les pages chargées.',
   },
@@ -367,6 +438,8 @@ export const knowledge = {
       'La publication nécessite un index prêt, construit à partir des sources de connaissances de cet agent.',
     buildAction: 'Construire l’index',
     building: 'Construction…',
+    buildingNotice:
+      'Création de la v{number}. Votre agent continue de répondre avec la version précédente jusqu’à ce que celle-ci soit prête, en général en moins d’une minute.',
     versionLabel: 'v{number}',
     columns: {
       version: 'Version',
@@ -386,6 +459,8 @@ export const knowledge = {
     notBuilt: 'Non construit',
     toast: {
       buildStarted: 'Construction de l’index lancée.',
+      buildReady: 'L’index de recherche v{number} est prêt ({chunks} éléments de contenu).',
+      buildFailed: 'La création de l’index a échoué. Relancez-la.',
     },
   },
 };

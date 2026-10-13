@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 
-import { PLATFORM_FAVICON_HREF } from '@/lib/constants/brandAssets';
+import { PLATFORM_FAVICON_HREF, PLATFORM_APPLE_ICON_HREF } from '@/lib/constants/brandAssets';
 import { JetBrains_Mono, Poppins, Work_Sans } from 'next/font/google';
 import { cookies, headers } from 'next/headers';
 import { Toaster } from 'sonner';
@@ -56,7 +56,7 @@ export function generateMetadata(): Metadata {
     // favicon set by the restricted layout only ever became a second link the browser chose
     // between. As metadata it is an ordinary field a deeper segment can replace. The file
     // now lives in `public/`, which is why the href has no build hash.
-    icons: { icon: PLATFORM_FAVICON_HREF },
+    icons: { icon: PLATFORM_FAVICON_HREF, apple: PLATFORM_APPLE_ICON_HREF },
   };
 }
 

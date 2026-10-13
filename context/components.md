@@ -20,8 +20,10 @@ typography wasn't part of that feedback. One type scale, Tailwind defaults other
 
 `RHFTextField`, `RHFTextareaField`, `RHFSelectField`, `RHFSwitchField`, `RHFColorField`,
 `RHFStringListField`, `RHFObjectListField`, `RHFCheckboxGroupField`,
-`RHFSearchableCheckboxGroupField`, plus `fieldStyles.ts` (`fieldInputCls`,
-`fieldLabelCls`, `fieldDescriptionCls`, `getRhfError`).
+`RHFSearchableCheckboxGroupField`, `RHFRadioCardField` (one-of-N as selectable cards,
+each with a description and optional badge; first used for the add-website read mode),
+plus `fieldStyles.ts` (`fieldInputCls`, `fieldLabelCls`, `fieldDescriptionCls`,
+`getRhfError`).
 
 Use these inside a `<FormProvider>` rather than wiring controlled inputs per form.
 When a field type is missing, add a primitive here instead of inlining a one-off —

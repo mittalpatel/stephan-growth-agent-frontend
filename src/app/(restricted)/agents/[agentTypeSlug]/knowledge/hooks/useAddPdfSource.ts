@@ -4,11 +4,21 @@ import { useCallback, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 
 import { useAuthMutation } from '@/hooks/useAuthMutation';
+import { useAuthQuery } from '@/hooks/useAuthQuery';
 import { applyApiError, getEnvelope } from '@/lib/apiError';
 import { getErrorCode } from '@/lib/helper';
-import { KNOWLEDGE_PDF_UPLOAD_ENDPOINT, knowledgeSourcesListKey } from '@/services/knowledge';
+import { format, formatFileSize } from '@/lib/i18n';
+import { t } from '@/locales';
+import {
+  KNOWLEDGE_PDF_UPLOAD_ENDPOINT,
+  KNOWLEDGE_UPLOAD_LIMITS_ENDPOINT,
+  KNOWLEDGE_UPLOAD_LIMITS_KEY,
+  knowledgeSourcesListKey,
+} from '@/services/knowledge';
 import type { ApiResponse } from '@/types/api';
-import type { KnowledgeSource } from '@/types/knowledge';
+import type { KnowledgeSource, KnowledgeUploadLimits } from '@/types/knowledge';
+
+const BYTES_PER_MB = 1024 * 1024;
 
 /**
  * Uploads a PDF as a new knowledge source. Multipart body, same pattern as
@@ -26,6 +36,16 @@ export function useAddPdfSource(onCreated?: (sourceId: string) => void) {
    * (matched by checksum), set only by a `duplicate_pdf_document` 409. Same
    * pattern as `useAddWebsiteFlow`'s `duplicateSourceId` (2026-09-12 fix). */
   const [duplicateSourceId, setDuplicateSourceId] = useState<string | null>(null);
+
+  // The limit is a platform setting, so it is read rather than hardcoded.
+  // Stated up front and checked on pick: it used to surface only after the
+  // whole file had uploaded (client testing, 13 Oct 2026).
+  const limitsQuery = useAuthQuery<ApiResponse<KnowledgeUploadLimits>>(
+    [KNOWLEDGE_UPLOAD_LIMITS_KEY],
+    KNOWLEDGE_UPLOAD_LIMITS_ENDPOINT,
+    { staleTime: Infinity }
+  );
+  const limits = limitsQuery.data?.data ?? null;
 
   const upload = useCallback(
     async (file: File) => {
@@ -54,5 +74,25 @@ export function useAddPdfSource(onCreated?: (sourceId: string) => void) {
     [mutateAsync, onCreated, queryClient]
   );
 
-  return { upload, isUploading: isPending, duplicateSourceId };
+  return {
+    upload,
+    isUploading: isPending,
+    duplicateSourceId,
+    /** "PDF only, up to 20 MB and 500 pages", or `null` until loaded. */
+    limitsHint: limits
+      ? format(t.knowledge.addPdf.limitsHint, {
+          size: limits.max_pdf_size_mb,
+          pages: limits.max_pdf_pages,
+        })
+      : null,
+    /** Why `file` cannot be uploaded, or `null` when it can (or the limit is
+     * not loaded yet; the backend still enforces it). */
+    fileError: (file: File): string | null =>
+      limits && file.size > limits.max_pdf_size_mb * BYTES_PER_MB
+        ? format(t.knowledge.addPdf.tooLarge, {
+            size: formatFileSize(file.size),
+            limit: limits.max_pdf_size_mb,
+          })
+        : null,
+  };
 }

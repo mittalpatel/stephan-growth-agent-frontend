@@ -4,6 +4,7 @@ import { useEffect, useRef } from 'react';
 import { toast } from 'sonner';
 
 import { usePermissions } from '@/app/(restricted)/context/PermissionsContext';
+import { useAgentOptions } from '@/app/(restricted)/hooks/useAgentOptions';
 import { useAuthQuery } from '@/hooks/useAuthQuery';
 import { format } from '@/lib/i18n';
 import { t } from '@/locales';
@@ -15,7 +16,7 @@ import {
 import type { ApiResponse } from '@/types/api';
 import type { KnowledgeSourceListItem, KnowledgeSourceStatus } from '@/types/knowledge';
 
-const POLL_INTERVAL_MS = 10_000;
+const POLL_INTERVAL_MS = 4_000;
 const IN_PROGRESS: readonly KnowledgeSourceStatus[] = ['pending', 'processing'];
 
 /**
@@ -27,6 +28,8 @@ const IN_PROGRESS: readonly KnowledgeSourceStatus[] = ['pending', 'processing'];
  * the same org-wide list as `useAllKnowledgeSources` (same query key, so the
  * cache is shared and an add-source invalidation wakes it up), polls only
  * while something is in progress, and toasts each source as it finishes.
+ * Each row's `progress` (backend 2026-10-13) carries its stage and live page
+ * counts, so nothing here has to guess what a `pending` source is doing.
  */
 export function useKnowledgeProcessing() {
   const { can } = usePermissions();
@@ -68,5 +71,21 @@ export function useKnowledgeProcessing() {
     );
   }, [sources]);
 
-  return { inProgress };
+  // Knowledge lives on an agent's Knowledge tab, so "View progress" needs an
+  // agent to open. Any agent works: sources are shared across the org.
+  const { agents } = useAgentOptions();
+  const firstAgentSlug = agents[0]?.agent_type?.slug;
+  const knowledgeHref = firstAgentSlug ? `/agents/${firstAgentSlug}?tab=knowledge` : null;
+
+  // A website on "choosing" is waiting on the user, not on us. It still
+  // belongs in the bar (with its button), but it must not drive the spinner
+  // icon: it shows a list icon and a "Choose pages" button instead.
+  const running = inProgress.filter((source) => source.progress?.stage !== 'choosing');
+
+  return {
+    inProgress,
+    isWorking: running.length > 0,
+    agentSlug: firstAgentSlug ?? null,
+    knowledgeHref,
+  };
 }

@@ -126,6 +126,13 @@ export const auth = {
     strength: {
       label: 'Robustesse du mot de passe : {level}',
       levels: ['Trop faible', 'Faible', 'Moyen', 'Bon', 'Fort'],
+      rulesTitle: 'Votre mot de passe doit contenir :',
+      rules: {
+        length: 'Au moins 8 caractères',
+        lower: 'Une lettre minuscule',
+        upper: 'Une lettre majuscule',
+        number: 'Un chiffre',
+      },
     },
     termsPrefix: 'J’accepte les',
     termsLink: 'Conditions générales',

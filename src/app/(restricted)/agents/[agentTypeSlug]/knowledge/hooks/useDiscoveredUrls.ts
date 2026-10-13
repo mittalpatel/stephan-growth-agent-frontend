@@ -1,10 +1,12 @@
 'use client';
 
 import { useQueryClient } from '@tanstack/react-query';
+import { toast } from 'sonner';
 
 import { useAuthMutation } from '@/hooks/useAuthMutation';
 import { useAuthQuery } from '@/hooks/useAuthQuery';
 import { applyApiError } from '@/lib/apiError';
+import { t } from '@/locales';
 import {
   DISCOVERED_URLS_PAGE_SIZE,
   discoveredUrlsKey,
@@ -12,6 +14,14 @@ import {
 } from '@/services/knowledge';
 import type { ApiResponse } from '@/types/api';
 import type { DiscoveredUrl, DiscoveredUrlBulkActionInput } from '@/types/knowledge';
+
+const DISCOVERED_URLS_POLL_MS = 5_000;
+
+/** Same page for listing purposes: case-insensitive, ignoring a trailing slash. */
+function sameAddress(a: string, b: string) {
+  const normalize = (value: string) => value.trim().toLowerCase().replace(/\/+$/, '');
+  return normalize(a) === normalize(b);
+}
 
 /**
  * The discovered-URLs review step of the add-website flow: list every page the
@@ -28,14 +38,22 @@ import type { DiscoveredUrl, DiscoveredUrlBulkActionInput } from '@/types/knowle
  * `add`/`remove_ids` still refetch: both change which rows exist, and the
  * server assigns the id of anything added, so there is nothing to patch in.
  */
-export function useDiscoveredUrls(websiteSourceId: string | null) {
+export function useDiscoveredUrls(
+  websiteSourceId: string | null,
+  options: Readonly<{ pollWhile?: boolean }> = {}
+) {
   const queryClient = useQueryClient();
   const queryKey = discoveredUrlsKey(websiteSourceId ?? '');
 
   const listQuery = useAuthQuery<ApiResponse<DiscoveredUrl[]>>(
     queryKey,
     `${websiteDiscoveredUrlsEndpoint(websiteSourceId ?? '')}?page_size=${DISCOVERED_URLS_PAGE_SIZE}`,
-    { enabled: Boolean(websiteSourceId) }
+    {
+      enabled: Boolean(websiteSourceId),
+      // Rows change under the user while a re-read runs; without polling the
+      // page keeps showing the state from before the click until a refresh.
+      refetchInterval: options.pollWhile ? DISCOVERED_URLS_POLL_MS : false,
+    }
   );
 
   const { mutateAsync } = useAuthMutation<ApiResponse<unknown>, DiscoveredUrlBulkActionInput>();
@@ -108,7 +126,18 @@ export function useDiscoveredUrls(websiteSourceId: string | null) {
     selectMany: (ids: readonly string[]) => setSelection(ids, true),
     deselectMany: (ids: readonly string[]) => setSelection(ids, false),
     /** A URL outside what discovery found, added manually before extraction. */
-    addUrl: (url: string) => applyStructuralAction({ add: [url] }),
+    addUrl: (url: string) => {
+      // The backend drops an address it already has without an error, so a
+      // repeat used to look like the button did nothing (client testing,
+      // 13 Oct 2026). Say so instead of sending it.
+      if (
+        urls.some((row) => sameAddress(row.url, url) || sameAddress(row.canonical_url ?? '', url))
+      ) {
+        toast.info(t.knowledge.pages.alreadyListed);
+        return Promise.resolve(false);
+      }
+      return applyStructuralAction({ add: [url] });
+    },
     /** Removes a page outright, distinct from deselecting: a deselected row
      * stays in the list (excluded from extraction, still visible); this
      * drops it entirely. */

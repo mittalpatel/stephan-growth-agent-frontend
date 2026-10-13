@@ -2,10 +2,11 @@ import Link from 'next/link';
 import { Bot, Database, Globe, Inbox, MessagesSquare, Sparkles, UserPlus } from 'lucide-react';
 
 import { BrandMark } from '@/components/common/BrandMark';
+import { PlatformLogo } from '@/components/common/PlatformLogo';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { format } from '@/lib/i18n';
-import { resolvePublicBranding } from '@/lib/publicBranding';
+import { resolvePublicBranding, isPlatformBrand } from '@/lib/publicBranding';
 import type { PublicBranding } from '@/types/settings';
 import { t } from '@/locales';
 
@@ -30,14 +31,20 @@ export default function LandingPage({ branding }: Readonly<{ branding: PublicBra
       <header className="bg-background/85 sticky top-0 z-30 border-b backdrop-blur-md">
         <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-4 px-4 sm:px-6">
           <div className="flex items-center gap-2.5">
-            <BrandMark
-              logoUrl={brand.logoUrl}
-              colorPrimary={brand.colorPrimary}
-              onColorPrimary={brand.onColorPrimary}
-            />
-            <span className="font-display text-[15px] font-bold tracking-tight">
-              {brand.displayName}
-            </span>
+            {isPlatformBrand(brand) ? (
+              <PlatformLogo className="h-10" />
+            ) : (
+              <>
+                <BrandMark
+                  logoUrl={brand.logoUrl}
+                  colorPrimary={brand.colorPrimary}
+                  onColorPrimary={brand.onColorPrimary}
+                />
+                <span className="font-display text-[15px] font-bold tracking-tight">
+                  {brand.displayName}
+                </span>
+              </>
+            )}
           </div>
           <div className="flex items-center gap-2">
             <Button variant="ghost" asChild>
@@ -177,15 +184,21 @@ export default function LandingPage({ branding }: Readonly<{ branding: PublicBra
       <footer className="border-t py-10">
         <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 px-4 text-sm sm:flex-row sm:px-6">
           <div className="flex items-center gap-2.5">
-            <BrandMark
-              logoUrl={brand.logoUrl}
-              colorPrimary={brand.colorPrimary}
-              onColorPrimary={brand.onColorPrimary}
-              className="size-7"
-              iconClassName="size-3.5"
-            />
+            {isPlatformBrand(brand) ? (
+              <PlatformLogo className="h-9" />
+            ) : (
+              <BrandMark
+                logoUrl={brand.logoUrl}
+                colorPrimary={brand.colorPrimary}
+                onColorPrimary={brand.onColorPrimary}
+                className="size-7"
+                iconClassName="size-3.5"
+              />
+            )}
             <div>
-              <p className="font-display font-bold">{brand.displayName}</p>
+              {!isPlatformBrand(brand) && (
+                <p className="font-display font-bold">{brand.displayName}</p>
+              )}
               <p className="text-muted-foreground text-xs">{t.marketing.footer.tagline}</p>
             </div>
           </div>

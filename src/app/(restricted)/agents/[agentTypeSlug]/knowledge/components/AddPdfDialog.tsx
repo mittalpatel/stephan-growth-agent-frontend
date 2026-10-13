@@ -23,7 +23,9 @@ type Props = Readonly<{ onCreated?: (sourceId: string) => void }>;
 export function AddPdfDialog({ onCreated }: Props) {
   const [open, setOpen] = useState(false);
   const [file, setFile] = useState<File | null>(null);
-  const { upload, isUploading, duplicateSourceId } = useAddPdfSource(onCreated);
+  const [rejection, setRejection] = useState<string | null>(null);
+  const { upload, isUploading, duplicateSourceId, limitsHint, fileError } =
+    useAddPdfSource(onCreated);
   // A PDF source has no detail route to link to (no `website_source_id`, no
   // pages view), so the duplicate is named rather than linked. The org-wide
   // list is already loaded for the sources table, so this is a lookup, not a
@@ -33,7 +35,18 @@ export function AddPdfDialog({ onCreated }: Props) {
     ? (sources.find((source) => source.id === duplicateSourceId)?.display_name ?? null)
     : null;
 
-  const reset = () => setFile(null);
+  const reset = () => {
+    setFile(null);
+    setRejection(null);
+  };
+
+  // An oversized file is refused on pick, so nothing is sent just to be
+  // turned away.
+  const selectFile = (candidate: File) => {
+    const error = fileError(candidate);
+    setRejection(error);
+    setFile(error ? null : candidate);
+  };
 
   // The submit button is disabled without a file, so there is no
   // "you forgot to choose one" state to report here.
@@ -73,9 +86,16 @@ export function AddPdfDialog({ onCreated }: Props) {
           activeHint={t.knowledge.addPdf.dropzoneActive}
           rejectedMessage={t.knowledge.addPdf.dropzoneWrongType}
           disabled={isUploading}
-          onFileSelected={setFile}
+          onFileSelected={selectFile}
           onClear={reset}
         />
+
+        {limitsHint && !rejection && <p className="text-muted-foreground text-xs">{limitsHint}</p>}
+        {rejection && (
+          <p role="alert" className="text-destructive text-sm">
+            {rejection}
+          </p>
+        )}
 
         {duplicateSourceName && (
           <div className="border-border bg-muted/40 flex items-start gap-2.5 rounded-lg border p-3">

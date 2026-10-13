@@ -12,6 +12,8 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Input } from '@/components/ui/input';
 import { format, formatNumber, formatRelativeTime } from '@/lib/i18n';
+import { progressLine } from '@/lib/knowledgeProgress';
+import { pageFailureReason } from '@/lib/pageFailure';
 import { t } from '@/locales';
 import type { PageStatus } from '@/types/knowledge';
 
@@ -72,6 +74,16 @@ export function KnowledgeSourcePagesView({ agentTypeSlug, websiteSourceId }: Pro
   const canManage = can('knowledge', 'manage');
   const canRecrawl = can('knowledge', 'execute');
 
+  // Resolves this source's display name and, while it is being re-read, its
+  // live progress: the pages endpoint itself carries no source metadata.
+  const { sources } = useAllKnowledgeSources();
+  const source = sources.find((item) => item.website_source_id === websiteSourceId);
+  const isReading = source?.progress?.stage === 'reading';
+  // The app-wide bar leaves this source out on its own screen, so this
+  // banner covers every stage, not only reading.
+  const progress = source?.progress ?? null;
+  const progressText = progress ? progressLine(progress, progress.stage) : null;
+
   const {
     pages,
     isLoading,
@@ -83,15 +95,16 @@ export function KnowledgeSourcePagesView({ agentTypeSlug, websiteSourceId }: Pro
     removePage,
     isTruncated,
     total,
-  } = useKnowledgeSourcePages(canView ? websiteSourceId : null);
-  // Only used to resolve this source's display name for the header — the
-  // pages endpoint itself carries no source metadata, and adding one just
-  // for a title isn't worth it when the org-wide list is already fetched
-  // elsewhere on this page's parent tab.
-  const { sources } = useAllKnowledgeSources();
-  const source = sources.find((item) => item.website_source_id === websiteSourceId);
+  } = useKnowledgeSourcePages(canView ? websiteSourceId : null, {
+    isReading: progress !== null,
+  });
 
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  // The pages last sent to be read. In "choose" mode every page starts
+  // selected, so "selected and not read yet" would mark all of them as being
+  // read when only the ticked few are. `null` after a reload, where the
+  // selected-and-unread rule is the best guess left.
+  const [sentIds, setSentIds] = useState<Set<string> | null>(null);
   const [search, setSearch] = useState('');
   const [newUrl, setNewUrl] = useState('');
 
@@ -131,8 +144,10 @@ export function KnowledgeSourcePagesView({ agentTypeSlug, websiteSourceId }: Pro
     });
   };
 
+  // Status counts cover included pages only, so the boxes add up to "Pages
+  // found": an excluded page counts once, under Excluded, whatever its status.
   const countByStatus = (status: PageStatus) =>
-    pages.filter((page) => page.status === status).length;
+    pages.filter((page) => page.is_selected && page.status === status).length;
   const summaryRows = [
     { key: 'total', label: t.knowledge.pages.summary.total, value: pages.length },
     { key: 'ready', label: t.knowledge.pages.summary.indexed, value: countByStatus('ready') },
@@ -147,9 +162,6 @@ export function KnowledgeSourcePagesView({ agentTypeSlug, websiteSourceId }: Pro
       label: t.knowledge.pages.summary.skipped,
       value: countByStatus('low_quality') + countByStatus('duplicate'),
     },
-    // Counted separately from status: a page can be `ready` and still excluded,
-    // which is the one combination that otherwise looks entirely healthy while
-    // contributing nothing to the index.
     {
       key: 'excluded',
       label: t.knowledge.pages.summary.excluded,
@@ -213,6 +225,27 @@ export function KnowledgeSourcePagesView({ agentTypeSlug, websiteSourceId }: Pro
               loaded. Without this the page answers "which pages exist" but
               not "how did it go", which is the first thing anyone asks after a
               crawl finishes. */}
+          {progressText && (
+            <div
+              role="status"
+              className="bg-info text-info-foreground flex items-start gap-3 rounded-lg border px-4 py-3 text-sm"
+            >
+              <Loader2 className="mt-0.5 size-4 shrink-0 animate-spin" aria-hidden />
+              <div className="min-w-0 flex-1 space-y-2">
+                <p className="font-semibold tabular-nums">{progressText.text}</p>
+                {progressText.percent !== null && (
+                  <div className="bg-current/20 h-1.5 w-full max-w-sm overflow-hidden rounded-full">
+                    <div
+                      className="h-full bg-current transition-[width] duration-500"
+                      style={{ width: `${progressText.percent}%` }}
+                    />
+                  </div>
+                )}
+                <p className="text-xs opacity-80">{t.knowledge.pages.reading.description}</p>
+              </div>
+            </div>
+          )}
+
           <dl className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
             {summaryRows.map((row) => (
               <div key={row.key} className="bg-card rounded-lg border px-4 py-3">
@@ -298,9 +331,15 @@ export function KnowledgeSourcePagesView({ agentTypeSlug, websiteSourceId }: Pro
               {visiblePages.map((page) => {
                 const isFailedStatus = (page.http_status ?? 200) >= 400;
                 // The backend's own reason beats a guess from the status.
+                const isBeingRead =
+                  isReading &&
+                  page.status === 'discovered' &&
+                  (sentIds ? sentIds.has(page.id) : page.is_selected);
                 const hint = page.exclusion_reason
                   ? t.knowledge.pages.exclusionReason[page.exclusion_reason]
-                  : PAGE_STATUS_HINTS[page.status];
+                  : isBeingRead || !page.is_selected
+                    ? null
+                    : PAGE_STATUS_HINTS[page.status];
                 return (
                   <div
                     key={page.id}
@@ -333,21 +372,23 @@ export function KnowledgeSourcePagesView({ agentTypeSlug, websiteSourceId }: Pro
                             tone={isFailedStatus ? 'danger' : 'success'}
                           />
                         )}
-                        {/* An excluded page keeps its crawl-outcome badge, but
-                            never a success tone: `ready` + excluded reads as
-                            "Indexed" while contributing nothing to retrieval,
-                            which is exactly the state that made a real
-                            extracted-but-unanswerable page look healthy. */}
-                        <StatusBadge
-                          label={t.knowledge.pages.pageStatus[page.status]}
-                          tone={page.is_selected ? PAGE_STATUS_TONES[page.status] : 'neutral'}
-                        />
-                        {!page.is_selected && (
+                        {/* An excluded page shows only "Excluded": its read
+                            status beside it ("Not read yet", or a success-toned
+                            "Read") said two things at once, and a page left out
+                            on purpose needs no reading instructions. */}
+                        {isBeingRead ? (
+                          <StatusBadge label={t.knowledge.pages.reading.badge} tone="info" />
+                        ) : page.is_selected ? (
+                          <StatusBadge
+                            label={t.knowledge.pages.pageStatus[page.status]}
+                            tone={PAGE_STATUS_TONES[page.status]}
+                          />
+                        ) : (
                           <StatusBadge label={t.knowledge.pages.excludedBadge} tone="warning" />
                         )}
                       </div>
-                      {page.status === 'failed' && page.error_message && (
-                        <p className="text-destructive text-xs">{page.error_message}</p>
+                      {page.status === 'failed' && (
+                        <p className="text-destructive text-xs">{pageFailureReason(page)}</p>
                       )}
                       {hint && <p className="text-muted-foreground text-xs">{hint}</p>}
                       {!page.is_selected && (
@@ -441,7 +482,12 @@ export function KnowledgeSourcePagesView({ agentTypeSlug, websiteSourceId }: Pro
             type="button"
             className="shrink-0"
             disabled={selectedIds.size === 0 || isRecrawling}
-            onClick={() => recrawlSelected(Array.from(selectedIds))}
+            onClick={() =>
+              recrawlSelected(Array.from(selectedIds), () => {
+                setSentIds(selectedIds);
+                setSelectedIds(new Set());
+              })
+            }
           >
             {t.knowledge.actions.recrawlSelected}
           </Button>

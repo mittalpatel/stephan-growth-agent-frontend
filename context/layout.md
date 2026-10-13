@@ -31,8 +31,9 @@ hamburger button, closed by its own close button or the backdrop.
   it stays pinned while the content column scrolls past it; a `fixed` overlay
   drawer below `lg`.
 - **Header** (`h-16`, `border-b`): the brand mark (`BrandMark`) plus the organization's
-  white-label `display_name`, from `useOrgBranding` (falling back to the platform
-  glyph and `t.common.appName`), replacing the old header-bar wordmark. This is the
+  white-label `display_name`, from `useOrgBranding`. With neither a custom logo nor a
+  custom name (`isPlatformBrand`), it shows the YB Inspire wordmark (`PlatformLogo`,
+  light or dark artwork by theme, from `public/brand/`) instead. This is the
   one place the brand mark renders in the shell; `HeaderOne` has none.
   `useOrgBranding` (`src/app/(restricted)/hooks/useOrgBranding.ts`) reads
   `GET /settings/brand/summary/`, open to any member (display name, logo, favicon,
@@ -67,7 +68,9 @@ hamburger button, closed by its own close button or the backdrop.
   and `/` hands it to `LandingPage` as a prop; both resolve it through
   `resolvePublicBranding`. Name, logo, copyright line, favicon and tab title change;
   the auth hero panel takes the org color via `orgSurfaceStyle`, which also inverts
-  the accent pair so marks on it stay visible. `BrandMark` is the shared tile.
+  the accent pair so marks on it stay visible. `BrandMark` is the shared tile;
+  `PlatformLogo` replaces tile and name when `isPlatformBrand` (always the dark
+  artwork on the auth hero panel).
 - **Nav** (`flex-1 overflow-y-auto`): sections from `NAV_ITEMS` grouped by
   `section` (Main / Workspace / Platform), each a flat list of pill rows —
   `bg-primary/10 text-primary` when active, `text-muted-foreground` otherwise. A
@@ -168,3 +171,18 @@ org-wide sources query key with `useAllKnowledgeSources`, polls every 10s
 only while something is in progress, and toasts each source as it becomes
 `ready` or `failed`. Added 2026-10-07 because users could close the
 add-website dialog with no sign the crawl was still running.
+
+Reworked 2026-10-13: each source (up to three, then "N more") shows the step it
+is on (website: finding pages, choose pages, reading pages, ready; PDF: waiting,
+reading, ready), with a ticking elapsed time from the oldest running source
+(`useElapsedSeconds`), the usual duration, and "View progress" to the first
+agent's Knowledge tab (`useAgentOptions`). There is no percentage bar: the API
+reports a status, not progress.
+
+Since 2026-10-13 the stage and counts come from the backend's `progress` on each list
+row (no more frontend guessing from `discovered-urls`). "Choose pages" appears only for a
+website waiting on the user, with a "Choose them now" link to its pages; such a source
+does not drive the spinner or the clock, and when it is the only one in progress the bar
+reads "Your pages are ready to choose" with no spinner. A fill bar shows only while
+reading, the one stage with a real total. The clock counts from `updated_at`, so a
+source chosen late counts from the choice.

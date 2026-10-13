@@ -32,6 +32,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { format, formatDate } from '@/lib/i18n';
+import { progressLine } from '@/lib/knowledgeProgress';
 import { t } from '@/locales';
 import type { KnowledgeSourceListItem, KnowledgeSourceStatus } from '@/types/knowledge';
 
@@ -83,11 +84,36 @@ export function KnowledgeSourcesTable({ agentTypeSlug, sources }: Props) {
                     tone={STATUS_TONE[source.status]}
                   />
                   {/* A bare "Pending" left testers unsure whether anything was
-                      happening, or for how long. */}
+                      happening, or for how long. With `progress` (backend
+                      2026-10-13) it says which step, with live counts, and a
+                      website waiting on the user gets a button to act. */}
                   {(source.status === 'pending' || source.status === 'processing') && (
-                    <p className="text-muted-foreground mt-1 max-w-56 text-xs">
-                      {t.knowledge.list.pendingHint}
-                    </p>
+                    <SourceProgressHint
+                      source={source}
+                      pagesHref={
+                        websiteSourceId
+                          ? `/agents/${agentTypeSlug}/knowledge/${websiteSourceId}`
+                          : null
+                      }
+                    />
+                  )}
+                  {/* A website that failed used to give no reason and no way
+                      back short of the overflow menu (client testing, 13 Oct
+                      2026). The usual cause is an address with no readable
+                      pages, so say that and offer the retry right here. */}
+                  {source.status === 'failed' && websiteSourceId && (
+                    <div className="mt-1 max-w-56 space-y-1.5">
+                      <p className="text-muted-foreground text-xs">{t.knowledge.list.failedHint}</p>
+                      {canExecute && (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => recrawl(websiteSourceId)}
+                        >
+                          {t.knowledge.list.retry}
+                        </Button>
+                      )}
+                    </div>
                   )}
                 </td>
                 <td className={`${dataTableTd} text-muted-foreground hidden text-sm md:table-cell`}>
@@ -200,5 +226,38 @@ export function KnowledgeSourcesTable({ agentTypeSlug, sources }: Props) {
         </AlertDialogContent>
       </AlertDialog>
     </>
+  );
+}
+
+/** The in-progress line under a source's status badge. */
+function SourceProgressHint({
+  source,
+  pagesHref,
+}: Readonly<{ source: KnowledgeSourceListItem; pagesHref: string | null }>) {
+  const progress = source.progress;
+  if (!progress) {
+    return (
+      <p className="text-muted-foreground mt-1 max-w-56 text-xs">{t.knowledge.list.pendingHint}</p>
+    );
+  }
+  const line = progressLine(progress, progress.stage);
+
+  return (
+    <div className="mt-1 max-w-56 space-y-1.5">
+      <p className="text-muted-foreground text-xs tabular-nums">{line.text}</p>
+      {line.percent !== null && (
+        <div className="bg-muted h-1.5 w-full overflow-hidden rounded-full">
+          <div
+            className="bg-primary h-full transition-[width] duration-500"
+            style={{ width: `${line.percent}%` }}
+          />
+        </div>
+      )}
+      {progress.stage === 'choosing' && pagesHref && (
+        <Button size="sm" asChild>
+          <Link href={pagesHref}>{t.knowledge.list.choosePages}</Link>
+        </Button>
+      )}
+    </div>
   );
 }

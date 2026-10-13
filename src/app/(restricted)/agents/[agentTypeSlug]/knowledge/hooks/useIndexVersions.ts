@@ -7,6 +7,7 @@ import { toast } from 'sonner';
 import { useAuthMutation } from '@/hooks/useAuthMutation';
 import { useAuthQuery } from '@/hooks/useAuthQuery';
 import { getAxiosError } from '@/lib/helper';
+import { format, formatNumber } from '@/lib/i18n';
 import { t } from '@/locales';
 import {
   agentBuildIndexEndpoint,
@@ -52,14 +53,28 @@ export function useIndexVersions(agentId: string) {
   // (indexed_chunks/score) it feeds is stale too — refresh it right when the
   // build actually finishes, rather than waiting for the next unrelated
   // invalidation.
-  const latestStatus = listQuery.data?.data[0]?.status;
+  const latest = listQuery.data?.data[0];
+  const latestStatus = latest?.status;
   const previousStatusRef = useRef<IndexVersionStatus | undefined>(latestStatus);
   useEffect(() => {
     if (previousStatusRef.current === 'building' && latestStatus !== 'building') {
       void queryClient.invalidateQueries({ queryKey: knowledgeHealthKey(agentId) });
+      // The build ends minutes after the click, usually with the panel out
+      // of view; without this nothing said it had finished (client testing,
+      // 13 Oct 2026).
+      if (latestStatus === 'ready' && latest) {
+        toast.success(
+          format(t.knowledge.index.toast.buildReady, {
+            number: latest.version_number,
+            chunks: formatNumber(latest.chunk_count),
+          })
+        );
+      } else if (latestStatus === 'failed') {
+        toast.error(t.knowledge.index.toast.buildFailed);
+      }
     }
     previousStatusRef.current = latestStatus;
-  }, [latestStatus, agentId, queryClient]);
+  }, [latestStatus, latest, agentId, queryClient]);
 
   const buildMutation = useAuthMutation<ApiResponse<IndexVersion>, undefined>({
     onSuccess: () => {
@@ -83,6 +98,10 @@ export function useIndexVersions(agentId: string) {
 
     // Fire-and-forget (`mutate` never rejects); errors surface via `onError`.
     buildIndex: () => buildMutation.mutate({ url: agentBuildIndexEndpoint(agentId) }),
-    isBuilding: buildMutation.isPending,
+    /** True for the whole build, not only the request: the button used to
+     * re-enable while the new version was still `building`. */
+    isBuilding: buildMutation.isPending || (page === 1 && latestStatus === 'building'),
+    /** The version being built, for "Building v4…". `null` otherwise. */
+    buildingVersion: latestStatus === 'building' ? (latest?.version_number ?? null) : null,
   };
 }

@@ -25,9 +25,10 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { RHFStringListField, RHFTextField } from '@/components/common/form';
+import { RHFRadioCardField, RHFStringListField, RHFTextField } from '@/components/common/form';
 import { EmptyState } from '@/components/common/EmptyState';
 import { format, formatDuration, formatNumber } from '@/lib/i18n';
+import { progressLine } from '@/lib/knowledgeProgress';
 import { useElapsedSeconds } from '@/hooks/useElapsedSeconds';
 import {
   websiteDiscoverSchema,
@@ -35,12 +36,13 @@ import {
   type WebsiteDiscoverSubmitValues,
 } from '@/lib/schemas/knowledge';
 import { t } from '@/locales';
-import type { CrawlJob } from '@/types/knowledge';
+import type { KnowledgeSourceListItem } from '@/types/knowledge';
 
 import { useAddWebsiteFlow } from '../hooks/useAddWebsiteFlow';
 import { useAllKnowledgeSources } from '../hooks/useAllKnowledgeSources';
 import { useCrawlJob } from '../hooks/useCrawlJob';
 import { useExtractionProgress } from '../hooks/useExtractionProgress';
+import { useReadOutcome } from '../hooks/useReadOutcome';
 
 import { DiscoveredUrlsReview } from './DiscoveredUrlsReview';
 
@@ -126,6 +128,54 @@ function CrawlProgress({
 }
 
 /**
+ * The "Read the whole website" waiting screen. There is no crawl job to poll
+ * here (the backend starts extraction itself), so it watches the source row
+ * on the org-wide list, which the app-wide progress bar keeps polling while
+ * anything is in progress. Closing is always safe: nothing waits on the user.
+ */
+function ReadingProgress({
+  source,
+  onUpdate,
+  onClose,
+}: Readonly<{
+  source: KnowledgeSourceListItem | undefined;
+  onUpdate: (source: KnowledgeSourceListItem) => void;
+  onClose: () => void;
+}>) {
+  const copy = t.knowledge.addWebsite.reading;
+
+  useEffect(() => {
+    if (source) onUpdate(source);
+  }, [source, onUpdate]);
+
+  const line = progressLine(source?.progress, 'finding');
+
+  return (
+    <div className="flex flex-col items-center gap-4 py-8 text-center">
+      <Loader2 className="text-muted-foreground size-8 animate-spin" aria-hidden />
+      <p className="font-medium">{copy.title}</p>
+
+      <div className="w-full max-w-xs" aria-live="polite">
+        <p className="text-sm tabular-nums">{line.text}</p>
+        {line.percent !== null && (
+          <div className="bg-muted mt-2 h-1.5 w-full overflow-hidden rounded-full">
+            <div
+              className="bg-primary h-full transition-[width] duration-500"
+              style={{ width: `${line.percent}%` }}
+            />
+          </div>
+        )}
+      </div>
+
+      <p className="text-muted-foreground max-w-sm text-xs">{copy.backgroundNotice}</p>
+      <Button variant="outline" onClick={onClose}>
+        {copy.close}
+      </Button>
+    </div>
+  );
+}
+
+/**
  * What the extraction actually produced, from the finished job's own counters.
  *
  * The done step used to say only "the selected pages have been queued for
@@ -136,17 +186,17 @@ function CrawlProgress({
  * it is worded as skipped rather than failed.
  */
 function ExtractionSummary({
-  job,
+  websiteSourceId,
+  pagesHref,
   onClose,
-}: Readonly<{ job: CrawlJob | null; onClose: () => void }>) {
+}: Readonly<{ websiteSourceId: string | null; pagesHref: string | null; onClose: () => void }>) {
   const copy = t.knowledge.addWebsite.done;
-  const rows = job
-    ? [
-        { key: 'indexed', label: copy.indexedLabel, value: job.included_count },
-        { key: 'failed', label: copy.failedLabel, value: job.failed_count },
-        { key: 'skipped', label: copy.skippedLabel, value: job.excluded_count },
-      ].filter((row) => row.value > 0)
-    : [];
+  const outcome = useReadOutcome(websiteSourceId);
+  const rows = [
+    { key: 'indexed', label: copy.indexedLabel, value: outcome.indexed },
+    { key: 'failed', label: copy.failedLabel, value: outcome.failedCount },
+    { key: 'skipped', label: copy.skippedLabel, value: outcome.skipped },
+  ].filter((row) => row.value > 0);
 
   return (
     <div className="space-y-4 py-4">
@@ -167,11 +217,40 @@ function ExtractionSummary({
         </dl>
       )}
 
-      <p className="text-muted-foreground text-xs">{copy.wherePages}</p>
+      {/* A count alone ("1 page could not be read") left testers unsure
+          whether their content was missing (client testing, 13 Oct 2026):
+          name the pages and say why, in words a site owner can act on. */}
+      {outcome.failures.length > 0 && (
+        <div className="space-y-2">
+          <p className="text-sm font-medium">{copy.failedListTitle}</p>
+          <ul className="space-y-2">
+            {outcome.failures.map((failure) => (
+              <li key={failure.id} className="rounded-md border px-3 py-2 text-xs">
+                <p className="truncate font-medium" title={failure.url}>
+                  {failure.url}
+                </p>
+                <p className="text-muted-foreground mt-0.5">{failure.reason}</p>
+              </li>
+            ))}
+          </ul>
+          {outcome.hiddenFailures > 0 && (
+            <p className="text-muted-foreground text-xs">
+              {format(copy.moreFailed, { count: outcome.hiddenFailures })}
+            </p>
+          )}
+        </div>
+      )}
 
-      <Button className="w-full" onClick={onClose}>
-        {copy.close}
-      </Button>
+      <div className="flex flex-col gap-2 sm:flex-row">
+        {pagesHref && (
+          <Button variant="outline" className="sm:flex-1" asChild>
+            <Link href={pagesHref}>{copy.reviewPages}</Link>
+          </Button>
+        )}
+        <Button className="sm:flex-1" onClick={onClose}>
+          {copy.close}
+        </Button>
+      </div>
     </div>
   );
 }
@@ -184,12 +263,27 @@ function ExtractionSummary({
 export function AddWebsiteDialog({ agentId, agentTypeSlug, onCreated }: Props) {
   const [open, setOpen] = useState(false);
   const [confirmingClose, setConfirmingClose] = useState(false);
+  const [confirmingReview, setConfirmingReview] = useState(false);
   const flow = useAddWebsiteFlow(agentId, onCreated);
+
+  // A close asked for mid-run can outlive the run: discovery finishing under
+  // an open "finish in the background" question lands on the review step. The
+  // question then has to become the review one, not stay stale on top of it.
+  const reviewQuestionOpen = confirmingReview || (confirmingClose && flow.step === 'review');
+  const runningQuestionOpen = confirmingClose && flow.step !== 'review';
+  const dismissQuestions = () => {
+    setConfirmingClose(false);
+    setConfirmingReview(false);
+  };
   const isRunning = flow.step === 'discovering' || flow.step === 'extracting';
   // `duplicateSourceId` is a `KnowledgeSource.id`, but the pages route is keyed
   // on `WebsiteSource.id`. The org-wide list already carries both, so the
   // mapping is a lookup against data that is loaded anyway, not a new request.
   const { sources } = useAllKnowledgeSources();
+  const createdSource = flow.sourceId
+    ? sources.find((source) => source.id === flow.sourceId)
+    : undefined;
+  const selectedCount = createdSource?.progress?.pages_total ?? null;
   const duplicateWebsiteSourceId = flow.duplicateSourceId
     ? (sources.find((source) => source.id === flow.duplicateSourceId)?.website_source_id ?? null)
     : null;
@@ -204,6 +298,7 @@ export function AddWebsiteDialog({ agentId, agentTypeSlug, onCreated }: Props) {
   const form = useForm<WebsiteDiscoverFormValues, unknown, WebsiteDiscoverSubmitValues>({
     resolver: zodResolver(websiteDiscoverSchema),
     defaultValues: {
+      read_mode: 'all',
       root_url: '',
       max_pages: '',
       max_depth: '',
@@ -213,7 +308,7 @@ export function AddWebsiteDialog({ agentId, agentTypeSlug, onCreated }: Props) {
   });
 
   const submit = form.handleSubmit(async (values) => {
-    await flow.discover(values);
+    await flow.discover(values, form.setError);
   });
 
   const close = (next: boolean) => {
@@ -234,6 +329,14 @@ export function AddWebsiteDialog({ agentId, agentTypeSlug, onCreated }: Props) {
   const requestClose = (next: boolean) => {
     if (!next && isRunning) {
       setConfirmingClose(true);
+      return;
+    }
+    // Closing on the review step used to leave the source waiting, `pending`,
+    // with nothing on screen saying the user still had to choose (client
+    // testing, 06 Oct 2026). Ask instead: read now, or choose later from the
+    // knowledge list, which then shows a "Choose pages" button.
+    if (!next && flow.step === 'review') {
+      setConfirmingReview(true);
       return;
     }
     close(next);
@@ -269,6 +372,24 @@ export function AddWebsiteDialog({ agentId, agentTypeSlug, onCreated }: Props) {
                   label={t.knowledge.addWebsite.rootUrlLabel}
                   placeholder={t.knowledge.addWebsite.rootUrlPlaceholder}
                   required
+                />
+
+                <RHFRadioCardField<WebsiteDiscoverFormValues>
+                  name="read_mode"
+                  label={t.knowledge.addWebsite.readMode.label}
+                  options={[
+                    {
+                      value: 'all',
+                      label: t.knowledge.addWebsite.readMode.allLabel,
+                      description: t.knowledge.addWebsite.readMode.allDescription,
+                      badge: t.knowledge.addWebsite.readMode.allBadge,
+                    },
+                    {
+                      value: 'choose',
+                      label: t.knowledge.addWebsite.readMode.chooseLabel,
+                      description: t.knowledge.addWebsite.readMode.chooseDescription,
+                    },
+                  ]}
                 />
 
                 <Collapsible>
@@ -348,6 +469,14 @@ export function AddWebsiteDialog({ agentId, agentTypeSlug, onCreated }: Props) {
           />
         )}
 
+        {flow.step === 'reading' && (
+          <ReadingProgress
+            source={createdSource}
+            onUpdate={flow.onReadingUpdate}
+            onClose={() => close(false)}
+          />
+        )}
+
         {flow.step === 'discovery-failed' && (
           <EmptyState
             title={t.knowledge.addWebsite.discoveryFailed.title}
@@ -394,10 +523,53 @@ export function AddWebsiteDialog({ agentId, agentTypeSlug, onCreated }: Props) {
         )}
 
         {flow.step === 'done' && (
-          <ExtractionSummary job={flow.extractionResult} onClose={() => close(false)} />
+          <ExtractionSummary
+            websiteSourceId={flow.websiteSourceId}
+            pagesHref={
+              flow.websiteSourceId
+                ? `/agents/${agentTypeSlug}/knowledge/${flow.websiteSourceId}`
+                : null
+            }
+            onClose={() => close(false)}
+          />
         )}
 
-        <AlertDialog open={confirmingClose} onOpenChange={setConfirmingClose}>
+        <AlertDialog open={reviewQuestionOpen} onOpenChange={(next) => !next && dismissQuestions()}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>
+                {selectedCount
+                  ? format(t.knowledge.addWebsite.closeReview.title, { count: selectedCount })
+                  : t.knowledge.addWebsite.closeReview.titleNoCount}
+              </AlertDialogTitle>
+              <AlertDialogDescription>
+                {t.knowledge.addWebsite.closeReview.description}
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel
+                onClick={() => {
+                  dismissQuestions();
+                  close(false);
+                }}
+              >
+                {t.knowledge.addWebsite.closeReview.later}
+              </AlertDialogCancel>
+              <AlertDialogAction
+                onClick={async () => {
+                  dismissQuestions();
+                  // Reading carries on server-side and the app-wide progress
+                  // bar shows it, so the dialog can close straight away.
+                  if (await flow.extract()) close(false);
+                }}
+              >
+                {t.knowledge.addWebsite.closeReview.readAll}
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+
+        <AlertDialog open={runningQuestionOpen} onOpenChange={setConfirmingClose}>
           <AlertDialogContent>
             <AlertDialogHeader>
               <AlertDialogTitle>{t.knowledge.addWebsite.closeWhileRunning.title}</AlertDialogTitle>

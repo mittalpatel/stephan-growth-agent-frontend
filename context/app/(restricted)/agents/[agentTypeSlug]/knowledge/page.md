@@ -290,6 +290,28 @@ frontend to mirror.
 
 ## Add website flow
 
+### Read mode (2026-10-13)
+
+The form opens with "How should we read it?" (`read_mode`, a `RHFRadioCardField`):
+
+- **Read the whole website** (default, marked Recommended): `useAddWebsiteFlow`
+  sends `auto_extract: true` and the backend reads every found page by itself. The
+  dialog goes straight to a `reading` screen (`ReadingProgress`) that watches the
+  source row on the org-wide list (its `progress`: stage, live counts, a fill bar while
+  reading). Closing is always safe; the app-wide progress bar takes over. The source
+  becoming `ready` shows the done screen; `failed` the failure screen; `choosing`
+  (the backend refused the automatic read, e.g. plan page limit) drops to the review
+  step.
+- **Let me choose the pages**: the five-step flow below, unchanged, except that
+  closing on the review step now asks "Read the selected pages now?": _Read selected
+  pages_ extracts and closes, _I'll choose later_ closes. The source then shows a
+  **Choose pages** button in the list and "Choose them now" in the progress bar, so it
+  is never left silently `pending` (client testing, 06 Oct 2026).
+
+The list's status cell (`SourceProgressHint`) shows the stage and counts from
+`progress` (`src/lib/knowledgeProgress.ts` words the counts for the dialog, the list and
+the bar alike). Without `progress` it falls back to the old pending hint.
+
 `AddWebsiteDialog` is a five-step dialog driven by `useAddWebsiteFlow.ts`'s
 state machine (`form → discovering → review → extracting → done`, plus a
 failure state per polling step):
@@ -770,3 +792,38 @@ All/Selected/Not selected tab, section shortcuts, derived rows) in
   Exclude vs Remove, auto-skipped pages, what to exclude), a select-all row
   scoped to the filtered list, a hint on "Not extracted yet", and the
   primary action renamed to "Extract selected pages".
+
+### Failure and live states (2026-10-13)
+
+- `websiteUrl` in `lib/schemas/knowledge.ts` prefixes a bare host with `https://` and
+  only accepts http(s). `useAddWebsiteFlow.discover(values, setError)` binds the
+  backend's `root_url` refusal (private address, unknown host) to the field.
+- A first discovery that finds nothing fails the source (backend). The dialog shows
+  `discoveryFailed` with `list.failedHint` in both modes (`onDiscoveryFinished` checks
+  `discovered_count === 0`; `onReadingUpdate` checks whether any page was ever seen).
+  The list row shows the same hint and a Try again button (`recrawl`).
+- A close question opened mid-run becomes the review question if discovery finishes
+  under it (`reviewQuestionOpen` / `runningQuestionOpen` in `AddWebsiteDialog`).
+- Pages route (`[sourceId]`): reads the source's `progress` from the org-wide list. While
+  `stage === 'reading'` it shows an on-page progress banner, polls the page list every
+  5s (`useDiscoveredUrls(id, { pollWhile })`), and marks selected not-yet-read rows
+  "Reading now". `recrawlSelected(ids, onStarted)` clears the selection on success, and
+  the recrawl invalidates the source list so progress starts at once.
+- `useDiscoveredUrls.addUrl` refuses an address already listed (toast
+  `pages.alreadyListed`); the backend dropped repeats without a word.
+- Breadcrumb: `RESOLVERS.knowledge` in `components/common/RestrictedBreadcrumb.tsx`
+  names the source from the cached org-wide list.
+
+### Read outcome, index build and PDF limit (2026-10-13)
+
+- `ExtractionSummary` (in `AddWebsiteDialog`) reads `useReadOutcome(websiteSourceId)`:
+  counts of added, failed and skipped selected pages, plus up to five failed pages
+  with `pageFailureReason` (`lib/pageFailure.ts`, keyed on `http_status`). It links
+  to the pages route. The flow no longer keeps the extraction job for this screen.
+- `useIndexVersions.isBuilding` covers the whole build (request pending, or the
+  newest version on page 1 still `building`); `buildingVersion` drives the panel's
+  notice. The hook toasts `index.toast.buildReady` / `buildFailed` when the newest
+  version leaves `building`, whoever started it.
+- `useAddPdfSource` reads `KNOWLEDGE_UPLOAD_LIMITS_ENDPOINT` once (`staleTime:
+Infinity`) and returns `limitsHint` and `fileError(file)`; `AddPdfDialog` refuses an
+  oversized pick before upload. The backend still enforces the limit.

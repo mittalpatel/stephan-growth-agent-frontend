@@ -5,6 +5,11 @@ import { usePathname, useRouter } from 'next/navigation';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useQueryClient } from '@tanstack/react-query';
 import { useAuthQuery } from '@/hooks/useAuthQuery';
+import {
+  KNOWLEDGE_SOURCES_ENDPOINT,
+  KNOWLEDGE_SOURCES_LIST_KEY,
+  KNOWLEDGE_TARGET_PICKER_PAGE_SIZE,
+} from '@/services/knowledge';
 import { roleDetailEndpoint, roleDetailKey } from '@/services/organizations';
 import { projectDetailEndpoint, projectDetailKey } from '@/services/projects';
 import { AGENT_TYPE_ROADMAP } from '@/constants/agentTypes';
@@ -71,7 +76,7 @@ function labelForSegment(segment: string): string {
 type Resolver = {
   endpoint: (id: string) => string;
   queryKey: (id: string) => string[];
-  getLabel: (data: unknown) => string | undefined;
+  getLabel: (data: unknown, id: string) => string | undefined;
 };
 
 // The detail hooks cache the raw API response, which is the standard envelope
@@ -100,6 +105,20 @@ const RESOLVERS: Record<string, Resolver> = {
     endpoint: roleDetailEndpoint,
     queryKey: roleDetailKey,
     getLabel: (data) => unwrap<{ name?: string }>(data)?.name,
+  },
+  // `/agents/<slug>/knowledge/<websiteSourceId>`. There is no detail endpoint
+  // keyed on that id, but the org-wide source list (the same query and key as
+  // `useAllKnowledgeSources`) is already loaded on every restricted page for
+  // the progress bar, so the site's name costs no request. Client testing
+  // (13 Oct 2026) flagged the shortened id this crumb used to show.
+  knowledge: {
+    endpoint: () =>
+      `${KNOWLEDGE_SOURCES_ENDPOINT}?page=1&page_size=${KNOWLEDGE_TARGET_PICKER_PAGE_SIZE}`,
+    queryKey: () => [KNOWLEDGE_SOURCES_LIST_KEY, 'all'],
+    getLabel: (data, id) =>
+      unwrap<{ website_source_id: string | null; display_name: string }[]>(data)?.find(
+        (source) => source.website_source_id === id
+      )?.display_name,
   },
 };
 
@@ -140,7 +159,7 @@ function DynamicLabel({
   });
 
   const data = cachedData ?? fetchedData;
-  const resolved = resolver && data ? resolver.getLabel(data) : undefined;
+  const resolved = resolver && data ? resolver.getLabel(data, id) : undefined;
   const display = resolved ?? shortUuid(id);
 
   return <span title={id}>{display}</span>;

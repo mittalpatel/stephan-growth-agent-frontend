@@ -5,6 +5,8 @@ import { usePathname } from 'next/navigation';
 import { useState } from 'react';
 import { BookOpen, Building2, ChevronDown, ChevronRight, X } from 'lucide-react';
 import { BrandMark } from '@/components/common/BrandMark';
+import { isPlatformBrand } from '@/lib/publicBranding';
+import { PlatformLogo } from '@/components/common/PlatformLogo';
 import { cn } from '@/lib/utils';
 import { NAV_ITEMS, ENABLED_HREFS, type NavItem } from '@/constants/navItems';
 import { usePermissions } from '@/app/(restricted)/context/PermissionsContext';
@@ -200,14 +202,21 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
       )}
     >
       <div className="flex h-16 shrink-0 items-center gap-2.5 border-b px-4">
-        <BrandMark
-          logoUrl={branding.logoUrl}
-          colorPrimary={branding.colorPrimary}
-          onColorPrimary={branding.onColorPrimary}
-        />
-        <span className="font-display truncate text-[15px] font-bold tracking-tight">
-          {branding.displayName}
-        </span>
+        {isPlatformBrand(branding) ? (
+          // `ml-4` sets the wordmark 32px in, clear of the sidebar edge.
+          <PlatformLogo className="ml-4 h-10" />
+        ) : (
+          <>
+            <BrandMark
+              logoUrl={branding.logoUrl}
+              colorPrimary={branding.colorPrimary}
+              onColorPrimary={branding.onColorPrimary}
+            />
+            <span className="font-display truncate text-[15px] font-bold tracking-tight">
+              {branding.displayName}
+            </span>
+          </>
+        )}
         <button
           type="button"
           onClick={onClose}

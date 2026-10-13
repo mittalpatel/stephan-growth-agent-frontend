@@ -12,6 +12,8 @@ export type BrandAssetKind = 'logo' | 'favicon';
  * clears its own favicon. Both must name the same file, so it is declared once here.
  */
 export const PLATFORM_FAVICON_HREF = '/favicon.ico';
+/** Home-screen icon (iOS), cut from the client's logo artwork like the favicon. */
+export const PLATFORM_APPLE_ICON_HREF = '/brand/apple-icon.png';
 
 export const BRAND_ASSET_RULES: Record<
   BrandAssetKind,

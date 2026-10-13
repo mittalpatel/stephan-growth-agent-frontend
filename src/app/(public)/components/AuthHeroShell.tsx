@@ -4,6 +4,8 @@ import Link from 'next/link';
 import { CheckCircle2 } from 'lucide-react';
 
 import { BrandMark } from '@/components/common/BrandMark';
+import { PlatformLogo } from '@/components/common/PlatformLogo';
+import { isPlatformBrand } from '@/lib/publicBranding';
 import { Button } from '@/components/ui/button';
 import { orgSurfaceStyle } from '@/lib/orgColors';
 import { usePublicBranding } from '@/providers/PublicBrandingProvider';
@@ -66,8 +68,16 @@ export default function AuthHeroShell({
         <div className="relative flex items-center gap-2.5">
           {/* No org colors passed: on the org-colored panel the tile inherits the
               inverted accent pair `orgSurfaceStyle` sets, so it stays visible. */}
-          <BrandMark logoUrl={brand.logoUrl} className="size-9" iconClassName="size-5" />
-          <span className="font-display text-lg font-bold tracking-tight">{brand.displayName}</span>
+          {isPlatformBrand(brand) ? (
+            <PlatformLogo surface="dark" className="h-14" />
+          ) : (
+            <>
+              <BrandMark logoUrl={brand.logoUrl} className="size-9" iconClassName="size-5" />
+              <span className="font-display text-lg font-bold tracking-tight">
+                {brand.displayName}
+              </span>
+            </>
+          )}
         </div>
 
         <div className="relative space-y-6">
@@ -108,16 +118,22 @@ export default function AuthHeroShell({
             <LanguageSelect />
           </div>
           <div className="mb-6 flex items-center gap-2.5 md:hidden">
-            <BrandMark
-              logoUrl={brand.logoUrl}
-              colorPrimary={brand.colorPrimary}
-              onColorPrimary={brand.onColorPrimary}
-              className="size-9"
-              iconClassName="size-5"
-            />
-            <span className="font-display text-lg font-bold tracking-tight">
-              {brand.displayName}
-            </span>
+            {isPlatformBrand(brand) ? (
+              <PlatformLogo className="h-10" />
+            ) : (
+              <>
+                <BrandMark
+                  logoUrl={brand.logoUrl}
+                  colorPrimary={brand.colorPrimary}
+                  onColorPrimary={brand.onColorPrimary}
+                  className="size-9"
+                  iconClassName="size-5"
+                />
+                <span className="font-display text-lg font-bold tracking-tight">
+                  {brand.displayName}
+                </span>
+              </>
+            )}
           </div>
 
           {cta && (

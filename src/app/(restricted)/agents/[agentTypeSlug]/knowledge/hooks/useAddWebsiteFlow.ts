@@ -1,12 +1,17 @@
 'use client';
 
+import type { UseFormSetError } from 'react-hook-form';
 import { useCallback, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 
 import { useAuthMutation } from '@/hooks/useAuthMutation';
 import { applyApiError, getEnvelope } from '@/lib/apiError';
 import { getErrorCode } from '@/lib/helper';
-import type { WebsiteDiscoverSubmitValues } from '@/lib/schemas/knowledge';
+import { t } from '@/locales';
+import type {
+  WebsiteDiscoverFormValues,
+  WebsiteDiscoverSubmitValues,
+} from '@/lib/schemas/knowledge';
 import {
   discoveredUrlsKey,
   indexVersionsListKey,
@@ -16,7 +21,12 @@ import {
   websiteExtractEndpoint,
 } from '@/services/knowledge';
 import type { ApiResponse } from '@/types/api';
-import type { CrawlJob, WebsiteDiscoverInput, WebsiteDiscoverResult } from '@/types/knowledge';
+import type {
+  CrawlJob,
+  KnowledgeSourceListItem,
+  WebsiteDiscoverInput,
+  WebsiteDiscoverResult,
+} from '@/types/knowledge';
 
 /** `RHFStringListField`'s row shape back to the plain `string[]` the API wants. */
 function fromRows(rows: { value: string }[] | undefined): string[] {
@@ -46,6 +56,7 @@ function buildScopeConfig(
 export type AddWebsiteStep =
   | 'form'
   | 'discovering'
+  | 'reading'
   | 'review'
   | 'extracting'
   | 'done'
@@ -53,8 +64,14 @@ export type AddWebsiteStep =
   | 'extraction-failed';
 
 /**
- * Orchestrates the multi-step add-website dialog: discover → poll → review
- * → extract → poll → done. Holds only the ids the next step needs
+ * Orchestrates the multi-step add-website dialog. Two paths (2026-10-13):
+ *
+ * - "Read the whole website" (`read_mode: 'all'`, the default): one call with
+ *   `auto_extract: true`, and the backend reads every found page by itself.
+ *   The dialog only watches the source (`reading`), so closing it is safe.
+ * - "Let me choose the pages": discover → poll → review → extract → poll →
+ *   done, as before.
+ * Holds only the ids the next step needs
  * (`discoverJobId`/`websiteSourceId`/`extractJobId`) — the actual polling
  * happens in `useCrawlJob`, called from the dialog component with whichever
  * job id is currently active, so this hook stays a plain state machine.
@@ -69,16 +86,18 @@ export function useAddWebsiteFlow(agentId: string, onCreated?: (sourceId: string
   const queryClient = useQueryClient();
   const [step, setStep] = useState<AddWebsiteStep>('form');
   const [websiteSourceId, setWebsiteSourceId] = useState<string | null>(null);
+  /** `KnowledgeSource.id` of the source this run created, watched by `reading`. */
+  const [sourceId, setSourceId] = useState<string | null>(null);
   const [discoverJobId, setDiscoverJobId] = useState<string | null>(null);
   const [extractJobId, setExtractJobId] = useState<string | null>(null);
   // The failed job's own `error_summary`, kept so the failure screens can say
   // what actually went wrong instead of only the generic copy. Empty when the
   // backend sent none.
   const [errorSummary, setErrorSummary] = useState('');
-  // The finished extraction job, so the done screen can report what actually
-  // happened (how many pages made it in, how many failed or were skipped)
-  // instead of a bare "queued for indexing" with no numbers.
-  const [extractionResult, setExtractionResult] = useState<CrawlJob | null>(null);
+  // Whether the read-everything path ever saw a page. A failure before the
+  // first one means the address had nothing readable, which is a different
+  // message from a read that broke part way.
+  const [sawPages, setSawPages] = useState(false);
   /** `KnowledgeSource.id` of the source that already covers this root URL, set
    * only by a `duplicate_website_source` 409. Not a `WebsiteSource.id`, so the
    * consumer resolves it before routing. */
@@ -93,18 +112,24 @@ export function useAddWebsiteFlow(agentId: string, onCreated?: (sourceId: string
   const reset = useCallback(() => {
     setStep('form');
     setWebsiteSourceId(null);
+    setSourceId(null);
     setDiscoverJobId(null);
     setExtractJobId(null);
     setErrorSummary('');
-    setExtractionResult(null);
     setDuplicateSourceId(null);
+    setSawPages(false);
   }, []);
 
   const discover = useCallback(
-    async (values: WebsiteDiscoverSubmitValues) => {
+    async (
+      values: WebsiteDiscoverSubmitValues,
+      setError?: UseFormSetError<WebsiteDiscoverFormValues>
+    ) => {
       const scope_config = buildScopeConfig(values);
+      const autoExtract = values.read_mode === 'all';
       const input: WebsiteDiscoverInput = {
         root_url: values.root_url,
+        auto_extract: autoExtract,
         ...(scope_config && { scope_config }),
       };
       setDuplicateSourceId(null);
@@ -114,9 +139,13 @@ export function useAddWebsiteFlow(agentId: string, onCreated?: (sourceId: string
           body: input,
         });
         onCreated?.(response.data.source.id);
+        setSourceId(response.data.source.id);
         setWebsiteSourceId(response.data.crawl_job.website_source);
         setDiscoverJobId(response.data.crawl_job.id);
-        setStep('discovering');
+        setStep(autoExtract ? 'reading' : 'discovering');
+        // The new source is in progress: wake the app-wide list (and the
+        // progress bar polling it) now rather than at its next interval.
+        void queryClient.invalidateQueries({ queryKey: knowledgeSourcesListKey() });
         return true;
       } catch (error) {
         // The backend's own message for this 409 is already the full
@@ -131,17 +160,53 @@ export function useAddWebsiteFlow(agentId: string, onCreated?: (sourceId: string
             | undefined;
           setDuplicateSourceId(existing?.existing_source_id ?? null);
         }
-        applyApiError(error);
+        // A refused address (wrong scheme, private network, host not found)
+        // comes back on `root_url`; shown under the field it says what to
+        // change, where a toast said only "The submitted data is invalid".
+        applyApiError<WebsiteDiscoverFormValues>(error, { setError, fields: ['root_url'] });
         return false;
       }
     },
-    [discoverMutation, onCreated]
+    [discoverMutation, onCreated, queryClient]
+  );
+
+  /**
+   * Called by the `reading` screen each time the watched source changes.
+   * Ends on ready or failed. A source that lands on `choosing` had its
+   * automatic read refused (a plan page limit, or no pages selected), so the
+   * user gets the review step they would have had without it.
+   */
+  const onReadingUpdate = useCallback(
+    (source: KnowledgeSourceListItem) => {
+      const seen =
+        sawPages || Boolean(source.progress?.pages_found || source.progress?.pages_total);
+      if (seen !== sawPages) setSawPages(seen);
+      if (source.status === 'failed' && !seen) {
+        setErrorSummary(t.knowledge.list.failedHint);
+        setStep('discovery-failed');
+      } else if (source.status === 'ready') {
+        void queryClient.invalidateQueries({ queryKey: indexVersionsListKey(agentId) });
+        void queryClient.invalidateQueries({ queryKey: knowledgeHealthKey(agentId) });
+        if (websiteSourceId) {
+          void queryClient.invalidateQueries({ queryKey: discoveredUrlsKey(websiteSourceId) });
+        }
+        setStep('done');
+      } else if (source.status === 'failed') {
+        setStep('extraction-failed');
+      } else if (source.progress?.stage === 'choosing') {
+        setStep('review');
+      }
+    },
+    [queryClient, agentId, websiteSourceId, sawPages]
   );
 
   /** Called by the dialog once `useCrawlJob` reports the discovery run is done. */
   const onDiscoveryFinished = useCallback((job: CrawlJob) => {
-    setErrorSummary(job.error_summary);
-    setStep(job.status === 'completed' ? 'review' : 'discovery-failed');
+    // A first discovery that found nothing fails the source (backend
+    // 2026-10-13); an empty review list would leave nothing to do.
+    const foundNothing = job.status === 'completed' && job.discovered_count === 0;
+    setErrorSummary(foundNothing ? t.knowledge.list.failedHint : job.error_summary);
+    setStep(job.status === 'completed' && !foundNothing ? 'review' : 'discovery-failed');
   }, []);
 
   const extract = useCallback(async () => {
@@ -163,7 +228,6 @@ export function useAddWebsiteFlow(agentId: string, onCreated?: (sourceId: string
   const onExtractionFinished = useCallback(
     (job: CrawlJob) => {
       setErrorSummary(job.error_summary);
-      setExtractionResult(job);
       if (job.status === 'completed') {
         void queryClient.invalidateQueries({ queryKey: knowledgeSourcesListKey() });
         // A successful extraction also updates this source's own page list
@@ -188,15 +252,16 @@ export function useAddWebsiteFlow(agentId: string, onCreated?: (sourceId: string
   return {
     step,
     websiteSourceId,
+    sourceId,
     discoverJobId,
     extractJobId,
     errorSummary,
-    extractionResult,
     reset,
     discover,
     isDiscovering: discoverMutation.isPending,
     duplicateSourceId,
     onDiscoveryFinished,
+    onReadingUpdate,
     extract,
     isExtracting: extractMutation.isPending,
     onExtractionFinished,

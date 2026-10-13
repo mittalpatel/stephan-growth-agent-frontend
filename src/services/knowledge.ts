@@ -20,6 +20,8 @@ import { buildListParams, type ListQuery } from './listParams';
 export const KNOWLEDGE_SOURCES_ENDPOINT = '/api/v1/knowledge/';
 export const KNOWLEDGE_WEBSITE_DISCOVER_ENDPOINT = '/api/v1/knowledge/website/discover/';
 export const KNOWLEDGE_PDF_UPLOAD_ENDPOINT = '/api/v1/knowledge/pdfs/';
+export const KNOWLEDGE_UPLOAD_LIMITS_ENDPOINT = '/api/v1/knowledge/upload-limits/';
+export const KNOWLEDGE_UPLOAD_LIMITS_KEY = 'knowledge-upload-limits';
 
 /** Agent-scoped: the routes that genuinely need one agent's context. */
 export const agentKnowledgeTargetsEndpoint = (agentId: string) =>

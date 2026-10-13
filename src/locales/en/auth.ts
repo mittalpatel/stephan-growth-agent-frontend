@@ -128,6 +128,13 @@ export const auth = {
     strength: {
       label: 'Password strength: {level}',
       levels: ['Too weak', 'Weak', 'Fair', 'Good', 'Strong'],
+      rulesTitle: 'Your password must have:',
+      rules: {
+        length: 'At least 8 characters',
+        lower: 'A lowercase letter',
+        upper: 'An uppercase letter',
+        number: 'A number',
+      },
     },
     termsPrefix: 'I agree to the',
     termsLink: 'Terms and Conditions',

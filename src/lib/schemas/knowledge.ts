@@ -16,22 +16,55 @@ import { t } from '@/locales';
  * the seed page, follow no links) rather than something to fall back away
  * from.
  */
+/**
+ * How a new website is read. Not a backend field itself: `useAddWebsiteFlow`
+ * turns `all` into `auto_extract: true` on the discover call.
+ */
+export const WEBSITE_READ_MODES = ['all', 'choose'] as const;
+export type WebsiteReadMode = (typeof WEBSITE_READ_MODES)[number];
+
+/** Any scheme prefix, so a bare `example.com` can be told apart from `ftp://…`. */
+const HAS_SCHEME = /^[a-z][a-z0-9+.-]*:\/\//i;
+
+/**
+ * A website address as people type it. A bare `example.com` used to be
+ * refused as invalid while `ftp://example.com` was accepted and then never
+ * crawled (client testing, 13 Oct 2026). Bare hosts now get `https://`, and
+ * only http(s) passes. Private and local addresses are refused by the
+ * backend, which can resolve the host; that error binds to this field.
+ */
+const websiteUrl = z
+  .string()
+  .trim()
+  .min(1, t.knowledge.validation.rootUrlRequired)
+  .transform((value) => (HAS_SCHEME.test(value) ? value : `https://${value}`))
+  .pipe(
+    z
+      .url(t.knowledge.validation.rootUrlInvalid)
+      .refine((value) => /^https?:\/\//i.test(value), t.knowledge.validation.rootUrlScheme)
+  );
+
 export const websiteDiscoverSchema = z.object({
-  root_url: z
-    .string()
-    .trim()
-    .min(1, t.knowledge.validation.rootUrlRequired)
-    .url(t.knowledge.validation.rootUrlInvalid),
+  read_mode: z.enum(WEBSITE_READ_MODES),
+  root_url: websiteUrl,
   max_pages: z
     .union([
       z.literal(''),
-      z.coerce.number().int().positive().max(1000, t.knowledge.validation.maxPagesRange),
+      z.coerce
+        .number(t.knowledge.validation.maxPagesRange)
+        .int(t.knowledge.validation.maxPagesRange)
+        .min(1, t.knowledge.validation.maxPagesRange)
+        .max(1000, t.knowledge.validation.maxPagesRange),
     ])
     .optional(),
   max_depth: z
     .union([
       z.literal(''),
-      z.coerce.number().int().min(0).max(10, t.knowledge.validation.maxDepthRange),
+      z.coerce
+        .number(t.knowledge.validation.maxDepthRange)
+        .int(t.knowledge.validation.maxDepthRange)
+        .min(0, t.knowledge.validation.maxDepthRange)
+        .max(10, t.knowledge.validation.maxDepthRange),
     ])
     .optional(),
   include_paths: z

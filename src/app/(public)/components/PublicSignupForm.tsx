@@ -137,7 +137,10 @@ export default function PublicSignupForm() {
                 {detailsForm.formState.errors.password.message}
               </p>
             )}
-            <PasswordStrengthMeter score={strength} />
+            <PasswordStrengthMeter
+              score={strength}
+              password={detailsForm.watch('password') ?? ''}
+            />
           </div>
 
           <div className="space-y-1.5">

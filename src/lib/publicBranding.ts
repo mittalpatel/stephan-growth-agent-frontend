@@ -28,3 +28,11 @@ export function resolvePublicBranding(branding: PublicBranding | null): PublicBr
     onColorPrimary: branding.on_color_primary,
   };
 }
+
+/**
+ * True when nothing custom is set, so the platform's own wordmark
+ * (`PlatformLogo`) is shown instead of an organization's logo and name.
+ */
+export function isPlatformBrand(brand: Pick<PublicBrandingValue, 'displayName' | 'logoUrl'>) {
+  return !brand.logoUrl && brand.displayName === t.common.appName;
+}

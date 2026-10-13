@@ -3,9 +3,9 @@ export const analytics = {
   description: 'Un résumé de l’activité : conversations, prospects et escalades.',
   range: {
     label: 'Période',
-    '7d': '7 derniers jours',
-    '30d': '30 derniers jours',
-    '90d': '90 derniers jours',
+    '7d': '7 jours',
+    '30d': '30 jours',
+    '90d': '90 jours',
   },
   empty:
     'Aucune activité sur cette période. Les chiffres apparaîtront dès que des visiteurs parleront à un agent publié.',
