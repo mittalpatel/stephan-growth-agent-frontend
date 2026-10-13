@@ -1,0 +1,66 @@
+export const notifications = {
+  title: 'Notifications',
+  description: 'Tout ce qui vous a été envoyé, dans toutes vos organisations.',
+  bell: {
+    label: 'Notifications',
+    viewAll: 'Tout voir',
+    empty: 'Aucune notification pour le moment',
+    markAllRead: 'Tout marquer comme lu',
+  },
+  columns: {
+    type: 'Type',
+    received: 'Reçue',
+    status: 'Statut',
+  },
+  status: {
+    read: 'Lue',
+    unread: 'Non lue',
+  },
+  eventType: {
+    organization_invite: 'Invitation à une organisation',
+    organization_added: 'Ajout à une organisation',
+    password_reset_otp: 'Code de réinitialisation du mot de passe',
+    signup_verification_otp: 'Code de vérification de l’inscription',
+    new_device_login: 'Connexion depuis un nouvel appareil',
+    invite_accepted: 'Invitation acceptée',
+    project_shared: 'Un projet a été partagé avec vous',
+    conversation_assigned: 'Une conversation vous a été attribuée',
+    lead_captured: 'Un prospect a été capté',
+    conversation_escalated: 'Une conversation a été escaladée',
+    approval_pending: 'Une action attend votre validation',
+    org_data_export_ready: 'Votre export de données est prêt',
+    org_deletion_requested: 'Suppression de l’organisation demandée',
+  },
+  browser: {
+    project_shared: {
+      title: 'Projet partagé avec vous',
+      body: '{granted_by} vous a donné un accès {access_level} à {project_name}',
+      bodyNoActor: 'Vous avez reçu un accès {access_level} à {project_name}',
+    },
+    invite_accepted: {
+      title: 'Invitation acceptée',
+      body: '{accepted_by} a accepté votre invitation',
+    },
+    enablePrompt: 'Activer les notifications sur le bureau',
+    enabled: 'Notifications sur le bureau activées.',
+    blocked: 'Les notifications sur le bureau sont bloquées dans les réglages de votre navigateur.',
+  },
+  emptyTitle: 'Aucune notification',
+  emptyDescription: 'Vous êtes à jour.',
+  markRead: 'Marquer comme lue',
+  markAllRead: 'Tout marquer comme lu',
+  markedRead: 'Notification marquée comme lue.',
+  allMarkedRead: 'Toutes les notifications ont été marquées comme lues.',
+  errorTitle: 'Impossible de charger les notifications',
+  errorDescription:
+    'Une erreur est survenue lors du chargement de vos notifications. Veuillez réessayer.',
+  preferences: {
+    title: 'Préférences de notification',
+    description: 'Choisissez les notifications que vous recevez par e-mail.',
+    channelEmail: 'E-mail',
+    requiredNote:
+      'Obligatoire. Elle contient un code de sécurité nécessaire pour terminer l’action.',
+    updated: 'Préférences mises à jour.',
+    updateFailed: 'Impossible de mettre à jour cette préférence. Veuillez réessayer.',
+  },
+};

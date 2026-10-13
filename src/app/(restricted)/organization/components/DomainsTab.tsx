@@ -18,9 +18,15 @@ import { useOrganizationDomains } from '../hooks/useOrganizationDomains';
 import { SettingsTabError } from './SettingsTabError';
 
 const DOMAIN_STATUS_LABEL: Record<DomainActivationStatus, string> = {
-  pending_verification: t.organizations.settingsTabs.domains.statusPendingVerification,
-  awaiting_routing: t.organizations.settingsTabs.domains.statusAwaitingRouting,
-  active: t.organizations.settingsTabs.domains.statusActive,
+  get pending_verification() {
+    return t.organizations.settingsTabs.domains.statusPendingVerification;
+  },
+  get awaiting_routing() {
+    return t.organizations.settingsTabs.domains.statusAwaitingRouting;
+  },
+  get active() {
+    return t.organizations.settingsTabs.domains.statusActive;
+  },
 };
 
 const DOMAIN_STATUS_TONE: Record<DomainActivationStatus, StatusTone> = {

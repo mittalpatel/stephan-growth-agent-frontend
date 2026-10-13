@@ -105,6 +105,14 @@ export const AGENT_TYPE_CAPABILITY_KEYS: Record<AgentTypeSlug, readonly AgentCap
   lead_outreach: [],
 };
 
+/** Which marketplace tab each agent type sits under. A code value, so not in the catalog. */
+const CATEGORY_BY_SLUG: Record<AgentTypeSlug, AgentTypeCategory> = {
+  website_sales_support: 'sales',
+  sevo: 'growth',
+  content_strategy: 'marketing',
+  lead_outreach: 'automation',
+};
+
 /**
  * The four-agent roadmap, as the frontend's own copy of the catalog.
  *
@@ -142,16 +150,27 @@ export const AGENT_TYPE_ROADMAP: ReadonlyArray<{
   };
 }> = AGENT_TYPE_SLUGS.map((slug) => {
   const declared = AGENT_TYPE_CAPABILITY_KEYS[slug];
+  // Getters: this table is built once at load, but its text must be read per
+  // render, in the viewer's language (ADR-0019).
   return {
     slug,
-    name: t.agents.types.roadmap[slug].name,
-    description: t.agents.types.roadmap[slug].description,
-    category: t.agents.types.roadmap[slug].category,
-    capabilities:
-      declared.length > 0
+    category: CATEGORY_BY_SLUG[slug],
+    get name() {
+      return t.agents.types.roadmap[slug].name;
+    },
+    get description() {
+      return t.agents.types.roadmap[slug].description;
+    },
+    get capabilities() {
+      return declared.length > 0
         ? declared.map((key) => t.agents.capabilities[key])
-        : t.agents.types.roadmap[slug].plannedCapabilities,
-    workflow: t.agents.types.roadmap[slug].workflow,
-    upgrade: t.agents.types.roadmap[slug].upgrade,
+        : t.agents.types.roadmap[slug].plannedCapabilities;
+    },
+    get workflow() {
+      return t.agents.types.roadmap[slug].workflow;
+    },
+    get upgrade() {
+      return t.agents.types.roadmap[slug].upgrade;
+    },
   };
 });

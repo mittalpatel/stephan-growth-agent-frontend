@@ -4,7 +4,10 @@ import RoleDetailView from './components/RoleDetailView';
 import RoleEditorSkeleton from '../components/RoleEditorSkeleton';
 import { t } from '@/locales';
 
-export const metadata: Metadata = { title: t.organizations.roles.title };
+export function generateMetadata(): Metadata {
+  // A function, not a constant: built per request, in the viewer's language.
+  return { title: t.organizations.roles.title };
+}
 
 /**
  * The role editor route.

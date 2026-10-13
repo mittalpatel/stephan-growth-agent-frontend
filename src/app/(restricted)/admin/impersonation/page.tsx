@@ -9,10 +9,13 @@ import { t } from '@/locales';
 import StartImpersonationForm from './components/StartImpersonationForm';
 import SessionsTable from './components/SessionsTable';
 
-export const metadata: Metadata = {
-  title: t.organizations.impersonation.title,
-  description: t.organizations.impersonation.description,
-};
+export function generateMetadata(): Metadata {
+  // A function, not a constant: built per request, in the viewer's language.
+  return {
+    title: t.organizations.impersonation.title,
+    description: t.organizations.impersonation.description,
+  };
+}
 
 /**
  * The platform-admin surface, gated on `is_superuser` rather than a permission

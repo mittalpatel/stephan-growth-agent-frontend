@@ -1,0 +1,41 @@
+export const billing = {
+  title: 'Facturation',
+  description: 'Votre offre, votre consommation du mois et les offres disponibles.',
+  subscription: {
+    title: 'Abonnement',
+    noPlan: 'Aucune offre attribuée. Votre organisation n’a actuellement aucune limite.',
+    notProvisioned: 'La facturation n’est pas encore configurée.',
+    status: {
+      trialing: 'Essai',
+      active: 'Actif',
+      past_due: 'Paiement en retard',
+      canceled: 'Annulé',
+    },
+    trialEnds: 'Fin de l’essai le {date}',
+    renewsOn: 'Renouvellement le {date}',
+    graceEnds: 'Paiement en retard. L’accès reste ouvert jusqu’au {date}.',
+    canceledOn: 'Annulé le {date}',
+  },
+  usage: {
+    title: 'Consommation ce mois-ci',
+    empty: 'Aucune donnée de consommation pour le moment.',
+    error: 'La consommation n’a pas pu être chargée.',
+    unlimited: 'Illimité',
+    keys: {
+      max_agents: 'Agents',
+      max_seats: 'Utilisateurs',
+      max_conversations_per_month: 'Conversations',
+      max_messages_per_month: 'Réponses de l’agent',
+      max_pdf_count: 'PDF',
+      max_crawl_pages: 'Pages explorées',
+    },
+  },
+  plans: {
+    title: 'Offres disponibles',
+    current: 'Offre actuelle',
+    empty: 'Aucune offre n’a encore été publiée.',
+    errorTitle: 'Impossible de charger les offres',
+    errorDescription: 'Une erreur est survenue lors du chargement des offres disponibles.',
+    noLimitsConfigured: 'Aucune limite n’est encore définie pour cette offre.',
+  },
+};

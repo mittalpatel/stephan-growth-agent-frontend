@@ -6,6 +6,7 @@ export const dateRangePicker = {
 
 export const common = {
   appName: 'YB Inspire',
+  languageLabel: 'Language',
   appDescription: 'AI-powered sales and support agent platform.',
 
   loading: 'Loading...',

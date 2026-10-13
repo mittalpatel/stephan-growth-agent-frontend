@@ -3,7 +3,7 @@ import type { OAuthConfig } from 'next-auth/providers/oauth';
 import CredentialsProvider from 'next-auth/providers/credentials';
 import GithubProvider from 'next-auth/providers/github';
 import axios, { type AxiosError } from 'axios';
-import { DEFAULT_LANGUAGE } from '@/config/language';
+import { getLanguage } from '@/locales/activeLanguage';
 import { t } from '@/locales';
 
 import { getOidcProviders } from './oidcProviders';
@@ -18,7 +18,8 @@ const GITHUB_PROVIDER_ID = 'github';
 const GITHUB_CLIENT_ID = process.env.GITHUB_CLIENT_ID;
 const GITHUB_CLIENT_SECRET = process.env.GITHUB_CLIENT_SECRET;
 
-const ACCEPT_LANGUAGE = { 'Accept-Language': DEFAULT_LANGUAGE };
+// A function, not a constant: this runs on the server for many viewers.
+const acceptLanguage = () => ({ 'Accept-Language': getLanguage() });
 
 const BASE_URL = serverBackendOrigin();
 
@@ -115,7 +116,7 @@ export const authOptions: NextAuthOptions = {
         // `req.headers` is the original incoming request's headers (per
         // next-auth's `RequestInternal` type) — genuinely the caller's
         // browser, not a value this code controls.
-        const forwardedHeaders: Record<string, string> = { ...ACCEPT_LANGUAGE };
+        const forwardedHeaders: Record<string, string> = { ...acceptLanguage() };
         const realUserAgent = req.headers?.['user-agent'];
         if (typeof realUserAgent === 'string') forwardedHeaders['User-Agent'] = realUserAgent;
         // Only meaningful if something in front of Next.js itself sets this
@@ -251,7 +252,7 @@ export const authOptions: NextAuthOptions = {
       try {
         const url = `${BASE_URL}api/v1/auth/oauth/${account.provider}/exchange/`;
         const { data } = await axios.post<AuthEnvelope<LoginPayload>>(url, payload, {
-          headers: ACCEPT_LANGUAGE,
+          headers: acceptLanguage(),
         });
         if (data.data.mfa_required) {
           // Same shape as the credentials MFA step-up, minus the callbackUrl

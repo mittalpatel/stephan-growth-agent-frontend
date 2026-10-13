@@ -42,7 +42,6 @@ export const agents = {
         name: 'Website Sales & Support',
         description:
           'An AI sales assistant trained on your company knowledge that guides visitors, answers questions, and captures qualified prospects around the clock.',
-        category: 'sales',
         plannedCapabilities: [],
         upgrade: {
           title: 'Unlock sales intelligence',
@@ -71,7 +70,6 @@ export const agents = {
         name: 'SEvO',
         description:
           'Trains your team on AEO, GEO, SEO and the SEvO experience, and produces the exact steps to become visible inside LLMs and modern search.',
-        category: 'growth',
         plannedCapabilities: [
           'Website analysis',
           'SEO analysis',
@@ -103,7 +101,6 @@ export const agents = {
         name: 'Content Strategy',
         description:
           'Builds a weekly content plan from your website, second brain, and two strategic topics, producing on-brand LinkedIn and social posts automatically.',
-        category: 'marketing',
         plannedCapabilities: [
           'Weekly content planning',
           'LinkedIn posts',
@@ -136,7 +133,6 @@ export const agents = {
         name: 'Lead Outreach',
         description:
           'Ingests Meta Lead Ads, enriches and scores each lead, syncs to your CRM, and carries on AI-assisted WhatsApp conversations with human approval built in.',
-        category: 'automation',
         plannedCapabilities: [
           'Meta Lead Ads',
           'CRM sync',

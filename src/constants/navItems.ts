@@ -100,8 +100,12 @@ export const DEFAULT_LANDING = '/dashboard';
 export const NAV_ITEMS: NavItem[] = [
   // ── MAIN ─────────────────────────────────────────────────────────────
   {
-    section: t.navigation.sections.main,
-    label: t.navigation.dashboard,
+    get section() {
+      return t.navigation.sections.main;
+    },
+    get label() {
+      return t.navigation.dashboard;
+    },
     href: '/dashboard',
     icon: LayoutDashboard,
     // No requiredFunction: it's DEFAULT_LANDING, reachable by everyone
@@ -110,42 +114,66 @@ export const NAV_ITEMS: NavItem[] = [
   // Demo module — removed by `npm run strip-demo`. Defined but left out of
   // ENABLED_HREFS above, so it resolves to nothing in the sidebar.
   {
-    section: t.navigation.sections.main,
-    label: t.navigation.projects,
+    get section() {
+      return t.navigation.sections.main;
+    },
+    get label() {
+      return t.navigation.projects;
+    },
     href: '/projects',
     icon: Boxes,
     requiredFunction: 'project',
   },
   {
-    section: t.navigation.sections.main,
-    label: t.navigation.agents,
+    get section() {
+      return t.navigation.sections.main;
+    },
+    get label() {
+      return t.navigation.agents;
+    },
     href: '/agents',
     icon: Bot,
     requiredFunction: 'agent',
   },
   {
-    section: t.navigation.sections.main,
-    label: t.navigation.conversations,
+    get section() {
+      return t.navigation.sections.main;
+    },
+    get label() {
+      return t.navigation.conversations;
+    },
     href: '/conversations',
     icon: MessagesSquare,
     requiredFunction: 'conversation',
   },
   {
-    section: t.navigation.sections.main,
-    label: t.navigation.leads,
+    get section() {
+      return t.navigation.sections.main;
+    },
+    get label() {
+      return t.navigation.leads;
+    },
     href: '/leads',
     icon: UserPlus,
     requiredFunction: 'lead',
   },
   {
-    section: t.navigation.sections.main,
-    label: t.navigation.analytics,
+    get section() {
+      return t.navigation.sections.main;
+    },
+    get label() {
+      return t.navigation.analytics;
+    },
     href: '/analytics',
     icon: BarChart3,
   },
   {
-    section: t.navigation.sections.main,
-    label: t.navigation.approvals,
+    get section() {
+      return t.navigation.sections.main;
+    },
+    get label() {
+      return t.navigation.approvals;
+    },
     href: '/approvals',
     icon: CircleCheckBig,
     requiredFunction: 'approval',
@@ -153,8 +181,12 @@ export const NAV_ITEMS: NavItem[] = [
 
   // ── WORKSPACE ────────────────────────────────────────────────────────
   {
-    section: t.navigation.sections.workspace,
-    label: t.navigation.invites,
+    get section() {
+      return t.navigation.sections.workspace;
+    },
+    get label() {
+      return t.navigation.invites;
+    },
     href: '/invites',
     icon: Mail,
     // No requiredFunction: this is about invitations addressed to *me*, not an
@@ -163,27 +195,55 @@ export const NAV_ITEMS: NavItem[] = [
     // all, since accepting one is how they get their first org.
   },
   {
-    section: t.navigation.sections.workspace,
-    label: t.navigation.organization,
+    get section() {
+      return t.navigation.sections.workspace;
+    },
+    get label() {
+      return t.navigation.organization;
+    },
     href: '/organization',
     icon: Building2,
     requiredFunction: 'organization',
     children: [
-      { label: t.navigation.members, href: '/organization/members', requiredFunction: 'member' },
-      { label: t.navigation.roles, href: '/organization/roles', requiredFunction: 'rbac' },
-      { label: t.navigation.audit, href: '/organization/audit', requiredFunction: 'audit' },
       {
-        label: t.navigation.apiKeys,
+        get label() {
+          return t.navigation.members;
+        },
+        href: '/organization/members',
+        requiredFunction: 'member',
+      },
+      {
+        get label() {
+          return t.navigation.roles;
+        },
+        href: '/organization/roles',
+        requiredFunction: 'rbac',
+      },
+      {
+        get label() {
+          return t.navigation.audit;
+        },
+        href: '/organization/audit',
+        requiredFunction: 'audit',
+      },
+      {
+        get label() {
+          return t.navigation.apiKeys;
+        },
         href: '/organization/api-keys',
         requiredFunction: 'apikey',
       },
       {
-        label: t.navigation.integrations,
+        get label() {
+          return t.navigation.integrations;
+        },
         href: '/organization/integrations',
         requiredFunction: 'integration',
       },
       {
-        label: t.navigation.billing,
+        get label() {
+          return t.navigation.billing;
+        },
         href: '/organization/billing',
       },
     ],
@@ -193,8 +253,12 @@ export const NAV_ITEMS: NavItem[] = [
   // Visible only to superusers, and gated again on the server (the page itself
   // redirects) and on every backend endpoint. Hiding a link is not a control.
   {
-    section: t.navigation.sections.platform,
-    label: t.navigation.impersonation,
+    get section() {
+      return t.navigation.sections.platform;
+    },
+    get label() {
+      return t.navigation.impersonation;
+    },
     href: '/admin/impersonation',
     icon: UserCog,
     superuserOnly: true,

@@ -326,7 +326,15 @@ Derives crumbs from the pathname. A UUID segment is resolved to a record name th
 `RESOLVERS`, keyed by the parent route segment. The resolver imports its `endpoint`
 and `queryKey` from the service so the breadcrumb reads the detail page's cache
 instead of refetching. With no resolver registered, a UUID falls back to a shortened
-id — correct, just less useful.
+id — correct, just less useful. Other segments use the sidebar's own label
+(`NAV_ITEMS`), then an agent type's name, then title-casing, so crumbs follow
+the viewer's language.
+
+## LanguageSelect
+
+`src/components/common/LanguageSelect.tsx`, on the signed-out pages
+(`AuthHeroShell`). Driven by `useLanguage`; renders nothing while one language ships.
+The signed-in equivalent is the Language submenu in `ProfilePopup`.
 
 ## Motion — `src/components/motion/`
 

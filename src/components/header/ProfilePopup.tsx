@@ -6,10 +6,17 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
   DropdownMenuSeparator,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { LogOut, User } from 'lucide-react';
+import { Globe, LogOut, User } from 'lucide-react';
+import { isLanguage } from '@/config/language';
+import { useLanguage } from '@/hooks/useLanguage';
 import { t } from '@/locales';
 
 async function handleSignOut() {
@@ -30,6 +37,7 @@ async function handleSignOut() {
 export default function ProfilePopup() {
   const { data: session } = useSession();
   const user = session?.user;
+  const languageMenu = useLanguage();
 
   const initials =
     user?.full_name
@@ -63,6 +71,28 @@ export default function ProfilePopup() {
             {t.header.profile}
           </Link>
         </DropdownMenuItem>
+        {languageMenu.canSwitch && (
+          <DropdownMenuSub>
+            <DropdownMenuSubTrigger className="font-semibold text-sm">
+              <Globe className="mr-2 h-4 w-4" />
+              {t.common.languageLabel}
+            </DropdownMenuSubTrigger>
+            <DropdownMenuSubContent>
+              <DropdownMenuRadioGroup
+                value={languageMenu.language}
+                onValueChange={(value) => {
+                  if (isLanguage(value)) languageMenu.setLanguage(value);
+                }}
+              >
+                {languageMenu.options.map((option) => (
+                  <DropdownMenuRadioItem key={option.value} value={option.value}>
+                    {option.label}
+                  </DropdownMenuRadioItem>
+                ))}
+              </DropdownMenuRadioGroup>
+            </DropdownMenuSubContent>
+          </DropdownMenuSub>
+        )}
         <DropdownMenuSeparator />
         <DropdownMenuItem onClick={handleSignOut} className="text-destructive">
           <LogOut className="mr-2 h-4 w-4" />

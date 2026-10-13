@@ -6,7 +6,10 @@ import { t } from '@/locales';
 import { KnowledgeSourcePagesSkeleton } from './components/KnowledgeSourcePagesSkeleton';
 import { KnowledgeSourcePagesView } from './components/KnowledgeSourcePagesView';
 
-export const metadata: Metadata = { title: t.knowledge.pages.title };
+export function generateMetadata(): Metadata {
+  // A function, not a constant: built per request, in the viewer's language.
+  return { title: t.knowledge.pages.title };
+}
 
 /**
  * A website source's page list, as its own route rather than the

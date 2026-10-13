@@ -4,7 +4,10 @@ import MemberOverridesView from './components/MemberOverridesView';
 import { Skeleton } from '@/components/ui/skeleton';
 import { t } from '@/locales';
 
-export const metadata: Metadata = { title: t.organizations.overrides.title };
+export function generateMetadata(): Metadata {
+  // A function, not a constant: built per request, in the viewer's language.
+  return { title: t.organizations.overrides.title };
+}
 
 /**
  * `params` is a Promise in Next 16 and must be awaited — see the role editor

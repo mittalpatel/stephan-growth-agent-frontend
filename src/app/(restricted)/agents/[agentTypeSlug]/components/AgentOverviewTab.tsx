@@ -22,12 +22,7 @@ type Props = Readonly<{ agent: Agent }>;
 const RANGES: readonly AnalyticsRange[] = ['7d', '30d', '90d'];
 
 /** Labels in payload order, so the loading skeleton is the shape of the result. */
-const METRIC_LABELS = [
-  t.analytics.metrics.conversations,
-  t.analytics.metrics.leads,
-  t.analytics.metrics.escalations,
-  t.analytics.metrics.unresolvedTopics,
-] as const;
+const METRIC_KEYS = ['conversations', 'leads', 'escalations', 'unresolvedTopics'] as const;
 
 /**
  * The Overview tab: what this agent has actually done, what it can do, and
@@ -60,8 +55,8 @@ export function AgentOverviewTab({ agent }: Props) {
     if (performance.isLoading) {
       return (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {METRIC_LABELS.map((label) => (
-            <MetricCard key={label} label={label} value="" isLoading />
+          {METRIC_KEYS.map((key) => (
+            <MetricCard key={key} label={t.analytics.metrics[key]} value="" isLoading />
           ))}
         </div>
       );

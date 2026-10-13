@@ -1,0 +1,391 @@
+export const knowledge = {
+  title: 'Sources de connaissances',
+  description: 'Les contenus sur lesquels reposent les réponses de cet agent.',
+  columns: {
+    displayName: 'Nom',
+    sourceType: 'Type',
+    status: 'Statut',
+    updatedAt: 'Mise à jour',
+  },
+  sourceType: {
+    website: 'Site web',
+    pdf: 'PDF',
+  },
+  status: {
+    pending: 'En attente',
+    processing: 'En cours de traitement',
+    ready: 'Prête',
+    failed: 'En échec',
+    disabled: 'Désactivée',
+  },
+  filters: {
+    statusLabel: 'Statut',
+    sourceTypeLabel: 'Type',
+  },
+  list: {
+    sectionTitle: 'Sources',
+    searchPlaceholder: 'Rechercher des sources',
+    errorTitle: 'Impossible de charger les sources de connaissances',
+    errorDescription:
+      'Une erreur est survenue lors du chargement de ces sources. Veuillez réessayer.',
+    emptyTitle: 'Aucune source de connaissances pour le moment',
+    emptyDescription:
+      'Importez un PDF, comme votre FAQ ou votre grille tarifaire, ou ajoutez l’adresse de votre site. Vos agents répondent uniquement à partir de ce que vous ajoutez ici.',
+    pendingHint:
+      'Généralement prête en quelques minutes. Les grands sites riches en images peuvent prendre plus de temps.',
+    sharedNotice:
+      'Les sources de connaissances sont partagées dans toute votre organisation. Chaque agent peut les lire, sauf si vous en limitez la liste ci-dessous.',
+    emptyFilteredTitle: 'Aucune source ne correspond à vos filtres',
+    emptyFilteredDescription: 'Essayez de modifier ou d’effacer vos filtres.',
+  },
+  processing: {
+    one: 'Lecture de « {name} » en cours. Vous pouvez continuer à travailler, nous vous préviendrons quand ce sera prêt.',
+    many: 'Lecture de {count} sources de connaissances en cours. Vous pouvez continuer à travailler, nous vous préviendrons quand elles seront prêtes.',
+    readyToast: '« {name} » est prête. Vos agents peuvent maintenant s’en servir pour répondre.',
+    failedToast:
+      '« {name} » n’a pas pu être traitée. Ouvrez Connaissances pour voir ce qui s’est passé.',
+  },
+  tips: {
+    title: 'Que puis-je ajouter, et qu’est-ce qui fonctionne le mieux ?',
+    whatTitle: 'Ce que vous pouvez ajouter',
+    what: [
+      'Votre site web : nous lisons ses pages pour vous. Collez simplement l’adresse, par exemple https://votreentreprise.fr.',
+      'Des fichiers PDF : FAQ, grille tarifaire, brochure, carte, fiches produits ou conditions générales.',
+    ],
+    examplesTitle: 'De bons contenus pour commencer',
+    examples: [
+      'Les questions fréquentes et leurs réponses',
+      'Vos services ou produits, avec les prix si vous les rendez publics',
+      'Horaires d’ouverture, adresses et coordonnées',
+      'Règles de réservation, de livraison, d’annulation et de remboursement',
+    ],
+    practicesTitle: 'Bonnes pratiques',
+    practices: [
+      'Tenez vos contenus à jour. Votre agent répète ce qu’il lit, y compris les anciens prix.',
+      'Le texte simple fonctionne le mieux. Les images scannées de texte ne peuvent pas être lues.',
+      'Écartez les pages qui ne doivent pas être citées, comme les pages de connexion ou les anciennes offres. Vous pourrez les exclure une fois le site lu.',
+    ],
+    guideLink: 'Lire le guide pas à pas',
+  },
+  actions: {
+    addWebsite: 'Ajouter un site web',
+    addPdf: 'Importer un PDF',
+    edit: 'Renommer',
+    delete: 'Supprimer la source',
+    reprocess: 'Retraiter',
+    recrawl: 'Explorer à nouveau',
+    viewPages: 'Voir les pages',
+    moreActions: 'Plus d’actions pour {name}',
+    recrawlSelected: 'Extraire les pages sélectionnées',
+    disable: 'Désactiver',
+    enable: 'Activer',
+  },
+  rename: {
+    title: 'Renommer la source',
+    nameLabel: 'Nom',
+    save: 'Enregistrer',
+    cancel: 'Annuler',
+  },
+  deleteConfirm: {
+    title: 'Supprimer cette source ?',
+    description:
+      'La source est supprimée de façon logique. Elle ne sera plus utilisée pour les prochains index, mais son historique est conservé.',
+    action: 'Supprimer',
+    cancel: 'Annuler',
+  },
+  toast: {
+    renamed: 'Source renommée.',
+    deleted: 'Source supprimée.',
+    reprocessStarted: 'Retraitement lancé.',
+    recrawlStarted: 'Nouvelle exploration lancée.',
+    recrawlAlreadyRunning: 'Une découverte est déjà en cours pour cette source.',
+    recrawlPagesStarted: 'Nouvelle exploration lancée pour les pages sélectionnées.',
+    disabled: 'Source désactivée.',
+    enabled: 'Source activée.',
+  },
+  addWebsite: {
+    title: 'Ajouter un site web',
+    description: 'L’agent va explorer ce site et vous laisser choisir les pages à inclure.',
+    rootUrlLabel: 'URL du site',
+    rootUrlPlaceholder: 'https://exemple.fr',
+    viewExistingSource: 'Ouvrir la source qui couvre déjà ce site',
+    scope: {
+      toggle: 'Options d’exploration avancées',
+      maxPagesLabel: 'Nombre maximal de pages',
+      maxPagesDescription:
+        'Limitez le nombre de pages que cette exploration peut découvrir. Laissez vide pour utiliser la limite de votre offre.',
+      maxPagesPlaceholder: 'ex. 100',
+      maxDepthLabel: 'Profondeur maximale des liens',
+      maxDepthDescription:
+        'Le nombre de liens suivis depuis la page de départ. 0 n’explore que la page de départ.',
+      maxDepthPlaceholder: 'ex. 3',
+      includePathsLabel: 'N’explorer que ces chemins',
+      includePathsDescription:
+        'Limitez l’exploration aux URL situées sous ces chemins. La correspondance se fait par segment complet : « /blog » couvre « /blog/article-1 » mais pas « /blogger-inscription ». Laissez vide pour explorer tout le site.',
+      excludePathsLabel: 'Exclure ces chemins',
+      excludePathsDescription:
+        'Ignorez les URL situées sous ces chemins. La correspondance se fait par segment complet : « /blog » exclut « /blog/article-1 » mais pas « /blogger-inscription ».',
+      addPath: 'Ajouter un chemin',
+      removePath: 'Retirer',
+      pathPlaceholder: '/blog',
+    },
+    submit: 'Lancer la découverte',
+    discovering: {
+      title: 'Découverte des pages…',
+      description:
+        'Recherche des pages de ce site. Les sites sans plan de site exploitable sont parcourus lien par lien, ce qui peut prendre jusqu’à 10 minutes.',
+      elapsed: 'En cours depuis {duration}',
+      backgroundNotice:
+        'Vous pouvez fermer cette fenêtre et continuer à travailler. L’exploration continue, et les pages apparaîtront sous cette source une fois terminée.',
+    },
+    discoveryFailed: {
+      title: 'Échec de la découverte',
+      description: 'Une erreur est survenue lors de la découverte des pages de ce site.',
+    },
+    review: {
+      title: 'Choisissez les pages à inclure',
+      foundOn: 'Trouvées sur {site}',
+      selectedCount: '{count} sur {total} sélectionnées',
+      preselectedNotice:
+        'Toutes les pages sont sélectionnées au départ. Décochez celles dont cet agent ne doit pas apprendre.',
+      selectionHint: 'Seules les pages sélectionnées sont lues et ajoutées à cet agent.',
+      searchPlaceholder: 'Rechercher par adresse',
+      clearSearch: 'Effacer la recherche',
+      filters: {
+        label: 'Afficher',
+        all: 'Toutes ({count})',
+        selected: 'Sélectionnées ({count})',
+        unselected: 'Non sélectionnées ({count})',
+      },
+      sectionsLabel: 'Aller à une section',
+      selectShown: 'Sélectionner les pages affichées ({count})',
+      selectAllPages: 'Tout sélectionner ({count})',
+      noMatches: 'Aucune page ne correspond à ces filtres.',
+      clearFilters: 'Effacer les filtres',
+      filterCount: '{shown} pages affichées sur {total}',
+      homePage: 'Page d’accueil',
+      duplicate: 'Doublon',
+      duplicateNotice: {
+        one: '{count} page semble être une copie d’une autre adresse.',
+        other: '{count} pages semblent être des copies d’autres adresses.',
+      },
+      deselectDuplicates: 'Ignorer les doublons',
+      truncatedNotice: 'Affichage des {shown} premières pages sur {total} trouvées.',
+      loadError: 'Impossible de charger les pages trouvées.',
+      extract: 'Extraire les pages sélectionnées',
+      extractCount: {
+        one: 'Extraire {count} page',
+        other: 'Extraire {count} pages',
+      },
+      nothingSelected: 'Sélectionnez au moins une page pour continuer.',
+      slowWarning:
+        'Les grandes sélections prennent quelques minutes. Vous pouvez fermer cette fenêtre pendant le traitement.',
+      noPages: 'Aucune page n’a été trouvée sur ce site.',
+      noPagesDescription: 'Ajoutez plutôt les pages souhaitées par leur adresse.',
+      addUrlToggle: 'Ajouter une page non trouvée',
+      addUrlLabel: 'Adresse de la page',
+      addUrlPlaceholder: 'https://exemple.fr/autre-page',
+      addUrlAction: 'Ajouter la page',
+      removeUrlHint: 'Retirer de la liste. Pour l’ignorer pour l’instant, décochez plutôt sa case.',
+      removeUrlLabel: 'Retirer {url} de la liste',
+    },
+    extracting: {
+      title: 'Extraction des pages sélectionnées…',
+      description:
+        'Chaque page sélectionnée est récupérée et lue séparément, cela prend donc un peu de temps.',
+      progress: '{done} pages traitées sur {total}',
+      elapsed: 'En cours depuis {duration}',
+      backgroundNotice:
+        'Vous pouvez fermer cette fenêtre et continuer à travailler. L’extraction continue, et les pages apparaîtront sous cette source une fois terminée.',
+    },
+    extractionFailed: {
+      title: 'Échec de l’extraction',
+      description: 'Une erreur est survenue lors de l’extraction des pages sélectionnées.',
+    },
+    closeWhileRunning: {
+      title: 'Fermer et laisser le traitement se terminer en arrière-plan ?',
+      description:
+        'L’exploration continue sur le serveur. Cette source est déjà enregistrée, vous pourrez la retrouver depuis sa ligne dans la liste.',
+      confirm: 'Fermer',
+      cancel: 'Continuer à suivre',
+    },
+    done: {
+      title: 'Site web ajouté',
+      description: 'Les pages ci-dessous ont été lues et mises en file pour l’indexation.',
+      indexedLabel: 'Pages ajoutées',
+      failedLabel: 'Pages illisibles',
+      skippedLabel: 'Pages ignorées car vides ou en double',
+      wherePages:
+        'Pour voir toutes les pages ou en explorer certaines à nouveau plus tard, ouvrez cette source depuis la liste et choisissez « Voir les pages ».',
+      close: 'Terminé',
+    },
+    close: 'Annuler',
+  },
+  addPdf: {
+    title: 'Importer un PDF',
+    description: 'L’agent va lire ce document et apprendre de son contenu.',
+    dropzoneHint: 'Glissez un PDF ici',
+    dropzoneActive: 'Déposez pour joindre ce PDF',
+    dropzoneWrongType: 'Seuls les fichiers PDF peuvent être importés.',
+    submit: 'Importer',
+    uploading: 'Import en cours…',
+    duplicateSource: 'Ce PDF a déjà été importé sous le nom « {name} ».',
+  },
+  validation: {
+    rootUrlRequired: 'Saisissez l’URL d’un site web.',
+    rootUrlInvalid: 'Saisissez une URL valide.',
+    nameRequired: 'Le nom est obligatoire.',
+    maxPagesRange: 'Saisissez un nombre entre 1 et 1000.',
+    maxDepthRange: 'Saisissez un nombre entre 0 et 10.',
+    pathListTooLong: 'Vous pouvez ajouter jusqu’à 20 chemins.',
+  },
+  targets: {
+    title: 'Périmètre des connaissances',
+    description:
+      'Choisissez parmi les sources partagées celles que cet agent utilise pour répondre. Cela détermine ce que couvrira son prochain index.',
+    modeAll: 'Toutes les sources partagées, y compris celles ajoutées plus tard',
+    modeAllDescription: 'Recommandé. Les nouvelles sources sont prises en compte automatiquement.',
+    modeSelected: 'Uniquement les sources que je sélectionne',
+    modeSelectedDescription:
+      'Les sources ajoutées plus tard sont ignorées tant que vous ne les cochez pas ici.',
+    selectedCount: '{selected} sur {total} sélectionnées',
+    selectAll: 'Tout sélectionner',
+    deselectAll: 'Tout désélectionner',
+    searchPlaceholder: 'Rechercher des sources',
+    noSourcesMatch: 'Aucune source ne correspond à votre recherche.',
+    saveChanges: 'Enregistrer le périmètre',
+    discard: 'Annuler les modifications',
+    noSources: 'Il n’y a encore aucune source partagée à sélectionner.',
+    truncated: 'Affichage des {shown} premières sources sur {total}.',
+    saved: 'Périmètre des connaissances mis à jour.',
+    error: 'Le périmètre des connaissances n’a pas pu être chargé.',
+  },
+  pages: {
+    title: 'Pages',
+    description: 'Les pages explorées par cette source pour « {name} ».',
+    backToKnowledge: 'Retour aux sources de connaissances',
+    errorTitle: 'Impossible de charger les pages',
+    errorDescription:
+      'Une erreur est survenue lors du chargement de ces pages. Veuillez réessayer.',
+    empty: 'Aucune page n’a encore été explorée.',
+    noPermissionTitle: 'Autorisation de consultation requise',
+    noPermissionDescription: 'Vous n’avez pas l’autorisation de voir les pages de cette source.',
+    summary: {
+      total: 'Pages trouvées',
+      indexed: 'Ajoutées à cet agent',
+      notExtracted: 'Pas encore extraites',
+      failed: 'Illisibles',
+      skipped: 'Ignorées car vides ou en double',
+      excluded: 'Exclues de l’index',
+    },
+    lastChangedLabel: 'Dernière modification {when}',
+    neverChanged: 'jamais',
+    httpStatusLabel: 'HTTP {status}',
+    pageStatus: {
+      discovered: 'Pas encore extraite',
+      ready: 'Indexée',
+      failed: 'Échec du traitement',
+      low_quality: 'Contenu insuffisant',
+      duplicate: 'Contenu en double',
+    },
+    pageStatusHint: {
+      discovered:
+        'Nous avons trouvé cette page mais pas encore lu son texte. Cochez-la et cliquez sur « Extraire les pages sélectionnées » pour l’ajouter.',
+      low_quality:
+        'Cette page contenait trop peu de texte pour être indexée, elle a donc été ignorée.',
+      duplicate:
+        'Le contenu de cette page correspond à une autre page de ce site, elle a donc été ignorée.',
+    },
+    exclusionReason: {
+      media:
+        'Il s’agit d’une image, d’une vidéo ou d’un fichier, pas d’une page web, elle a donc été écartée.',
+      duplicate:
+        'Le contenu de cette page correspond à une autre page de ce site, elle a donc été écartée.',
+      low_content:
+        'Cette page contenait trop peu de texte pour être utile, elle a donc été écartée.',
+      robots: 'Le fichier robots.txt de ce site demande aux robots de ne pas lire cette page.',
+      path_filter: 'Cette page correspond à l’un des chemins que vous avez choisi d’exclure.',
+      not_fetched:
+        'Nous n’avons pas pu lire cette page lors de la dernière exploration. Cochez-la et cliquez sur « Extraire les pages sélectionnées » pour réessayer.',
+    },
+    selectedCount: '{count} sélectionnées',
+    selectAllLabel: 'Sélectionner toutes les pages affichées',
+    selectionHint:
+      'Cocher une page la sélectionne seulement. Rien ne se passe tant que vous ne cliquez pas sur « Extraire les pages sélectionnées ».',
+    guide: {
+      title: 'Comment fonctionne cette page',
+      steps: [
+        'Toutes les pages trouvées sur votre site sont listées ici. Les pages « Indexées » sont celles dont votre agent se sert pour répondre.',
+        'Pour ajouter ou actualiser des pages, cochez-les et cliquez sur « Extraire les pages sélectionnées ». Cocher seul ne change rien.',
+        'Utilisez Exclure pour retirer une page des réponses de votre agent sans la supprimer. Inclure la réintègre.',
+        'Certaines pages sont ignorées automatiquement parce qu’elles n’ont presque pas de texte ou en répètent une autre. Vous n’avez rien à faire.',
+      ],
+      excludeTitle: 'Que faut-il exclure ?',
+      excludeExamples: [
+        'Les pages de connexion, de compte, de panier et de paiement',
+        'Les anciennes actualités, les événements passés et les offres expirées',
+        'Les pages juridiques que vous ne voulez pas voir citées, comme la politique de cookies',
+        'Les pages sur d’autres entreprises ou des sujets sans rapport',
+      ],
+    },
+    searchPlaceholder: 'Rechercher dans ces pages',
+    noMatches: 'Aucune page ne correspond à « {query} ».',
+    filterCount: '{shown} pages affichées sur {total}.',
+    addUrlHint: 'Il manque une page ? Ajoutez son adresse ici.',
+    addUrlPlaceholder: 'https://exemple.fr/autre-page',
+    addUrlAction: 'Ajouter l’URL',
+    excludedBadge: 'Exclue de l’index',
+    excludedHint:
+      'Cette page a été explorée, mais son contenu ne fait pas partie de l’index et l’agent ne peut pas s’en servir. Incluez-la pour la réintégrer lors de la prochaine reconstruction.',
+    includeAction: 'Inclure',
+    excludeAction: 'Exclure',
+    includeTitle: 'Réintégrer cette page dans l’index lors de la prochaine reconstruction.',
+    excludeTitle:
+      'Garder cette page dans la liste mais retirer son contenu de l’index. Le texte exploré est conservé, vous pourrez donc l’inclure de nouveau plus tard.',
+    removeAction: 'Retirer',
+    removeTitle:
+      'Supprimer complètement cette page de la liste. Une exploration ultérieure devra la redécouvrir. Pour garder la ligne mais la retirer de l’index, utilisez Exclure.',
+    removeRowLabel: 'Retirer {url} de cette source',
+    recrawlRowLabel: 'Sélectionner {url} pour une nouvelle exploration',
+    truncatedNotice:
+      'Cette source compte {total} pages, et seules les {shown} premières sont affichées. La recherche et les compteurs ci-dessus ne portent que sur les pages chargées.',
+  },
+  health: {
+    title: 'Santé des connaissances',
+    error: 'La santé n’a pas pu être chargée.',
+    score: 'Score de santé',
+    scoreValue: '{score}/100',
+    sources: 'Sources',
+    indexedChunks: 'Fragments indexés',
+    lastUpdated: 'Dernière mise à jour',
+    notAvailable: 'Pas encore',
+    noSourcesHint: 'Ajoutez une source pour obtenir un score',
+  },
+  index: {
+    title: 'Index de recherche',
+    description:
+      'La publication nécessite un index prêt, construit à partir des sources de connaissances de cet agent.',
+    buildAction: 'Construire l’index',
+    building: 'Construction…',
+    versionLabel: 'v{number}',
+    columns: {
+      version: 'Version',
+      status: 'Statut',
+      chunkCount: 'Fragments',
+      builtAt: 'Construit',
+    },
+    status: {
+      building: 'En construction',
+      ready: 'Prêt',
+      failed: 'En échec',
+    },
+    empty: 'Aucun index n’a encore été construit.',
+    emptyDescription:
+      'Un index est construit automatiquement une fois les sources traitées, ou vous pouvez en construire un maintenant.',
+    error: 'Les index n’ont pas pu être chargés.',
+    notBuilt: 'Non construit',
+    toast: {
+      buildStarted: 'Construction de l’index lancée.',
+    },
+  },
+};

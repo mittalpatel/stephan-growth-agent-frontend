@@ -4,7 +4,10 @@ import { t } from '@/locales';
 
 import PublicSignupForm from '../../components/PublicSignupForm';
 
-export const metadata: Metadata = { title: t.auth.publicSignupFlow.title };
+export function generateMetadata(): Metadata {
+  // A function, not a constant: built per request, in the viewer's language.
+  return { title: t.auth.publicSignupFlow.title };
+}
 
 export default function PublicSignupPage() {
   return <PublicSignupForm />;

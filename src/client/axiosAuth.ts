@@ -2,7 +2,7 @@ import axios from 'axios';
 import { signOut } from 'next-auth/react';
 import { clearQueryCache } from '@/lib/queryClientRef';
 import { shouldBypassBackendCache } from '@/lib/backendCache';
-import { DEFAULT_LANGUAGE } from '@/config/language';
+import { getLanguage } from '@/locales/activeLanguage';
 
 // Same-origin proxy (src/app/api/backend/[...path]/route.ts), not the backend
 // origin directly. The access token is never attached here — that route reads
@@ -13,7 +13,9 @@ import { DEFAULT_LANGUAGE } from '@/config/language';
 // open; it can no longer exfiltrate a reusable credential.
 const axiosAuth = axios.create({
   baseURL: '/api/backend',
-  headers: { 'Accept-Language': DEFAULT_LANGUAGE },
+  // Browser-only client: read once per page load, and a language switch
+  // reloads the page, so this stays the viewer's language.
+  headers: { 'Accept-Language': getLanguage() },
 });
 
 interface QueueItem {

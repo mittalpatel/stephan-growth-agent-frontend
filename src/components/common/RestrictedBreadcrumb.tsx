@@ -7,6 +7,8 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useAuthQuery } from '@/hooks/useAuthQuery';
 import { roleDetailEndpoint, roleDetailKey } from '@/services/organizations';
 import { projectDetailEndpoint, projectDetailKey } from '@/services/projects';
+import { AGENT_TYPE_ROADMAP } from '@/constants/agentTypes';
+import { NAV_ITEMS } from '@/constants/navItems';
 import { t } from '@/locales';
 
 // ─── Static segment labels ────────────────────────────────────────────────────
@@ -15,13 +17,37 @@ import { t } from '@/locales';
 // which is right often enough that adding an entry per route would be noise —
 // register a segment only when the derived label is actually unacceptable.
 const SEGMENT_LABELS: Record<string, string> = {
-  projects: t.navigation.projects,
-  'user-profile': t.userProfile.title,
+  get projects() {
+    return t.navigation.projects;
+  },
+  get 'user-profile'() {
+    return t.userProfile.title;
+  },
+  get knowledge() {
+    return t.agents.detail.tabs.knowledge;
+  },
+  get settings() {
+    return t.agents.detail.tabs.settings;
+  },
 };
+
+// The sidebar's own labels, so a breadcrumb crumb reads the same as the menu
+// entry and in the viewer's language. Looked up per render (labels are getters).
+function navLabel(segment: string): string | undefined {
+  for (const item of NAV_ITEMS) {
+    if (item.href.endsWith(`/${segment}`)) return item.label;
+    const child = item.children?.find((c) => c.href.endsWith(`/${segment}`));
+    if (child) return child.label;
+  }
+  return undefined;
+}
 
 function labelForSegment(segment: string): string {
   return (
-    SEGMENT_LABELS[segment] ?? segment.replaceAll('-', ' ').replace(/\b\w/g, (c) => c.toUpperCase())
+    SEGMENT_LABELS[segment] ??
+    navLabel(segment) ??
+    AGENT_TYPE_ROADMAP.find((entry) => entry.slug === segment)?.name ??
+    segment.replaceAll('-', ' ').replace(/\b\w/g, (c) => c.toUpperCase())
   );
 }
 

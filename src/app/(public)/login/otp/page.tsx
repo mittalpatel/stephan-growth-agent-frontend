@@ -6,7 +6,10 @@ import { t } from '@/locales';
 import AuthHeroShell from '../../components/AuthHeroShell';
 import MfaVerifyForm from '../../components/MfaVerifyForm';
 
-export const metadata: Metadata = { title: t.auth.mfaFlow.title };
+export function generateMetadata(): Metadata {
+  // A function, not a constant: built per request, in the viewer's language.
+  return { title: t.auth.mfaFlow.title };
+}
 
 export default function LoginOtpPage() {
   return (

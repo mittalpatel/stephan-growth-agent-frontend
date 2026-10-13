@@ -64,14 +64,18 @@ const QUALIFIABLE_FIELD_OPTIONS: SelectFieldOption[] = QUALIFIABLE_LEAD_FIELDS.m
 const QUALIFICATION_QUESTION_COLUMNS: ObjectListColumn[] = [
   {
     key: 'field',
-    label: t.agents.detail.draft.qualificationFieldColumn,
+    get label() {
+      return t.agents.detail.draft.qualificationFieldColumn;
+    },
     type: 'select',
     options: QUALIFIABLE_FIELD_OPTIONS,
     className: 'flex-1',
   },
   {
     key: 'weight',
-    label: t.agents.detail.draft.qualificationWeightColumn,
+    get label() {
+      return t.agents.detail.draft.qualificationWeightColumn;
+    },
     type: 'number',
     min: MIN_QUESTION_WEIGHT,
     max: MAX_QUESTION_WEIGHT,

@@ -6,7 +6,10 @@ import { t } from '@/locales';
 
 import SignupForm from '../components/SignupForm';
 
-export const metadata: Metadata = { title: t.auth.signupFlow.title };
+export function generateMetadata(): Metadata {
+  // A function, not a constant: built per request, in the viewer's language.
+  return { title: t.auth.signupFlow.title };
+}
 
 export default function SignupPage() {
   return (

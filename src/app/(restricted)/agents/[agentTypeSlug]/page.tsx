@@ -6,7 +6,10 @@ import { t } from '@/locales';
 import { AgentDetailSkeleton } from './components/AgentDetailSkeleton';
 import { AgentDetailView } from './components/AgentDetailView';
 
-export const metadata: Metadata = { title: t.agents.title };
+export function generateMetadata(): Metadata {
+  // A function, not a constant: built per request, in the viewer's language.
+  return { title: t.agents.title };
+}
 
 /**
  * The agent detail route, keyed by `AgentType` slug (`/agents/sevo`) rather

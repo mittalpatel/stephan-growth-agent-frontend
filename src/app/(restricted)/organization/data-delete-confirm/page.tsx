@@ -6,7 +6,10 @@ import { t } from '@/locales';
 
 import { DataDeleteConfirmView } from './components/DataDeleteConfirmView';
 
-export const metadata: Metadata = { title: t.organizations.settingsTabs.data.deleteConfirmTitle };
+export function generateMetadata(): Metadata {
+  // A function, not a constant: built per request, in the viewer's language.
+  return { title: t.organizations.settingsTabs.data.deleteConfirmTitle };
+}
 
 /**
  * The view reads the emailed `?token=` with `useSearchParams`, which Next

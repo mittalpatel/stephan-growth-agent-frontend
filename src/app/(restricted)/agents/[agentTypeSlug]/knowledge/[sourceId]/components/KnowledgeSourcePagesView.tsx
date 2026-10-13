@@ -35,9 +35,15 @@ const PAGE_STATUS_TONES: Record<PageStatus, StatusTone> = {
  * extracted yet" is here because client testing (29 Sep 2026) found even
  * the product owner could not tell what to do about it. */
 const PAGE_STATUS_HINTS: Partial<Record<PageStatus, string>> = {
-  discovered: t.knowledge.pages.pageStatusHint.discovered,
-  low_quality: t.knowledge.pages.pageStatusHint.low_quality,
-  duplicate: t.knowledge.pages.pageStatusHint.duplicate,
+  get discovered() {
+    return t.knowledge.pages.pageStatusHint.discovered;
+  },
+  get low_quality() {
+    return t.knowledge.pages.pageStatusHint.low_quality;
+  },
+  get duplicate() {
+    return t.knowledge.pages.pageStatusHint.duplicate;
+  },
 };
 
 /** Already-indexed pages first (what the request was for), then whatever

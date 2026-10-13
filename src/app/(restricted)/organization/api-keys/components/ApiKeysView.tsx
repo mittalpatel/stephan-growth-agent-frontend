@@ -37,9 +37,15 @@ const STATUS_VARIANT: Record<ApiKeyStatus, VariantProps<typeof badgeVariants>['v
 };
 
 const STATUS_LABEL: Record<ApiKeyStatus, string> = {
-  active: copy.status.active,
-  expired: copy.status.expired,
-  revoked: copy.status.revoked,
+  get active() {
+    return copy.status.active;
+  },
+  get expired() {
+    return copy.status.expired;
+  },
+  get revoked() {
+    return copy.status.revoked;
+  },
 };
 
 export default function ApiKeysView() {

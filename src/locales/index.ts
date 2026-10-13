@@ -1,45 +1,89 @@
 /**
  * The translation catalog.
  *
- * Static, typed, and English-only today. Nothing in the app renders a string
- * that does not come from here — see `AGENTS.md` and the `no-restricted-syntax`
- * rule in `eslint.config.mjs`, which fails the build on literal JSX text.
+ * Static and typed: every locale is a TypeScript object that must satisfy
+ * `Translations` (derived from English), so a missing, misspelled, or extra
+ * key is a compile error rather than a blank string found in production. See
+ * `docs/adr/0013-static-typed-locales.md`.
  *
- * ## Adding a second language
+ * ## Per-user language (ADR-0019)
  *
- * It is a content-only change. No component, hook, or route is touched:
+ * `t` is not one catalog object. It is a read-through view that looks up the
+ * active language (`getLanguage()`) each time a value is read, so one server
+ * process can render one request in English and the next in French. Nested
+ * objects come back as views too, which is what keeps the common
+ * `const copy = t.agents.detail` at module scope working: it captures a path,
+ * not one language's strings. Only reading a *string* at module scope freezes
+ * it, which is why page `metadata` is built in `generateMetadata`.
  *
- *   1. `cp -r src/locales/en src/locales/es`
- *   2. Translate the values (leave every key exactly as it is).
- *   3. Add `'es'` to `Language` and to the `translations` map below.
- *   4. `npx tsc --noEmit` — the `Translations` type is derived from English, so
- *      a missing, misspelled, or extra key is a compile error, not a blank
- *      string discovered in production.
+ * ## Adding a language
  *
- * That last point is the whole reason this is a typed object literal rather
- * than JSON files or a runtime lookup: at English-only, compile-time
- * completeness is worth more than the editability a DB-backed system would buy.
- * See `docs/adr/0013-static-typed-locales.md`.
+ *   1. `cp -r src/locales/en src/locales/xx`, translate the values (keys stay).
+ *   2. Add `'xx'` to `SUPPORTED_LANGUAGES`, `LOCALE_TAGS` and `LANGUAGE_NAMES`
+ *      in `src/config/language.ts`, and to `translations` below.
+ *   3. `npx tsc --noEmit`.
+ *
+ * The language selector appears by itself once more than one is supported.
  */
-import { DEFAULT_LANGUAGE } from '@/config/language';
+import { type Language } from '@/config/language';
 
+import { getLanguage } from './activeLanguage';
 import { en } from './en';
+import { fr } from './fr';
 
-/** Every locale the app ships. Grows by one entry per language added. */
-export type Language = 'en';
+export type { Language };
+
+/** English's literal strings widened to `string`, keys and nesting kept. */
+type Widen<T> = T extends string
+  ? string
+  : T extends readonly (infer U)[]
+    ? readonly Widen<U>[]
+    : { readonly [K in keyof T]: Widen<T[K]> };
 
 /**
- * The shape every locale must satisfy, derived from English.
- *
- * A new locale is declared `const es: Translations = { ... }`, which makes the
- * compiler enforce parity. The old approach — a runtime test comparing flattened
- * key lists — only caught the mismatch after someone remembered to run it.
+ * The shape every locale must satisfy, derived from English. Widened because
+ * the catalog is `as const` (keys must be exact) while another language's
+ * values naturally differ.
  */
-export type Translations = typeof en;
+export type Translations = Widen<typeof en>;
 
-export const translations: Record<Language, Translations> = { en };
+export const translations: Record<Language, Translations> = { en, fr };
 
-export const currentLocale: Language = DEFAULT_LANGUAGE;
+type Node = Record<PropertyKey, unknown>;
+
+// One view per catalog path, keyed by that path's English node, so a view
+// keeps its identity across reads (stable for React dependency arrays).
+const views = new WeakMap<object, object>();
+
+function resolve(path: readonly PropertyKey[]): Node {
+  let node: unknown = translations[getLanguage()];
+  for (const key of path) node = (node as Node)[key];
+  return node as Node;
+}
+
+function view<T extends object>(shape: T, path: readonly PropertyKey[]): T {
+  const cached = views.get(shape);
+  if (cached) return cached as T;
+
+  const read = (key: PropertyKey) => {
+    const value = resolve(path)[key];
+    const child = (shape as Node)[key];
+    // Objects and arrays stay views; strings and numbers are returned as is.
+    return typeof value === 'object' && value !== null && typeof child === 'object' && child
+      ? view(child, [...path, key])
+      : value;
+  };
+
+  const proxy = new Proxy(shape, {
+    get: (_target, key) => (typeof key === 'symbol' ? Reflect.get(resolve(path), key) : read(key)),
+    getOwnPropertyDescriptor: (target, key) => {
+      const own = Reflect.getOwnPropertyDescriptor(target, key);
+      return own && { ...own, value: read(key) };
+    },
+  });
+  views.set(shape, proxy);
+  return proxy;
+}
 
 /** The active catalog. Import this: `import { t } from '@/locales'`. */
-export const t: Translations = translations[DEFAULT_LANGUAGE];
+export const t: Translations = view(en, []);

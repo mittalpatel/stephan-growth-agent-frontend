@@ -27,12 +27,24 @@ const SUBSCRIPTION_TONE: Record<SubscriptionStatus, StatusTone> = {
  * here rather than printed raw.
  */
 const USAGE_LABEL: Record<UsageKey, string> = {
-  max_agents: t.billing.usage.keys.max_agents,
-  max_seats: t.billing.usage.keys.max_seats,
-  max_conversations_per_month: t.billing.usage.keys.max_conversations_per_month,
-  max_messages_per_month: t.billing.usage.keys.max_messages_per_month,
-  max_pdf_count: t.billing.usage.keys.max_pdf_count,
-  max_crawl_pages: t.billing.usage.keys.max_crawl_pages,
+  get max_agents() {
+    return t.billing.usage.keys.max_agents;
+  },
+  get max_seats() {
+    return t.billing.usage.keys.max_seats;
+  },
+  get max_conversations_per_month() {
+    return t.billing.usage.keys.max_conversations_per_month;
+  },
+  get max_messages_per_month() {
+    return t.billing.usage.keys.max_messages_per_month;
+  },
+  get max_pdf_count() {
+    return t.billing.usage.keys.max_pdf_count;
+  },
+  get max_crawl_pages() {
+    return t.billing.usage.keys.max_crawl_pages;
+  },
 };
 
 export function BillingView() {

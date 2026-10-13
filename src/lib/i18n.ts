@@ -8,10 +8,11 @@
  * up with `` `Showing ${n} items` `` — untranslatable, and wrong in every
  * language where the plural rule is not "add an s".
  *
- * All formatting is seeded from `src/config/language.ts`, so switching locale
- * switches this too.
+ * All formatting follows the active language (`getLocaleTag()`), so it
+ * switches with the viewer's language like the catalog does.
  */
-import { CURRENCY, LOCALE_TAG, TIME_ZONE } from '@/config/language';
+import { CURRENCY, TIME_ZONE } from '@/config/language';
+import { getLocaleTag } from '@/locales/activeLanguage';
 
 /**
  * Substitute `{placeholder}` tokens.
@@ -54,7 +55,7 @@ export function plural(
   forms: PluralForms,
   values: Record<string, string | number> = {}
 ): string {
-  const rule = new Intl.PluralRules(LOCALE_TAG).select(count);
+  const rule = new Intl.PluralRules(getLocaleTag()).select(count);
   const template = forms[rule] ?? forms.other;
   return format(template, { count, ...values });
 }
@@ -65,20 +66,22 @@ const numberFormatters = new Map<string, Intl.NumberFormat>();
 const dateFormatters = new Map<string, Intl.DateTimeFormat>();
 
 function numberFormatter(options: Intl.NumberFormatOptions = {}): Intl.NumberFormat {
-  const key = JSON.stringify(options);
+  const locale = getLocaleTag();
+  const key = `${locale}:${JSON.stringify(options)}`;
   let formatter = numberFormatters.get(key);
   if (!formatter) {
-    formatter = new Intl.NumberFormat(LOCALE_TAG, options);
+    formatter = new Intl.NumberFormat(locale, options);
     numberFormatters.set(key, formatter);
   }
   return formatter;
 }
 
 function dateFormatter(options: Intl.DateTimeFormatOptions): Intl.DateTimeFormat {
-  const key = JSON.stringify(options);
+  const locale = getLocaleTag();
+  const key = `${locale}:${JSON.stringify(options)}`;
   let formatter = dateFormatters.get(key);
   if (!formatter) {
-    formatter = new Intl.DateTimeFormat(LOCALE_TAG, { timeZone: TIME_ZONE, ...options });
+    formatter = new Intl.DateTimeFormat(locale, { timeZone: TIME_ZONE, ...options });
     dateFormatters.set(key, formatter);
   }
   return formatter;
@@ -214,7 +217,7 @@ export function formatRelativeTime(
   if (!date) return fallback;
 
   const seconds = Math.round((date.getTime() - Date.now()) / 1000);
-  const formatter = new Intl.RelativeTimeFormat(LOCALE_TAG, { numeric: 'auto' });
+  const formatter = new Intl.RelativeTimeFormat(getLocaleTag(), { numeric: 'auto' });
 
   for (const [unit, secondsPerUnit] of RELATIVE_UNITS) {
     if (Math.abs(seconds) >= secondsPerUnit || unit === 'second') {

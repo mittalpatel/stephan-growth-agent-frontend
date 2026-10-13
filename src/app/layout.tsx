@@ -2,10 +2,10 @@ import type { Metadata } from 'next';
 
 import { PLATFORM_FAVICON_HREF } from '@/lib/constants/brandAssets';
 import { JetBrains_Mono, Poppins, Work_Sans } from 'next/font/google';
-import { headers } from 'next/headers';
+import { cookies, headers } from 'next/headers';
 import { Toaster } from 'sonner';
 
-import { DEFAULT_LANGUAGE } from '@/config/language';
+import { DEFAULT_LANGUAGE, LANGUAGE_COOKIE, isLanguage } from '@/config/language';
 import { t } from '@/locales';
 import { ConfirmProvider } from '@/providers/ConfirmProvider';
 import LoaderProvider from '@/providers/LoaderProvider';
@@ -45,17 +45,20 @@ const jetbrainsMono = JetBrains_Mono({
   weight: ['400', '500', '600', '700'],
 });
 
-export const metadata: Metadata = {
-  title: { default: t.common.appName, template: `%s | ${t.common.appName}` },
-  description: t.common.appDescription,
-  // Declared here rather than as `src/app/favicon.ico`. The file convention emits its
-  // own `<link rel="icon">` on every route and cannot be overridden per segment ("favicons
-  // can only be set in the root /app segment" — Next's app-icons reference), so a tenant
-  // favicon set by the restricted layout only ever became a second link the browser chose
-  // between. As metadata it is an ordinary field a deeper segment can replace. The file
-  // now lives in `public/`, which is why the href has no build hash.
-  icons: { icon: PLATFORM_FAVICON_HREF },
-};
+export function generateMetadata(): Metadata {
+  // A function, not a constant: built per request, in the viewer's language.
+  return {
+    title: { default: t.common.appName, template: `%s | ${t.common.appName}` },
+    description: t.common.appDescription,
+    // Declared here rather than as `src/app/favicon.ico`. The file convention emits its
+    // own `<link rel="icon">` on every route and cannot be overridden per segment ("favicons
+    // can only be set in the root /app segment" — Next's app-icons reference), so a tenant
+    // favicon set by the restricted layout only ever became a second link the browser chose
+    // between. As metadata it is an ordinary field a deeper segment can replace. The file
+    // now lives in `public/`, which is why the href has no build hash.
+    icons: { icon: PLATFORM_FAVICON_HREF },
+  };
+}
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   // `proxy.ts` forwards the per-request CSP nonce as `x-nonce` so any inline
@@ -65,13 +68,16 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   // without this it silently fails under CSP and every load shows a flash
   // of the SSR default ("light") before the client-side effect corrects it.
   const nonce = (await headers()).get('x-nonce') ?? undefined;
+  // The viewer's language. `<html lang>` is also what the browser-side
+  // catalog reads (`getLanguage()`), so client components hydrate in the
+  // same language the server rendered.
+  const cookieLanguage = (await cookies()).get(LANGUAGE_COOKIE)?.value;
+  const language = isLanguage(cookieLanguage) ? cookieLanguage : DEFAULT_LANGUAGE;
 
   return (
     <html
-      // Driven by the language config, so adding a locale updates the document
-      // language (and therefore screen-reader pronunciation and hyphenation)
-      // without touching this file.
-      lang={DEFAULT_LANGUAGE}
+      // Also drives screen-reader pronunciation and hyphenation.
+      lang={language}
       className={`${workSans.variable} ${poppins.variable} ${jetbrainsMono.variable} h-full`}
       // next-themes writes `class="dark"` here before paint. Without this
       // React logs a hydration mismatch on every load, and the real warnings

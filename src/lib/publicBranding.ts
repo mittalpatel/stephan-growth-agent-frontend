@@ -11,7 +11,9 @@ export type PublicBrandingValue = {
 };
 
 export const PLATFORM_BRANDING: PublicBrandingValue = {
-  displayName: t.common.appName,
+  get displayName() {
+    return t.common.appName;
+  },
   logoUrl: null,
   colorPrimary: '',
   onColorPrimary: '',

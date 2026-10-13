@@ -4,7 +4,10 @@ import { t } from '@/locales';
 
 import { LeadsListView } from './components/LeadsListView';
 
-export const metadata: Metadata = { title: t.leads.title, description: t.leads.description };
+export function generateMetadata(): Metadata {
+  // A function, not a constant: built per request, in the viewer's language.
+  return { title: t.leads.title, description: t.leads.description };
+}
 
 export default function LeadsPage() {
   return <LeadsListView />;

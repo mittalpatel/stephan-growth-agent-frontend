@@ -9,6 +9,7 @@ import { orgSurfaceStyle } from '@/lib/orgColors';
 import { usePublicBranding } from '@/providers/PublicBrandingProvider';
 
 import { format } from '@/lib/i18n';
+import { LanguageSelect } from '@/components/common/LanguageSelect';
 import { t } from '@/locales';
 
 /**
@@ -103,6 +104,9 @@ export default function AuthHeroShell({
           phone. */}
       <div className="flex min-w-0 flex-1 flex-col items-center justify-center px-4 py-12">
         <div className="w-full max-w-md">
+          <div className="mb-4 flex justify-end empty:hidden">
+            <LanguageSelect />
+          </div>
           <div className="mb-6 flex items-center gap-2.5 md:hidden">
             <BrandMark
               logoUrl={brand.logoUrl}

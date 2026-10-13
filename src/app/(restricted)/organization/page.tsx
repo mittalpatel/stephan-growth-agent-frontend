@@ -4,10 +4,13 @@ import OrganizationSettingsView from './components/OrganizationSettingsView';
 import OrganizationSettingsSkeleton from './components/OrganizationSettingsSkeleton';
 import { t } from '@/locales';
 
-export const metadata: Metadata = {
-  title: t.organizations.title,
-  description: t.organizations.description,
-};
+export function generateMetadata(): Metadata {
+  // A function, not a constant: built per request, in the viewer's language.
+  return {
+    title: t.organizations.title,
+    description: t.organizations.description,
+  };
+}
 
 export default function OrganizationPage() {
   return (

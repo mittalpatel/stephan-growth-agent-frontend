@@ -4,10 +4,13 @@ import ApiKeysView from './components/ApiKeysView';
 import ApiKeysSkeleton from './components/ApiKeysSkeleton';
 import { t } from '@/locales';
 
-export const metadata: Metadata = {
-  title: t.organizations.apiKeys.title,
-  description: t.organizations.apiKeys.description,
-};
+export function generateMetadata(): Metadata {
+  // A function, not a constant: built per request, in the viewer's language.
+  return {
+    title: t.organizations.apiKeys.title,
+    description: t.organizations.apiKeys.description,
+  };
+}
 
 export default function OrganizationApiKeysPage() {
   return (

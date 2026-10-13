@@ -6,10 +6,13 @@ import { t } from '@/locales';
 import { ProjectsList } from './components/ProjectsList';
 import { ProjectsTableSkeleton } from './components/ProjectsSkeleton';
 
-export const metadata: Metadata = {
-  title: t.projects.title,
-  description: t.projects.description,
-};
+export function generateMetadata(): Metadata {
+  // A function, not a constant: built per request, in the viewer's language.
+  return {
+    title: t.projects.title,
+    description: t.projects.description,
+  };
+}
 
 /**
  * The projects list route — a server component that renders metadata and hands

@@ -6,7 +6,10 @@ import { t } from '@/locales';
 import { ProjectDetailSkeleton } from './components/ProjectDetailSkeleton';
 import { ProjectDetailsView } from './components/ProjectDetailsView';
 
-export const metadata: Metadata = { title: t.projects.detail.title };
+export function generateMetadata(): Metadata {
+  // A function, not a constant: built per request, in the viewer's language.
+  return { title: t.projects.detail.title };
+}
 
 /**
  * The project detail route.

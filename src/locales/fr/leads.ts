@@ -1,0 +1,73 @@
+export const leads = {
+  title: 'Prospects',
+  description: 'Tous les prospects captés par l’ensemble des agents de votre organisation.',
+  status: {
+    new: 'Nouveau',
+    contacted: 'Contacté',
+    qualified: 'Qualifié',
+    disqualified: 'Écarté',
+    won: 'Gagné',
+  },
+  qualificationOutcome: {
+    qualified: 'Qualifié',
+    partial: 'Partiel',
+    unqualified: 'Non qualifié',
+  },
+  filters: {
+    statusLabel: 'Statut',
+    qualificationOutcomeLabel: 'Qualification',
+  },
+  table: {
+    lead: 'Prospect',
+    status: 'Statut',
+    qualification: 'Qualification',
+    consent: 'Consentement',
+    lastContact: 'Capté',
+  },
+  list: {
+    errorTitle: 'Impossible de charger les prospects',
+    errorDescription: 'Une erreur est survenue lors du chargement de vos prospects.',
+    emptyTitle: 'Aucun prospect pour le moment',
+    emptyDescription:
+      'Les prospects apparaissent ici dès qu’un visiteur termine un parcours de capture avec un agent.',
+    emptyFilteredTitle: 'Aucun prospect ne correspond à vos filtres',
+    emptyFilteredDescription: 'Essayez d’effacer les filtres pour voir plus de résultats.',
+  },
+  detail: {
+    title: 'Détails du prospect',
+    statusLabel: 'Statut',
+    changeStatus: 'Modifier le statut du prospect',
+    capturedAt: 'Capté le {date}',
+    startedAt: 'Commencé le {date}',
+    noPhone: 'Aucun numéro de téléphone',
+    notProvided: 'Non renseigné',
+    interestNote: 'Intérêt',
+    reason: 'Pourquoi l’agent a signalé ce prospect',
+    consentNotice: 'Consentement',
+    consentVersion: 'Version de la mention {version}',
+    fieldsHeading: 'Informations recueillies',
+    fieldsEmpty: 'Aucune information supplémentaire n’a été recueillie.',
+    qualificationLabel: 'Qualification',
+    qualificationHelp:
+      'Calculée automatiquement à partir des règles de qualification de cet agent, indépendamment du statut défini ci-dessus.',
+    qualificationHeading: 'Historique des évaluations',
+    qualificationEmpty:
+      'Ce prospect n’a pas encore été évalué. L’évaluation a lieu quand un agent doté de règles de qualification capte un prospect.',
+    scoreLabel: 'Score {score}',
+    missingFieldsLabel: 'Manquant : {fields}',
+    conversationHeading: 'Conversation',
+    noConversation: 'Aucune conversation associée.',
+    viewTranscript: 'Voir la transcription',
+    hideTranscript: 'Masquer la transcription',
+    notificationHeading: 'Notification',
+    notificationSent: 'Envoyé par e-mail à la boîte de réception humaine le {date}',
+    notificationPending: 'Pas encore envoyé par e-mail',
+  },
+  consent: {
+    given: 'Donné',
+    notGiven: 'Non donné',
+  },
+  toast: {
+    statusChanged: 'Statut du prospect mis à jour.',
+  },
+};

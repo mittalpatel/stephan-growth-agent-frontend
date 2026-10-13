@@ -5,10 +5,13 @@ import { PageHeader } from '@/components/common/PageHeader';
 import { Skeleton } from '@/components/ui/skeleton';
 import { t } from '@/locales';
 
-export const metadata: Metadata = {
-  title: t.organizations.myInvites.title,
-  description: t.organizations.myInvites.description,
-};
+export function generateMetadata(): Metadata {
+  // A function, not a constant: built per request, in the viewer's language.
+  return {
+    title: t.organizations.myInvites.title,
+    description: t.organizations.myInvites.description,
+  };
+}
 
 export default function MyInvitesPage() {
   return (
