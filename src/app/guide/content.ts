@@ -67,7 +67,7 @@ export const guideChapters: readonly GuideChapter[] = [
       { kind: 'heading', text: '2.2 Sign in' },
       {
         kind: 'paragraph',
-        text: 'On the sign-in page, enter your email and password and click Sign In . You are taken back to your dashboard.',
+        text: 'On the sign-in page, enter your email and password and click Sign in . You are taken back to your dashboard.',
       },
       { kind: 'image', src: '/guide/ch02-02.png', caption: 'The sign-in page' },
     ],
@@ -88,7 +88,7 @@ export const guideChapters: readonly GuideChapter[] = [
       { kind: 'heading', text: '3.2 The overview' },
       {
         kind: 'paragraph',
-        text: 'The Get your widget live card lists what is left before visitors can chat with your assistant. This guide goes through each item in order.',
+        text: 'The bar under the title shows how many of the 5 setup steps are done and what to do next. Click Go to jump to that step, or Show all steps to see the full list. This guide goes through each step in order.',
       },
       {
         kind: 'paragraph',
@@ -117,9 +117,10 @@ export const guideChapters: readonly GuideChapter[] = [
           'Click Add website . Type your website address, for example https://www.example.com .',
           'Choose how to read it. Read the whole website (recommended) reads every page found. Let me choose the pages finds the pages first so you can pick.',
           'Click Start . You can close the window: a bar at the top of the screen shows the progress.',
+          'A website you already added (with or without www, http or https) is not added twice: you are told it is already there and can open it.',
         ],
       },
-      { kind: 'image', src: '/guide/ch04-02.png', caption: 'Adding a website, home page only' },
+      { kind: 'image', src: '/guide/ch04-02.png', caption: 'Adding a website' },
       { kind: 'heading', text: '4.3 Choose the pages' },
       {
         kind: 'paragraph',
@@ -142,6 +143,10 @@ export const guideChapters: readonly GuideChapter[] = [
         kind: 'paragraph',
         text: 'After a short while both items show Ready and the health score goes up. Your assistant can now answer from both.',
       },
+      {
+        kind: 'paragraph',
+        text: 'The index is rebuilt for you whenever your knowledge changes. If you click Build index when nothing has changed, you are told the index is already up to date and no new version is added.',
+      },
       { kind: 'image', src: '/guide/ch04-06.png', caption: 'Both sources are ready' },
     ],
   },
@@ -159,7 +164,7 @@ export const guideChapters: readonly GuideChapter[] = [
       },
       {
         kind: 'note',
-        text: "Bot name: Acme Assistant Instructions: You are Acme's website assistant. Answer questions about Acme's AI, chatbot and automation services using only the provided knowledge. You can also answer questions about the bedtime story 'The Little Star and the Sleepy Moon'. Be friendly and concise. If a visitor shows buying interest, offer to collect their contact details. Never invent prices or commitments.",
+        text: "Bot name: Acme Assistant Instructions: You are Acme's website assistant. Answer questions about the quotes and authors on our website using only the provided knowledge. You can also answer questions about the bedtime story 'The Little Star and the Sleepy Moon'. Be friendly and concise. If a visitor shows buying interest, offer to collect their contact details. Never invent prices or commitments.",
       },
       { kind: 'image', src: '/guide/ch05-01.png', caption: 'Instructions and bot name' },
       {
@@ -173,7 +178,7 @@ export const guideChapters: readonly GuideChapter[] = [
       },
       {
         kind: 'note',
-        text: "Greeting: Hi! I'm the Acme Assistant. Ask me about our AI services, or about the story of the Little Star.",
+        text: "Greeting: Hi! I'm the Acme Assistant. Ask me about our quotes and authors, or about the story of the Little Star.",
       },
       { kind: 'image', src: '/guide/ch05-02.png', caption: 'The messages section' },
       { kind: 'heading', text: '5.3 Passing the chat to a person (Handoff)' },
@@ -223,7 +228,7 @@ export const guideChapters: readonly GuideChapter[] = [
       {
         kind: 'list',
         items: [
-          '"What services does Acme offer?" was answered from the website. "In the story, who helps the little star fall asleep?" was answered from the PDF. "Can I get pricing for a custom chatbot?" did not make up a price and offered to take contact details.',
+          '"Which quotes by Albert Einstein are on your website?" was answered from the website. "In the story, who helps the little star fall asleep?" was answered from the PDF. "Can I get pricing for a custom chatbot?" did not make up a price: it showed Fell back and gave your fallback message, which offers to put the visitor in touch with your team.',
         ],
       },
       { kind: 'image', src: '/guide/ch06-01.png', caption: 'Answer from the website' },
@@ -257,13 +262,13 @@ export const guideChapters: readonly GuideChapter[] = [
       { kind: 'heading', text: '8.1 Check your details' },
       {
         kind: 'paragraph',
-        text: 'At the top of Settings , check Human inbox email . This is where you are emailed when a visitor asks for a person or leaves their details. You can also choose which languages the assistant speaks.',
+        text: 'Under Agent details at the top of Settings , check Human inbox email . This is where you are emailed when a visitor asks for a person or leaves their details. You can also choose which languages the assistant speaks.',
       },
       { kind: 'image', src: '/guide/ch08-01.png', caption: 'Assistant details and languages' },
       { kind: 'heading', text: '8.2 Allow your website' },
       {
         kind: 'paragraph',
-        text: 'Under Allowed domains , type your website address (for example www.yourcompany.com ) and click Add domain . The chat window only appears on websites listed here.',
+        text: 'Under Allowed domains , type your website address (for example www.example.com ) and click Add domain . Websites you added on the Knowledge tab are suggested under From your Knowledge : click one to add it. The chat window only appears on websites listed here.',
       },
       { kind: 'image', src: '/guide/ch08-02.png', caption: 'A website added to the allowed list' },
       { kind: 'heading', text: '8.3 Get the code' },
@@ -283,7 +288,7 @@ export const guideChapters: readonly GuideChapter[] = [
     blocks: [
       {
         kind: 'paragraph',
-        text: 'We added the code to a simple test page to see exactly what a visitor sees.',
+        text: 'We added the code to a simple test page on www.example.com to see exactly what a visitor sees.',
       },
       { kind: 'heading', text: '9.1 Open the chat' },
       {
@@ -305,7 +310,7 @@ export const guideChapters: readonly GuideChapter[] = [
       { kind: 'heading', text: '9.3 Leave contact details' },
       {
         kind: 'paragraph',
-        text: 'We asked "Can I get a quote for a custom chatbot?". Because it contains quote , the reply has a Leave your details button. The visitor fills in the form, ticks the consent box and clicks Submit , then sees a thank-you message.',
+        text: 'We asked "Can I get a quote for a custom chatbot?". Because it contains quote , the reply has a Leave your details button. The visitor fills in the form, ticks the consent box and clicks Submit , then sees a thank-you message and clicks Close .',
       },
       { kind: 'image', src: '/guide/ch09-04.png', caption: 'The offer to leave details' },
       { kind: 'image', src: '/guide/ch09-05.png', caption: 'The contact form' },
