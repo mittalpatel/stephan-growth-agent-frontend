@@ -232,7 +232,9 @@ role.
 
 ### Setup checklist (2026-09-09)
 
-`AgentSetupChecklist`, rendered above the `Tabs` block (`canManage` only),
+`AgentSetupChecklist`, rendered above the `Tabs` block (`canManage` only) as a
+single slim row since 2026-10-14 (progress dots, "Next: <step>", Go, and a
+Collapsible "Show all steps" list), so the tabs stay above the fold,
 exists because nothing previously told an operator what order to do things
 in to get a widget live: publish never mentioned domains or keys, and a
 brand-new unconfigured agent looked identical to a fully live one across all

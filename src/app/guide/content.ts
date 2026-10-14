@@ -43,7 +43,7 @@ export const guideChapters: readonly GuideChapter[] = [
       { kind: 'heading', text: '1.3 Your dashboard' },
       {
         kind: 'paragraph',
-        text: 'You are signed in straight away and land on your dashboard. The Get set up list already shows two steps done: your organization and your first assistant have been created for you.',
+        text: 'You are signed in straight away and land on your dashboard. Your organization and your first assistant have already been created for you.',
       },
       {
         kind: 'image',
@@ -363,6 +363,80 @@ export const guideChapters: readonly GuideChapter[] = [
       },
       { kind: 'image', src: '/guide/ch11-01.png', caption: 'The Leads page' },
       { kind: 'image', src: '/guide/ch11-02.png', caption: 'The dashboard after the test' },
+    ],
+  },
+  {
+    title: '12. Plan levels: what each one adds',
+    blocks: [
+      {
+        kind: 'paragraph',
+        text: 'YB Inspire grows with you in four levels. Each level keeps everything from the one before and adds more. In the app you only see the next level up from where you are, so you are never offered something you cannot use yet. This page lists all four.',
+      },
+      { kind: 'heading', text: 'Level 1 · Basic' },
+      {
+        kind: 'paragraph',
+        text: 'Where every account starts, free during your trial. Your agents answer visitors from your own content.',
+      },
+      {
+        kind: 'list',
+        items: [
+          'Website Sales & Support agent on your site',
+          'Knowledge from your website pages and PDFs',
+          'Lead capture: names, emails and phone numbers from chats',
+          'Hand a conversation to a person on your team',
+          'Conversations, leads and summary analytics',
+        ],
+      },
+      { kind: 'heading', text: 'Level 2 · Enhanced' },
+      {
+        kind: 'paragraph',
+        text: 'Each agent gets smarter about the people it talks to. For the Website Sales & Support agent this adds:',
+      },
+      {
+        kind: 'list',
+        items: [
+          'Enrich prospects automatically',
+          'Identify company information',
+          'Analyze buying intent',
+          'Generate personalized outreach',
+          'Sync enriched data with your CRM',
+        ],
+      },
+      {
+        kind: 'paragraph',
+        text: 'The other agents gain their own advanced features at this level: visibility monitoring and competitor benchmarking (SEVO), blogs, newsletters and campaigns (Content Strategy), and nurture sequences with CRM automation (Lead Outreach).',
+      },
+      { kind: 'heading', text: 'Level 3 · Connected' },
+      {
+        kind: 'paragraph',
+        text: 'Opens once you are on Level 2. Your agents work together on one shared knowledge layer, with automatic actions between them.',
+      },
+      {
+        kind: 'list',
+        items: [
+          'Every agent and feature available, not one at a time',
+          'Activations: one agent can trigger another, for example a qualified lead starting a follow-up sequence',
+          'Automated alerts and reports for your team',
+          'Full analytics, detailed reports and data export',
+        ],
+      },
+      { kind: 'heading', text: 'Level 4 · Customized' },
+      {
+        kind: 'paragraph',
+        text: 'Once your team has proven value with the agents, we build a fully branded, company-trained agent designed to identify and accelerate your specific business opportunities.',
+      },
+      {
+        kind: 'list',
+        items: [
+          'An agent custom-built on your brand and your data',
+          'Designed around your own business processes',
+          'Set up together with our team',
+        ],
+      },
+      {
+        kind: 'note',
+        text: 'To move up a level, open Organization, then Billing, or use the upgrade card on any agent page.',
+      },
     ],
   },
 ] as const;

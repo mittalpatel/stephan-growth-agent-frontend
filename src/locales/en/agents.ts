@@ -254,6 +254,9 @@ export const agents = {
       review: 'Review',
       progress: '{done} of {total} done',
       allDone: 'All set. This agent is ready to embed on your site.',
+      next: 'Next: {step}',
+      showAll: 'Show all steps',
+      hideAll: 'Hide steps',
     },
     tabs: {
       overview: 'Overview',

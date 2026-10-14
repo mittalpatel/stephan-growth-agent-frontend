@@ -39,26 +39,4 @@ export const dashboard = {
   },
   metricsEmpty:
     'Vos chiffres apparaîtront ici dès que des visiteurs commenceront à parler à un agent publié.',
-  checklist: {
-    title: 'Mise en route',
-    progress: '{done} étapes sur {total} terminées',
-    items: {
-      organization_created: 'Créer votre organisation',
-      team_member_invited: 'Inviter votre équipe',
-      agent_created: 'Préparer vos agents IA',
-      agent_published: 'Publier un agent',
-      knowledge_source_added: 'Ajouter une source de connaissances',
-    },
-    hints: {
-      organization_created: 'Fait pour vous lors de la création de votre compte.',
-      team_member_invited:
-        'Facultatif. Vous travaillez à plusieurs ? Invitez vos collègues quand vous le souhaitez.',
-      agent_created: 'Fait pour vous. Vos agents sont prêts à être configurés.',
-      agent_published: 'Mettez un agent en ligne pour que les visiteurs puissent lui parler.',
-      knowledge_source_added:
-        'Terminé dès qu’au moins une source a fini d’être traitée. Un site web peut prendre quelques minutes.',
-    },
-    optional: 'Facultatif',
-    guideLink: 'Comment fonctionne la mise en route ?',
-  },
 };

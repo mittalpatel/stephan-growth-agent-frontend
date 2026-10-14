@@ -258,6 +258,9 @@ export const agents = {
       review: 'Revoir',
       progress: '{done} sur {total} terminées',
       allDone: 'Tout est prêt. Cet agent peut être intégré à votre site.',
+      next: 'Étape suivante : {step}',
+      showAll: 'Voir toutes les étapes',
+      hideAll: 'Masquer les étapes',
     },
     tabs: {
       overview: 'Vue d’ensemble',

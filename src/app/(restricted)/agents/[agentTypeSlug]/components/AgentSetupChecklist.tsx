@@ -1,9 +1,10 @@
 'use client';
 
-import { Check } from 'lucide-react';
+import { ArrowRight, Check, ChevronDown } from 'lucide-react';
+import { useState } from 'react';
 
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { format } from '@/lib/i18n';
 import { cn } from '@/lib/utils';
 import { t } from '@/locales';
@@ -39,6 +40,7 @@ export function AgentSetupChecklist({ agent, onNavigate }: Props) {
   const { canViewKnowledge, hasReadyKnowledge, hasAllowedDomain, hasActiveKey, isLoading } =
     useAgentReadiness(agent.id);
   const copy = t.agents.detail.checklist;
+  const [open, setOpen] = useState(false);
 
   const steps = [
     // Publishing clears `draft_version` (the draft *becomes* the published
@@ -75,7 +77,7 @@ export function AgentSetupChecklist({ agent, onNavigate }: Props) {
 
   if (steps.every((step) => step.done)) {
     return (
-      <div className="border-border bg-success flex items-center gap-2 rounded-md border px-4 py-2.5 text-sm">
+      <div className="border-border bg-success flex items-center gap-2 rounded-md border px-4 py-2 text-sm">
         <Check className="text-success-foreground size-4 shrink-0" aria-hidden />
         <span className="text-success-foreground">{copy.allDone}</span>
       </div>
@@ -83,51 +85,79 @@ export function AgentSetupChecklist({ agent, onNavigate }: Props) {
   }
 
   const doneCount = steps.filter((step) => step.done).length;
-  // Only the first unfinished step gets the filled button, so the checklist
-  // says what to do next rather than offering five equal choices.
-  const nextKey = steps.find((step) => !step.done)?.key;
+  // The bar names only the first unfinished step: that is the one thing the
+  // operator needs, and the full list stays one click away.
+  const next = steps.find((step) => !step.done);
 
+  // A single slim row by default. The full five-row card sat above the tabs
+  // and pushed the page's actual content below the fold on every visit, even
+  // with one step left (client review, 14 Oct 2026).
   return (
-    <Card>
-      <CardContent className="space-y-4">
-        <div className="flex flex-wrap items-start justify-between gap-3">
-          <div>
-            <h2 className="font-display text-sm font-bold">{copy.title}</h2>
-            <p className="text-muted-foreground mt-0.5 text-xs">{copy.description}</p>
-          </div>
-          <p className="text-muted-foreground text-xs font-medium">
+    <Collapsible
+      open={open}
+      onOpenChange={setOpen}
+      className="border-border bg-card rounded-lg border"
+    >
+      <div className="flex flex-wrap items-center gap-x-4 gap-y-2 px-4 py-2.5">
+        <ol className="hidden items-center gap-1 sm:flex" aria-hidden>
+          {steps.map((step) => (
+            <li
+              key={step.key}
+              className={cn(
+                'size-2 rounded-full',
+                step.done ? 'bg-primary' : step.key === next?.key ? 'bg-foreground' : 'bg-muted'
+              )}
+            />
+          ))}
+        </ol>
+        <p className="min-w-0 flex-1 text-sm">
+          <span className="text-muted-foreground">
             {format(copy.progress, { done: doneCount, total: steps.length })}
-          </p>
+          </span>
+          {next && (
+            <>
+              <span className="text-muted-foreground px-1.5" aria-hidden>
+                ·
+              </span>
+              <span className="font-medium">{format(copy.next, { step: next.label })}</span>
+            </>
+          )}
+        </p>
+        <div className="flex items-center gap-1">
+          {next && (
+            <Button size="sm" onClick={() => onNavigate(next.tab)}>
+              {copy.goTo}
+              <ArrowRight aria-hidden />
+            </Button>
+          )}
+          <CollapsibleTrigger asChild>
+            <Button variant="ghost" size="sm" aria-label={open ? copy.hideAll : copy.showAll}>
+              <span className="hidden sm:inline">{open ? copy.hideAll : copy.showAll}</span>
+              <ChevronDown
+                className={cn('transition-transform', open && 'rotate-180')}
+                aria-hidden
+              />
+            </Button>
+          </CollapsibleTrigger>
         </div>
-        <div
-          className="bg-muted h-1.5 overflow-hidden rounded-full"
-          role="progressbar"
-          aria-label={copy.title}
-          aria-valuemin={0}
-          aria-valuemax={steps.length}
-          aria-valuenow={doneCount}
-        >
-          <div
-            className="bg-primary h-full rounded-full transition-[width]"
-            style={{ width: `${(doneCount / steps.length) * 100}%` }}
-          />
-        </div>
-        <ol className="space-y-1">
+      </div>
+      <CollapsibleContent>
+        <ol className="border-border space-y-0.5 border-t px-2 py-2">
           {steps.map((step, index) => (
             <li
               key={step.key}
               className={cn(
-                'flex items-center justify-between gap-3 rounded-lg px-2 py-1.5',
-                step.key === nextKey && 'bg-muted/60'
+                'flex items-center justify-between gap-3 rounded-md px-2 py-1',
+                step.key === next?.key && 'bg-muted/60'
               )}
             >
-              <div className="flex items-center gap-3">
+              <div className="flex min-w-0 items-center gap-2.5">
                 {step.done ? (
-                  <span className="bg-success text-success-foreground flex size-6 shrink-0 items-center justify-center rounded-full">
-                    <Check className="size-3.5" aria-hidden />
+                  <span className="bg-success text-success-foreground flex size-5 shrink-0 items-center justify-center rounded-full">
+                    <Check className="size-3" aria-hidden />
                   </span>
                 ) : (
-                  <span className="border-border text-muted-foreground flex size-6 shrink-0 items-center justify-center rounded-full border text-xs font-semibold">
+                  <span className="border-border text-muted-foreground flex size-5 shrink-0 items-center justify-center rounded-full border text-[11px] font-semibold">
                     {index + 1}
                   </span>
                 )}
@@ -142,17 +172,13 @@ export function AgentSetupChecklist({ agent, onNavigate }: Props) {
               </div>
               {/* Finished steps stay reachable: client testing asked to be
                   able to go back to a step once it was done. */}
-              <Button
-                variant={step.key === nextKey ? 'default' : 'ghost'}
-                size="sm"
-                onClick={() => onNavigate(step.tab)}
-              >
+              <Button variant="ghost" size="sm" onClick={() => onNavigate(step.tab)}>
                 {step.done ? copy.review : copy.goTo}
               </Button>
             </li>
           ))}
         </ol>
-      </CardContent>
-    </Card>
+      </CollapsibleContent>
+    </Collapsible>
   );
 }

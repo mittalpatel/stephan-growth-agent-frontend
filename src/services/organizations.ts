@@ -44,9 +44,6 @@ export interface OrganizationDetail {
  */
 export const ORGANIZATION_SWITCH_ROUTE = '/api/auth/organization-switch';
 
-export const organizationSetupChecklistEndpoint = (id: string): string =>
-  `${ORGANIZATIONS_ENDPOINT}${id}/setup-checklist/`;
-
 export const organizationMembersEndpoint = (id: string): string =>
   `${ORGANIZATIONS_ENDPOINT}${id}/members/`;
 
@@ -158,7 +155,6 @@ export const myInviteDeclineEndpoint = (inviteId: string): string =>
 export const ORGANIZATIONS_LIST_KEY = 'organizations';
 export const organizationDetailKey = (id: string) => ['organization-detail', id];
 export const organizationMembersKey = (id: string) => ['organization-members', id];
-export const organizationSetupChecklistKey = (id: string) => ['organization-setup-checklist', id];
 export const organizationRolesKey = (id: string) => ['organization-roles', id];
 export const organizationInvitesKey = (id: string) => ['organization-invites', id];
 // Single-arg, matching `roleDetailEndpoint`: `RestrictedBreadcrumb`'s resolver
