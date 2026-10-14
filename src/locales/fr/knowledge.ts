@@ -475,6 +475,8 @@ export const knowledge = {
       saving: 'Votre contenu a été traité mais n’a pas pu être enregistré.',
       unexpected: 'Un problème est survenu pendant la construction.',
     },
+    failureUnrecorded:
+      'Cette construction date d’avant l’enregistrement des causes d’échec. Relancez-la pour en voir une si elle échoue.',
     latestFailed: 'La dernière construction (v{number}) a échoué. {reason}',
     retry: 'Réessayer',
     toast: {

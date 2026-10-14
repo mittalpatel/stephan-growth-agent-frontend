@@ -9,7 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { format, formatDateTime, formatNumber } from '@/lib/i18n';
 import { t } from '@/locales';
-import type { IndexVersionStatus } from '@/types/knowledge';
+import type { IndexBuildFailure, IndexVersionStatus } from '@/types/knowledge';
 
 import { useIndexVersions } from '../hooks/useIndexVersions';
 
@@ -20,6 +20,12 @@ const STATUS_TONE: Record<IndexVersionStatus, StatusTone> = {
 };
 
 const copy = t.knowledge.index;
+
+/** A build that failed before reasons were recorded has none: say that,
+ * rather than a vague "something went wrong" (client recheck, 14 Oct 2026). */
+function failureText(reason: IndexBuildFailure): string {
+  return reason ? copy.failure[reason] : copy.failureUnrecorded;
+}
 
 type Props = Readonly<{ agentId: string }>;
 
@@ -97,7 +103,7 @@ export function IndexVersionsPanel({ agentId }: Props) {
                   />
                   {version.status === 'failed' && (
                     <p className="text-muted-foreground mt-1 max-w-xs text-xs">
-                      {copy.failure[version.failure_reason || 'unexpected']}
+                      {failureText(version.failure_reason)}
                     </p>
                   )}
                 </td>
@@ -150,7 +156,7 @@ export function IndexVersionsPanel({ agentId }: Props) {
               <AlertTriangle className="text-destructive mt-0.5 size-3.5 shrink-0" aria-hidden />
               {format(copy.latestFailed, {
                 number: latest.version_number,
-                reason: copy.failure[latest.failure_reason || 'unexpected'],
+                reason: failureText(latest.failure_reason),
               })}
             </p>
             {canBuild && (

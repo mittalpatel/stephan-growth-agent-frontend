@@ -31,7 +31,7 @@ export const guideChapters: readonly GuideChapter[] = [
         text: 'Signing up gives you your own workspace with a ready-made website assistant.',
       },
       { kind: 'heading', text: '1.1 Open the website' },
-      { kind: 'paragraph', text: 'Go to the YB Inspire home page and click Start for Free .' },
+      { kind: 'paragraph', text: 'Go to the YB Inspire home page and click Get started free .' },
       { kind: 'image', src: '/guide/ch01-01.png', caption: 'The YB Inspire home page' },
       { kind: 'heading', text: '1.2 Fill in your details' },
       {
@@ -123,7 +123,7 @@ export const guideChapters: readonly GuideChapter[] = [
       { kind: 'heading', text: '4.3 Choose the pages' },
       {
         kind: 'paragraph',
-        text: 'If you chose Let me choose the pages, you see the pages that were found, all ticked. Untick anything the assistant should not learn from, then click Read selected pages . When it finishes you see Website added . Click Done .',
+        text: 'If you chose Let me choose the pages, you see the pages that were found, all ticked. Untick anything the assistant should not learn from, then click Read N pages (the button shows how many are ticked). When it finishes you see Website added . Click Done .',
       },
       {
         kind: 'paragraph',
@@ -140,7 +140,7 @@ export const guideChapters: readonly GuideChapter[] = [
       { kind: 'heading', text: '4.5 Wait until everything is Ready' },
       {
         kind: 'paragraph',
-        text: 'After a short while both items show Ready and the health score reaches 100/100 . Your assistant can now answer from both.',
+        text: 'After a short while both items show Ready and the health score goes up. Your assistant can now answer from both.',
       },
       { kind: 'image', src: '/guide/ch04-06.png', caption: 'Both sources are ready' },
     ],
@@ -159,7 +159,7 @@ export const guideChapters: readonly GuideChapter[] = [
       },
       {
         kind: 'note',
-        text: "Bot name: Pragnakalp Assistant Instructions: You are Pragnakalp Labs' website assistant. Answer questions about Pragnakalp's AI, chatbot and automation services using only the provided knowledge. You can also answer questions about the bedtime story 'The Little Star and the Sleepy Moon'. Be friendly and concise. If a visitor shows buying interest, offer to collect their contact details. Never invent prices or commitments.",
+        text: "Bot name: Acme Assistant Instructions: You are Acme's website assistant. Answer questions about Acme's AI, chatbot and automation services using only the provided knowledge. You can also answer questions about the bedtime story 'The Little Star and the Sleepy Moon'. Be friendly and concise. If a visitor shows buying interest, offer to collect their contact details. Never invent prices or commitments.",
       },
       { kind: 'image', src: '/guide/ch05-01.png', caption: 'Instructions and bot name' },
       {
@@ -173,7 +173,7 @@ export const guideChapters: readonly GuideChapter[] = [
       },
       {
         kind: 'note',
-        text: "Greeting: Hi! I'm the Pragnakalp Assistant. Ask me about our AI services, or about the story of the Little Star.",
+        text: "Greeting: Hi! I'm the Acme Assistant. Ask me about our AI services, or about the story of the Little Star.",
       },
       { kind: 'image', src: '/guide/ch05-02.png', caption: 'The messages section' },
       { kind: 'heading', text: '5.3 Passing the chat to a person (Handoff)' },
@@ -223,7 +223,7 @@ export const guideChapters: readonly GuideChapter[] = [
       {
         kind: 'list',
         items: [
-          '"What services does Pragnakalp offer?" was answered from the website. "In the story, who helps the little star fall asleep?" was answered from the PDF. "Can I get pricing for a custom chatbot?" did not make up a price and offered to take contact details.',
+          '"What services does Acme offer?" was answered from the website. "In the story, who helps the little star fall asleep?" was answered from the PDF. "Can I get pricing for a custom chatbot?" did not make up a price and offered to take contact details.',
         ],
       },
       { kind: 'image', src: '/guide/ch06-01.png', caption: 'Answer from the website' },

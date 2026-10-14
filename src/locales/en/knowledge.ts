@@ -453,6 +453,8 @@ export const knowledge = {
       saving: 'Your content was processed but could not be saved.',
       unexpected: 'Something went wrong while building.',
     },
+    failureUnrecorded:
+      'This build ran before failure reasons were recorded. Build again to see one if it fails.',
     latestFailed: 'The latest build (v{number}) failed. {reason}',
     retry: 'Try again',
     toast: {

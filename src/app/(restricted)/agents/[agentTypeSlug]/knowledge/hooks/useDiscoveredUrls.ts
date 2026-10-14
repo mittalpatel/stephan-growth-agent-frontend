@@ -18,8 +18,17 @@ import type { DiscoveredUrl, DiscoveredUrlBulkActionInput } from '@/types/knowle
 const DISCOVERED_URLS_POLL_MS = 5_000;
 
 /** Same page for listing purposes: case-insensitive, ignoring a trailing slash. */
+/** Same page by the backend's `page_key`: case, a trailing slash, http/https
+ * and a leading www. do not make a different page (client testing, 14 Oct
+ * 2026: an http/https repeat was dropped by the backend with no message). */
 function sameAddress(a: string, b: string) {
-  const normalize = (value: string) => value.trim().toLowerCase().replace(/\/+$/, '');
+  const normalize = (value: string) =>
+    value
+      .trim()
+      .toLowerCase()
+      .replace(/^https?:\/\//, '')
+      .replace(/^www\./, '')
+      .replace(/\/+$/, '');
   return normalize(a) === normalize(b);
 }
 
