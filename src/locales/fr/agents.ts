@@ -566,6 +566,8 @@ export const agents = {
       publishConfirmTitle: 'Publier ce brouillon ?',
       publishConfirmDescription:
         'Le brouillon devient immédiatement la version en ligne utilisée par les visiteurs.',
+      liveVersionLine: 'La v{number} est en ligne.',
+      rollbackEarlier: 'Revenir à une version précédente',
       historyTitle: 'Historique des versions',
       versionLabel: 'Version {number}',
       rollbackAction: 'Revenir en arrière',

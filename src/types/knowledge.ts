@@ -220,4 +220,6 @@ export const CRAWL_JOB_ACTIVE_STATUSES: readonly CrawlJobStatus[] = ['pending', 
 export type KnowledgeUploadLimits = {
   max_pdf_size_mb: number;
   max_pdf_pages: number;
+  /** The most pages one website read finds on this organization's plan. */
+  max_discovered_pages: number;
 };

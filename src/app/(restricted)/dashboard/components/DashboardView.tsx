@@ -121,7 +121,7 @@ export function DashboardView() {
                 {t.dashboard.securityTip.dismiss}
               </Button>
               <Button size="sm" asChild>
-                <Link href="/user-profile">{t.dashboard.securityTip.action}</Link>
+                <Link href="/user-profile?tab=security">{t.dashboard.securityTip.action}</Link>
               </Button>
             </div>
           </CardContent>

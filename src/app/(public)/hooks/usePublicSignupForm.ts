@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useForm, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -48,7 +48,36 @@ const detailsSchema = z
     }
   });
 
-const otpSchema = z.object({ otp: z.string().trim().length(6, copy.validation.otpLength) });
+const otpSchema = z.object({
+  otp: z
+    .string()
+    .trim()
+    .regex(/^\d{6}$/, copy.validation.otpLength),
+});
+
+/** The typed details (never the passwords), kept for this tab only so a
+ * language switch, which reloads the page, does not wipe the form (client
+ * testing, 14 Oct 2026). */
+const DRAFT_KEY = 'yb-signup-draft';
+type SignupDraft = Pick<DetailsStepValues, 'first_name' | 'last_name' | 'email' | 'accepted_terms'>;
+
+function readDraft(): SignupDraft | null {
+  try {
+    const raw = sessionStorage.getItem(DRAFT_KEY);
+    return raw ? (JSON.parse(raw) as SignupDraft) : null;
+  } catch {
+    return null;
+  }
+}
+
+function writeDraft(draft: SignupDraft | null) {
+  try {
+    if (draft) sessionStorage.setItem(DRAFT_KEY, JSON.stringify(draft));
+    else sessionStorage.removeItem(DRAFT_KEY);
+  } catch {
+    // Storage blocked: the form simply is not kept across a reload.
+  }
+}
 
 export type DetailsStepValues = z.infer<typeof detailsSchema>;
 
@@ -94,6 +123,27 @@ export function usePublicSignupForm() {
     },
   });
   const strength = passwordStrength(useWatch({ control: detailsForm.control, name: 'password' }));
+
+  // Restored after mount, not as defaultValues, so the server-rendered and
+  // first client render match. Runs before the save below, so the first save
+  // never overwrites the draft it is about to restore.
+  useEffect(() => {
+    const draft = readDraft();
+    if (draft) detailsForm.reset({ ...detailsForm.getValues(), ...draft });
+  }, [detailsForm]);
+  const [draftFirstName, draftLastName, draftEmail, draftTerms] = useWatch({
+    control: detailsForm.control,
+    name: ['first_name', 'last_name', 'email', 'accepted_terms'],
+  });
+  useEffect(() => {
+    if (!draftFirstName && !draftLastName && !draftEmail && !draftTerms) return;
+    writeDraft({
+      first_name: draftFirstName,
+      last_name: draftLastName,
+      email: draftEmail,
+      accepted_terms: draftTerms,
+    });
+  }, [draftFirstName, draftLastName, draftEmail, draftTerms]);
   const otpForm = useForm<OtpStepValues>({
     resolver: zodResolver(otpSchema),
     defaultValues: { otp: '' },
@@ -140,10 +190,12 @@ export function usePublicSignupForm() {
             // Backend activated the account immediately
             // (`SIGNUP_OTP_VERIFICATION_ENABLED=false`) — no OTP step to show.
             toast.success(data.message || copy.accountVerified);
+            writeDraft(null);
             await signInAndRedirect(values.email, values.password);
             return;
           }
           toast.success(data.message || copy.otpSent);
+          writeDraft(null);
           setStep('otp');
         } catch (err) {
           applyApiError<DetailsStepValues>(err, {

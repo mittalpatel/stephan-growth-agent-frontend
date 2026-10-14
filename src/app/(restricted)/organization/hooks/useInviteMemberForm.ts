@@ -30,6 +30,8 @@ export type InviteMemberFormValues = z.infer<typeof schema>;
  * role that can still work with agents.
  */
 export const RECOMMENDED_ROLE_SLUG = 'member';
+/** Never offered on an invite: ownership moves only by transfer. */
+export const OWNER_ROLE_SLUG = 'owner';
 
 type Options = Readonly<{
   onSuccess: () => void;

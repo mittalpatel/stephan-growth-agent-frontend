@@ -48,24 +48,34 @@ export const websiteDiscoverSchema = z.object({
   read_mode: z.enum(WEBSITE_READ_MODES),
   root_url: websiteUrl,
   max_pages: z
-    .union([
-      z.literal(''),
-      z.coerce
-        .number(t.knowledge.validation.maxPagesRange)
-        .int(t.knowledge.validation.maxPagesRange)
-        .min(1, t.knowledge.validation.maxPagesRange)
-        .max(1000, t.knowledge.validation.maxPagesRange),
-    ])
+    .union(
+      [
+        z.literal(''),
+        z.coerce
+          .number(t.knowledge.validation.maxPagesRange)
+          .int(t.knowledge.validation.maxPagesRange)
+          .min(1, t.knowledge.validation.maxPagesRange)
+          .max(1000, t.knowledge.validation.maxPagesRange),
+      ],
+      // One message for the whole field: a failed union otherwise reports
+      // its first branch, the empty string, as `Invalid input: expected ""`.
+      { error: t.knowledge.validation.maxPagesRange }
+    )
     .optional(),
   max_depth: z
-    .union([
-      z.literal(''),
-      z.coerce
-        .number(t.knowledge.validation.maxDepthRange)
-        .int(t.knowledge.validation.maxDepthRange)
-        .min(0, t.knowledge.validation.maxDepthRange)
-        .max(10, t.knowledge.validation.maxDepthRange),
-    ])
+    .union(
+      [
+        z.literal(''),
+        z.coerce
+          .number(t.knowledge.validation.maxDepthRange)
+          .int(t.knowledge.validation.maxDepthRange)
+          .min(0, t.knowledge.validation.maxDepthRange)
+          .max(10, t.knowledge.validation.maxDepthRange),
+      ],
+      // One message for the whole field: a failed union otherwise reports
+      // its first branch, the empty string, as `Invalid input: expected ""`.
+      { error: t.knowledge.validation.maxDepthRange }
+    )
     .optional(),
   include_paths: z
     .array(z.object({ value: z.string().trim().max(200) }))

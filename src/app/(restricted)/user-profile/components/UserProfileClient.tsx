@@ -30,7 +30,9 @@ function initialsOf(name: string, email: string): string {
  * lives in a colocated hook (`useProfileForm`, `useChangePasswordForm`) owned
  * by the presenter that uses it — this component renders no forms itself.
  */
-export function UserProfileClient() {
+export function UserProfileClient({
+  initialTab = 'profile',
+}: Readonly<{ initialTab?: 'profile' | 'security' | 'sessions' }>) {
   const { data: profile, isLoading, error } = useUserProfile();
 
   if (isLoading)
@@ -48,7 +50,7 @@ export function UserProfileClient() {
       <PageHeader title={copy.title} description={copy.subtitle} />
 
       <Tabs
-        defaultValue="profile"
+        defaultValue={initialTab}
         orientation="vertical"
         className="flex-col items-start sm:flex-row"
       >

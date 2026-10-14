@@ -192,15 +192,19 @@ export function AgentPublishTab({ agent, onNavigate }: Props) {
         </Card>
       </div>
 
-      {canExecute && publishedVersion && (
+      {/* Version 1 has nothing earlier to return to, so no history card. */}
+      {canExecute && publishedVersion && publishedVersion.version_number > 1 && (
         <Card>
           <CardHeader>
             <CardTitle>{copy.historyTitle}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="flex items-center justify-between gap-4">
+              {/* Names the live version as live: shown bare beside "Roll back
+                  to this version", it read as rolling back to the version
+                  already live (client testing, 14 Oct 2026). */}
               <p className="text-muted-foreground text-sm">
-                {format(copy.versionLabel, {
+                {format(copy.liveVersionLine, {
                   number: publishedVersion.version_number,
                 })}
               </p>
@@ -213,7 +217,7 @@ export function AgentPublishTab({ agent, onNavigate }: Props) {
               >
                 <AlertDialogTrigger asChild>
                   <Button variant="outline" disabled={isRollingBack}>
-                    {t.agents.actions.rollback}
+                    {copy.rollbackEarlier}
                   </Button>
                 </AlertDialogTrigger>
                 <AlertDialogContent>

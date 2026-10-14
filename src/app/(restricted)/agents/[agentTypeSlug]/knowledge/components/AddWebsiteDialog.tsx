@@ -403,7 +403,7 @@ export function AddWebsiteDialog({ agentId, agentTypeSlug, onCreated }: Props) {
                       name="max_pages"
                       type="number"
                       label={t.knowledge.addWebsite.scope.maxPagesLabel}
-                      description={t.knowledge.addWebsite.scope.maxPagesDescription}
+                      description={flow.maxPagesHint}
                       placeholder={t.knowledge.addWebsite.scope.maxPagesPlaceholder}
                     />
                     <RHFTextField<WebsiteDiscoverFormValues>

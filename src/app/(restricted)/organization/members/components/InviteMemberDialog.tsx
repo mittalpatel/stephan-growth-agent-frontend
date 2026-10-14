@@ -5,6 +5,7 @@ import { FormProvider, useWatch, type Control } from 'react-hook-form';
 import { UserPlus } from 'lucide-react';
 import type { AssignableRole } from '../../hooks/useOrganizationMembers';
 import {
+  OWNER_ROLE_SLUG,
   RECOMMENDED_ROLE_SLUG,
   useInviteMemberForm,
   type InviteMemberFormValues,
@@ -48,8 +49,10 @@ function RoleDescription({
   );
 }
 
-export default function InviteMemberDialog({ roles, onInvited }: Props) {
+export default function InviteMemberDialog({ roles: allRoles, onInvited }: Props) {
   const [open, setOpen] = useState(false);
+  // Ownership moves only by transfer; the backend refuses it on an invite.
+  const roles = allRoles.filter((role) => role.slug !== OWNER_ROLE_SLUG);
   const recommendedRoleId = roles.find((role) => role.slug === RECOMMENDED_ROLE_SLUG)?.id;
   const { form, isPending, submit } = useInviteMemberForm({
     defaultRoleId: recommendedRoleId,

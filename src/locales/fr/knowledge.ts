@@ -165,6 +165,8 @@ export const knowledge = {
       maxPagesLabel: 'Nombre maximal de pages',
       maxPagesDescription:
         'Limitez le nombre de pages que nous cherchons. Laissez vide pour utiliser la limite de votre offre.',
+      maxPagesDescriptionWithLimit:
+        'Nous trouvons jusqu’à {limit} pages par site avec votre offre. Indiquez un nombre plus petit pour en lire moins.',
       maxPagesPlaceholder: 'ex. 100',
       maxDepthLabel: 'Profondeur maximale des liens',
       maxDepthDescription:

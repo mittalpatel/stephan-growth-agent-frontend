@@ -10,6 +10,14 @@ export function generateMetadata(): Metadata {
   };
 }
 
-export default function UserProfilePage() {
-  return <UserProfileClient />;
+const TABS = ['profile', 'security', 'sessions'] as const;
+
+type Props = Readonly<{ searchParams: Promise<{ tab?: string }> }>;
+
+/** `?tab=security` opens that tab, so a link can land on it (the dashboard's
+ * two-step verification tip used to open Profile). */
+export default async function UserProfilePage({ searchParams }: Props) {
+  const { tab } = await searchParams;
+  const initialTab = TABS.find((name) => name === tab) ?? 'profile';
+  return <UserProfileClient initialTab={initialTab} />;
 }

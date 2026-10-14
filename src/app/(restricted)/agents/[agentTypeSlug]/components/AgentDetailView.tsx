@@ -3,7 +3,7 @@
 import { useCallback, useState } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
-import { AlertTriangle, ArrowLeft, ArrowUpCircle, Bot, Settings2 } from 'lucide-react';
+import { AlertTriangle, ArrowUpCircle, Bot, Settings2 } from 'lucide-react';
 
 import { usePermissions } from '@/app/(restricted)/context/PermissionsContext';
 import { ConversationsListView } from '@/app/(restricted)/conversations/components/ConversationsListView';
@@ -192,16 +192,11 @@ export function AgentDetailView({ agentTypeSlug }: Props) {
 
   return (
     <div className="flex flex-col gap-6">
+      {/* No "Back to agents" link here: the header's Back and the
+          "Agents" breadcrumb above already go there (client testing,
+          14 Oct 2026: three back links on one screen). */}
       <div>
-        <Link
-          href="/agents"
-          className="text-muted-foreground hover:text-foreground inline-flex items-center gap-1.5 text-sm"
-        >
-          <ArrowLeft className="size-4" aria-hidden />
-          {t.agents.detail.backToList}
-        </Link>
-
-        <div className="mt-3 flex flex-wrap items-start justify-between gap-6">
+        <div className="flex flex-wrap items-start justify-between gap-6">
           <div className="flex items-start gap-4">
             <span
               className={cn(

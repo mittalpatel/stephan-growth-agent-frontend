@@ -61,6 +61,7 @@ export default function PublicSignupForm() {
   const subtitle =
     step === 'details' ? copy.detailsStepSubtitle : format(copy.otpStepSubtitle, { email });
 
+  const otpField = otpForm.register('otp');
   return (
     <AuthHeroShell title={copy.title} subtitle={subtitle}>
       {step === 'details' && (
@@ -231,7 +232,13 @@ export default function PublicSignupForm() {
               disabled={isLoading}
               aria-invalid={Boolean(otpForm.formState.errors.otp)}
               className="h-11 rounded-lg text-base"
-              {...otpForm.register('otp')}
+              {...otpField}
+              // Digits only: letters used to be accepted and only refused on
+              // submit (client testing, 14 Oct 2026).
+              onChange={(event) => {
+                event.target.value = event.target.value.replace(/\D/g, '').slice(0, 6);
+                void otpField.onChange(event);
+              }}
             />
             {otpForm.formState.errors.otp && (
               <p className="text-destructive text-xs">{otpForm.formState.errors.otp.message}</p>

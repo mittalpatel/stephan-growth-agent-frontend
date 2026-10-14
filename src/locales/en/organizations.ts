@@ -373,7 +373,7 @@ export const organizations = {
       billing_manager:
         'Manages the plan, invoices and payment details. No access to conversations.',
       operator: 'Handles visitor conversations, leads and hand-offs to a human.',
-      member: 'Basic access to the organization. Cannot see or change agents.',
+      member: 'Sees the organization and its members. No access to agents or conversations.',
       analyst: 'Can view agents, conversations, leads and analytics, without changing anything.',
       'read-only': 'Can see the organization only. Cannot see agents or conversations.',
     } as Record<string, string>,

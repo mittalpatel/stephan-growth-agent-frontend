@@ -558,6 +558,8 @@ export const agents = {
       publishConfirmTitle: 'Publish this draft?',
       publishConfirmDescription:
         'The draft becomes the live version visitors interact with immediately.',
+      liveVersionLine: 'v{number} is live now.',
+      rollbackEarlier: 'Roll back to an earlier version',
       historyTitle: 'Version history',
       versionLabel: 'Version {number}',
       rollbackAction: 'Roll back',

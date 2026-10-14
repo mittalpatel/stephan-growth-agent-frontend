@@ -160,6 +160,8 @@ export const knowledge = {
       maxPagesLabel: 'Max pages',
       maxPagesDescription:
         'Limit how many pages we look for. Leave blank to use your plan’s default limit.',
+      maxPagesDescriptionWithLimit:
+        'We find up to {limit} pages per website on your plan. Enter a smaller number to read fewer.',
       maxPagesPlaceholder: 'e.g. 100',
       maxDepthLabel: 'Max link depth',
       maxDepthDescription:

@@ -5,6 +5,8 @@ import { useCallback, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 
 import { useAuthMutation } from '@/hooks/useAuthMutation';
+import { useAuthQuery } from '@/hooks/useAuthQuery';
+import { format } from '@/lib/i18n';
 import { applyApiError, getEnvelope } from '@/lib/apiError';
 import { getErrorCode } from '@/lib/helper';
 import { t } from '@/locales';
@@ -16,6 +18,8 @@ import {
   discoveredUrlsKey,
   indexVersionsListKey,
   knowledgeHealthKey,
+  KNOWLEDGE_UPLOAD_LIMITS_ENDPOINT,
+  KNOWLEDGE_UPLOAD_LIMITS_KEY,
   KNOWLEDGE_WEBSITE_DISCOVER_ENDPOINT,
   knowledgeSourcesListKey,
   websiteExtractEndpoint,
@@ -24,6 +28,7 @@ import type { ApiResponse } from '@/types/api';
 import type {
   CrawlJob,
   KnowledgeSourceListItem,
+  KnowledgeUploadLimits,
   WebsiteDiscoverInput,
   WebsiteDiscoverResult,
 } from '@/types/knowledge';
@@ -249,7 +254,21 @@ export function useAddWebsiteFlow(agentId: string, onCreated?: (sourceId: string
     [queryClient, agentId, websiteSourceId]
   );
 
+  // Same cached read as the PDF dialog's. States the page ceiling up front:
+  // a read used to stop at 50 pages without saying so (client testing,
+  // 14 Oct 2026).
+  const limitsQuery = useAuthQuery<ApiResponse<KnowledgeUploadLimits>>(
+    [KNOWLEDGE_UPLOAD_LIMITS_KEY],
+    KNOWLEDGE_UPLOAD_LIMITS_ENDPOINT,
+    { staleTime: Infinity }
+  );
+  const maxPages = limitsQuery.data?.data.max_discovered_pages ?? null;
+
   return {
+    maxPagesHint:
+      maxPages === null
+        ? t.knowledge.addWebsite.scope.maxPagesDescription
+        : format(t.knowledge.addWebsite.scope.maxPagesDescriptionWithLimit, { limit: maxPages }),
     step,
     websiteSourceId,
     sourceId,
