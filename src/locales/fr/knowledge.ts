@@ -481,6 +481,7 @@ export const knowledge = {
     retry: 'Réessayer',
     toast: {
       buildStarted: 'Construction de l’index lancée.',
+      upToDate: 'L’index est déjà à jour. Rien n’a changé depuis la dernière construction.',
       buildReady: 'L’index de recherche v{number} est prêt ({chunks} éléments de contenu).',
       buildFailed: 'La création de l’index a échoué. Relancez-la.',
     },

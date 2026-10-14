@@ -835,3 +835,5 @@ Infinity`) and returns `limitsHint` and `fileError(file)`; `AddPdfDialog` refuse
 of a failed row shows `t.knowledge.index.failure[reason]`, and when the newest
 build (page 1, first row) failed, a callout above the table repeats the reason with
 a Try again button that re-runs `buildIndex()`.
+
+- Build index: when the backend answers with a `ready` version (nothing changed since the last build), `useIndexVersions` toasts `index.toast.upToDate` instead of "build started" (2026-10-14).

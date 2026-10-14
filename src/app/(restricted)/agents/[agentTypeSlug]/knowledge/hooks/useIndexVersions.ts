@@ -77,8 +77,14 @@ export function useIndexVersions(agentId: string) {
   }, [latestStatus, latest, agentId, queryClient]);
 
   const buildMutation = useAuthMutation<ApiResponse<IndexVersion>, undefined>({
-    onSuccess: () => {
-      toast.success(t.knowledge.index.toast.buildStarted);
+    onSuccess: (response) => {
+      // With nothing changed since the last build the backend returns that
+      // ready version instead of adding an identical row (retest, 14 Oct).
+      toast.success(
+        response.data?.status === 'ready'
+          ? t.knowledge.index.toast.upToDate
+          : t.knowledge.index.toast.buildStarted
+      );
       void queryClient.invalidateQueries({ queryKey: indexVersionsListKey(agentId) });
     },
     onError: (error) => toast.error(getAxiosError(error)),

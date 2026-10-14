@@ -459,6 +459,7 @@ export const knowledge = {
     retry: 'Try again',
     toast: {
       buildStarted: 'Index build started.',
+      upToDate: 'The index is already up to date. Nothing has changed since the last build.',
       buildReady: 'Search index v{number} is ready ({chunks} pieces of content).',
       buildFailed: 'The index build failed. Try building it again.',
     },
