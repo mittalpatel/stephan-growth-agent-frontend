@@ -6,7 +6,7 @@ export const guide = {
   downloadPdf: 'Download as PDF',
   closeChapterList: 'Close chapter list',
   openChapterList: '☰ Chapters',
-  heroEyebrow: 'Setup guide · 11 chapters',
+  heroEyebrow: 'Setup guide · {count} chapters',
   heroTitle: 'Get your assistant talking to visitors',
   heroLead:
     'A step by step walkthrough for creating your account, teaching your assistant, and putting a working chat window on your website.',

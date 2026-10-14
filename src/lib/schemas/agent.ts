@@ -20,7 +20,7 @@ import {
 } from '@/lib/constants/agentTheme';
 import { SUPPORTED_LANGUAGE_CODES } from '@/lib/constants/agentLanguages';
 import { HEX_COLOR_RE } from '@/lib/contrast';
-import { isValidHostname } from '@/lib/hostname';
+import { isValidHostname, toHostname } from '@/lib/hostname';
 import { t } from '@/locales';
 
 /** Every field here is optional in `theme_config`/`behavior_config`, so an
@@ -104,13 +104,16 @@ export type AgentUpdateFormValues = z.infer<typeof agentUpdateSchema>;
 export const agentDomainCreateSchema = z.object({
   hostname: z
     .string()
-    .trim()
-    .toLowerCase()
-    .min(1, t.agents.settings.domains.validation.hostnameRequired)
-    .max(255, t.agents.settings.domains.validation.hostnameTooLong)
-    .refine((value) => isValidHostname(value, { allowLocalhost: true }), {
-      message: t.agents.settings.domains.validation.hostnameInvalid,
-    }),
+    .transform(toHostname)
+    .pipe(
+      z
+        .string()
+        .min(1, t.agents.settings.domains.validation.hostnameRequired)
+        .max(255, t.agents.settings.domains.validation.hostnameTooLong)
+        .refine((value) => isValidHostname(value, { allowLocalhost: true }), {
+          message: t.agents.settings.domains.validation.hostnameInvalid,
+        })
+    ),
 });
 
 export type AgentDomainCreateFormValues = z.infer<typeof agentDomainCreateSchema>;

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Globe, X } from 'lucide-react';
+import { Globe, Plus, X } from 'lucide-react';
 import { useForm, FormProvider } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 
@@ -24,6 +24,7 @@ type Props = Readonly<{ agentId: string }>;
 export function AllowedDomainsSection({ agentId }: Props) {
   const {
     domains,
+    suggestions,
     canManage,
     isLoading,
     isError,
@@ -120,6 +121,26 @@ export function AllowedDomainsSection({ agentId }: Props) {
               </Button>
             </form>
           </FormProvider>
+        )}
+
+        {canManage && suggestions.length > 0 && (
+          <div className="flex flex-wrap items-center gap-2">
+            <p className="text-muted-foreground text-xs">{copy.suggestionsLabel}</p>
+            {suggestions.map((host) => (
+              <Button
+                key={host}
+                type="button"
+                variant="outline"
+                size="sm"
+                disabled={isAdding}
+                onClick={() => void addDomain(host)}
+                aria-label={format(copy.addSuggestion, { host })}
+              >
+                <Plus aria-hidden />
+                {host}
+              </Button>
+            ))}
+          </div>
         )}
 
         {renderList()}

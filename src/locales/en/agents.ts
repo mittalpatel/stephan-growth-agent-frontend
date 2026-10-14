@@ -657,6 +657,8 @@ export const agents = {
         'Add every website domain the widget should work on. The widget will not load on any other domain, so add yours before pasting the embed code.',
       addedAt: 'Added {date}',
       hostnameLabel: 'Hostname',
+      suggestionsLabel: 'From your Knowledge:',
+      addSuggestion: 'Allow {host}',
       hostnamePlaceholder: 'www.example.com',
       add: 'Add domain',
       remove: 'Remove domain',

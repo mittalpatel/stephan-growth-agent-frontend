@@ -417,6 +417,10 @@ export const knowledge = {
     removeTitle:
       'Supprimer cette page de la liste. Pour la garder listée sans l’utiliser, utilisez Exclure.',
     removeRowLabel: 'Retirer {url} de cette source',
+    removeConfirmTitle: 'Supprimer cette page ?',
+    removeConfirmMessage:
+      '{url} sera retirée de cette source et son texte ne sera plus utilisé. Cette action est définitive. Pour la garder dans la liste sans l’utiliser, choisissez plutôt Exclure.',
+    removeConfirmAction: 'Supprimer la page',
     recrawlRowLabel: 'Sélectionner {url} pour la lire',
     truncatedNotice:
       'Cette source compte {total} pages, et seules les {shown} premières sont affichées. La recherche et les compteurs ci-dessus ne portent que sur les pages chargées.',

@@ -48,3 +48,21 @@ export function isValidHostname(value: string, { allowLocalhost = false } = {}):
   const tld = labels[labels.length - 1];
   return isTld(tld) && labels.slice(0, -1).every(isLabel);
 }
+
+/**
+ * The bare host out of whatever was pasted: "https://www.Shop.com/fr?x=1"
+ * becomes "www.shop.com". A full URL used to be rejected outright (client
+ * testing, 14 Oct 2026); the domain is what the field needs, so take it.
+ * Input that is not a URL comes back trimmed and lowercased, for the hostname
+ * check to judge.
+ */
+export function toHostname(value: string): string {
+  const trimmed = value.trim().toLowerCase();
+  const withScheme = /^[a-z][a-z0-9+.-]*:\/\//.test(trimmed) ? trimmed : `https://${trimmed}`;
+  try {
+    const host = new URL(withScheme).hostname;
+    return host || trimmed;
+  } catch {
+    return trimmed;
+  }
+}

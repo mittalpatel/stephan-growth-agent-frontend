@@ -31,16 +31,21 @@ export const guideChapters: readonly GuideChapter[] = [
         text: 'Signing up gives you your own workspace with a ready-made website assistant.',
       },
       { kind: 'heading', text: '1.1 Open the website' },
-      { kind: 'paragraph', text: 'Go to the YB Inspire home page and click Get started free .' },
+      { kind: 'paragraph', text: 'Go to the YB Inspire home page and click Start for Free .' },
       { kind: 'image', src: '/guide/ch01-01.png', caption: 'The YB Inspire home page' },
       { kind: 'heading', text: '1.2 Fill in your details' },
       {
         kind: 'paragraph',
         text: 'Enter your first name, last name, email address and a password (twice), then click Create account .',
       },
-      { kind: 'note', text: 'First name: Priya Last name: Shah Email: priya.guide@pragnakalp.com' },
+      { kind: 'note', text: 'First name: Priya Last name: Shah Email: priya@example.com' },
       { kind: 'image', src: '/guide/ch01-02.png', caption: 'The sign-up form, filled in' },
-      { kind: 'heading', text: '1.3 Your dashboard' },
+      { kind: 'heading', text: '1.3 Verify your email' },
+      {
+        kind: 'paragraph',
+        text: 'We email you a 6-digit code. Type it in and click Verify and continue . No email after a minute? Check your spam folder, or click Resend .',
+      },
+      { kind: 'heading', text: '1.4 Your dashboard' },
       {
         kind: 'paragraph',
         text: 'You are signed in straight away and land on your dashboard. Your organization and your first assistant have already been created for you.',
@@ -109,14 +114,16 @@ export const guideChapters: readonly GuideChapter[] = [
       {
         kind: 'list',
         items: [
-          'Click Add website . Type your website address, for example https://www.pragnakalp.com . To read only your home page, click Advanced crawl options , set Max pages to 1 and Max link depth to 0 . Leave these blank to read the whole site. Click Start discovery .',
+          'Click Add website . Type your website address, for example https://www.example.com .',
+          'Choose how to read it. Read the whole website (recommended) reads every page found. Let me choose the pages finds the pages first so you can pick.',
+          'Click Start . You can close the window: a bar at the top of the screen shows the progress.',
         ],
       },
       { kind: 'image', src: '/guide/ch04-02.png', caption: 'Adding a website, home page only' },
       { kind: 'heading', text: '4.3 Choose the pages' },
       {
         kind: 'paragraph',
-        text: 'You see the pages that were found, all ticked. Untick anything the assistant should not learn from, then click Extract . When it finishes you see Website added . Click Done .',
+        text: 'If you chose Let me choose the pages, you see the pages that were found, all ticked. Untick anything the assistant should not learn from, then click Read selected pages . When it finishes you see Website added . Click Done .',
       },
       {
         kind: 'paragraph',

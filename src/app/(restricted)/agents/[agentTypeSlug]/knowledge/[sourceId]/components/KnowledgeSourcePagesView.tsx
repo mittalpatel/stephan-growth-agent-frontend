@@ -2,11 +2,12 @@
 
 import { useMemo, useState } from 'react';
 import Link from 'next/link';
-import { AlertTriangle, ArrowLeft, ChevronDown, Info, Loader2, Search, X } from 'lucide-react';
+import { AlertTriangle, ArrowLeft, ChevronDown, Info, Loader2, Search, Trash2 } from 'lucide-react';
 
 import { usePermissions } from '@/app/(restricted)/context/PermissionsContext';
 import { EmptyState } from '@/components/common/EmptyState';
 import { StatusBadge, type StatusTone } from '@/components/common/StatusBadge';
+import { ConfirmDialog } from '@/components/common/ConfirmDialog';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
@@ -98,6 +99,9 @@ export function KnowledgeSourcePagesView({ agentTypeSlug, websiteSourceId }: Pro
   } = useKnowledgeSourcePages(canView ? websiteSourceId : null, {
     isReading: progress !== null,
   });
+  // The trash button deleted on first click, with no undo (client testing,
+  // 14 Oct 2026). It now asks, and points at Exclude for keeping the page.
+  const [pendingRemove, setPendingRemove] = useState<{ id: string; url: string } | null>(null);
 
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   // The pages last sent to be read. In "choose" mode every page starts
@@ -418,11 +422,11 @@ export function KnowledgeSourcePagesView({ agentTypeSlug, websiteSourceId }: Pro
                           type="button"
                           variant="ghost"
                           size="icon"
-                          onClick={() => void removePage(page.id)}
+                          onClick={() => setPendingRemove({ id: page.id, url: page.url })}
                           title={t.knowledge.pages.removeTitle}
                           aria-label={format(t.knowledge.pages.removeRowLabel, { url: page.url })}
                         >
-                          <X aria-hidden />
+                          <Trash2 aria-hidden />
                         </Button>
                       </div>
                     )}
@@ -493,6 +497,20 @@ export function KnowledgeSourcePagesView({ agentTypeSlug, websiteSourceId }: Pro
           </Button>
         </div>
       )}
+      <ConfirmDialog
+        open={pendingRemove !== null}
+        title={t.knowledge.pages.removeConfirmTitle}
+        message={format(t.knowledge.pages.removeConfirmMessage, { url: pendingRemove?.url ?? '' })}
+        confirmLabel={t.knowledge.pages.removeConfirmAction}
+        destructive
+        onConfirm={() => {
+          if (pendingRemove) void removePage(pendingRemove.id);
+          setPendingRemove(null);
+        }}
+        onOpenChange={(open) => {
+          if (!open) setPendingRemove(null);
+        }}
+      />
     </div>
   );
 }

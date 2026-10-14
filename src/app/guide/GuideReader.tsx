@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
 
 import { Button } from '@/components/ui/button';
+import { format } from '@/lib/i18n';
 import { t } from '@/locales';
 import { cn } from '@/lib/utils';
 
@@ -145,7 +146,7 @@ export function GuideReader({ chapters, checklist }: GuideReaderProps) {
 
           <header className="border-border mb-14 border-b pb-10">
             <p className="text-primary text-xs font-semibold tracking-wide uppercase">
-              {t.guide.heroEyebrow}
+              {format(t.guide.heroEyebrow, { count: chapters.length })}
             </p>
             <h1 className="font-display mt-3 max-w-[16ch] text-4xl font-bold text-balance sm:text-5xl">
               {t.guide.heroTitle}

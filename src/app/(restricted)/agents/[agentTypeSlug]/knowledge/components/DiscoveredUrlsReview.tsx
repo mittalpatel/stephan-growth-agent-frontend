@@ -331,6 +331,10 @@ export function DiscoveredUrlsReview({ websiteSourceId, onExtract, isExtracting 
         )}
       </div>
 
+      {/* Above the list, not below it: below, it sat under the sticky
+          "Read N pages" footer and was missed (client testing, 14 Oct 2026). */}
+      <AddUrlForm onAdd={review.addUrl} />
+
       <div className="overflow-hidden rounded-lg border">
         {review.visibleRows.length > 0 && (
           <div className="bg-muted/50 flex items-center gap-3 border-b px-3 py-2">
@@ -378,8 +382,6 @@ export function DiscoveredUrlsReview({ websiteSourceId, onExtract, isExtracting 
           </ul>
         )}
       </div>
-
-      <AddUrlForm onAdd={review.addUrl} />
 
       <div className="bg-popover sticky bottom-0 -mx-4 -mb-4 space-y-2 border-t px-4 py-3">
         {review.selectedCount === 0 ? (

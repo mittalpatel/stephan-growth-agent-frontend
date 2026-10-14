@@ -667,6 +667,8 @@ export const agents = {
         'Ajoutez chaque domaine où le widget doit fonctionner. Le widget ne se charge sur aucun autre domaine : ajoutez le vôtre avant de coller le code d’intégration.',
       addedAt: 'Ajouté le {date}',
       hostnameLabel: 'Nom d’hôte',
+      suggestionsLabel: 'D’après vos connaissances :',
+      addSuggestion: 'Autoriser {host}',
       hostnamePlaceholder: 'www.exemple.fr',
       add: 'Ajouter le domaine',
       remove: 'Retirer le domaine',

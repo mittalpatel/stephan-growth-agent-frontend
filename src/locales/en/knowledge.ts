@@ -400,6 +400,10 @@ export const knowledge = {
     removeAction: 'Remove',
     removeTitle: 'Delete this page from the list. To keep it listed but unused, use Exclude.',
     removeRowLabel: 'Remove {url} from this source',
+    removeConfirmTitle: 'Delete this page?',
+    removeConfirmMessage:
+      '{url} will be removed from this source and its text will no longer be used. This cannot be undone. To keep it listed but unused, choose Exclude instead.',
+    removeConfirmAction: 'Delete page',
     recrawlRowLabel: 'Select {url} to read',
     truncatedNotice:
       'This source has {total} pages, and only the first {shown} are shown. Search and the counts above cover the loaded pages only.',

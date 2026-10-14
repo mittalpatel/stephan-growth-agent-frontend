@@ -73,6 +73,8 @@ export type KnowledgeSourceListItem = {
   status: KnowledgeSourceStatus;
   display_name: string;
   website_source_id: string | null;
+  /** The site address of a website source; null for a PDF. */
+  website_root_url: string | null;
   progress: SourceProgress | null;
   created_at: string;
   updated_at: string;

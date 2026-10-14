@@ -4,7 +4,9 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import { toast } from 'sonner';
 
+import { useAllKnowledgeSources } from '@/app/(restricted)/agents/[agentTypeSlug]/knowledge/hooks/useAllKnowledgeSources';
 import { usePermissions } from '@/app/(restricted)/context/PermissionsContext';
+import { toHostname } from '@/lib/hostname';
 import { useAuthMutation } from '@/hooks/useAuthMutation';
 import { useAuthQuery } from '@/hooks/useAuthQuery';
 import { applyApiError } from '@/lib/apiError';
@@ -17,6 +19,8 @@ import {
 import type { ApiResponse } from '@/types/api';
 import type { AllowedDomain } from '@/types/agent';
 import type { AgentDomainCreateFormValues } from '@/lib/schemas/agent';
+
+const MAX_DOMAIN_SUGGESTIONS = 6;
 
 /**
  * `GET /agents/{id}/domains/` landed 2026-09-07 (backend audit-fix round),
@@ -75,8 +79,33 @@ export function useAgentDomains(agentId: string) {
     }
   };
 
+  const domains = query.data?.data ?? [];
+  // The sites already added under Knowledge, as one-click domain suggestions
+  // (client testing, 14 Oct 2026: the field started empty even though the
+  // site was known). A plain domain also gets its www twin, since a widget on
+  // one is not allowed on the other; a subdomain such as shop.example.com does
+  // not. Already-allowed hosts drop out, and the list is capped so an org with
+  // many sources gets a short row, not a wall of buttons.
+  const { sources } = useAllKnowledgeSources();
+  const allowed = new Set(domains.map((domain) => domain.hostname));
+  const suggestions = [
+    ...new Set(
+      sources
+        .map((source) => source.website_root_url)
+        .filter((url): url is string => Boolean(url))
+        .map(toHostname)
+        .flatMap((host) => {
+          const bare = host.replace(/^www\./, '');
+          return bare.split('.').length === 2 ? [bare, `www.${bare}`] : [host];
+        })
+    ),
+  ]
+    .filter((host) => !allowed.has(host))
+    .slice(0, MAX_DOMAIN_SUGGESTIONS);
+
   return {
-    domains: query.data?.data ?? [],
+    domains,
+    suggestions,
     canManage,
     isLoading: canView && query.isLoading,
     isError: query.isError,

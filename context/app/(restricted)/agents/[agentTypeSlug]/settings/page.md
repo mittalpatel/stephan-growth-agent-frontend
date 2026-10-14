@@ -161,3 +161,13 @@ when opened (`useAgentVersion`) and maps it with `versionToFormValues`
 (exported from `useAgentDraftForm`) into `WidgetPreviewView`, the form-free
 half of the draft tab's `WidgetPreview`, opened by default in the screen
 corner. Client review (06 Oct 2026) asked to see the widget before embedding.
+
+## Domain suggestions and URL trimming (2026-10-14)
+
+`useAgentDomains` returns `suggestions`: the host of every website source's
+`website_root_url` (via `useAllKnowledgeSources`), plus the `www.` twin of a
+plain two-label domain (not of a subdomain), minus
+domains already allowed, capped at 6. `AllowedDomainsSection` renders them as one-click
+"+ host" buttons under the form. `agentDomainCreateSchema` runs input through
+`lib/hostname.ts:toHostname` first, so a pasted full URL is trimmed to its host
+before the hostname check instead of being rejected.
