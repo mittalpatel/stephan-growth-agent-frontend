@@ -44,4 +44,4 @@ Level 4 reuse the app's existing tier copy (`t.agents.levelBasic`, each agent's
 its text is a draft from the meeting ("all features with activations") pending
 Stephan's confirmation. Chapter 1.3 no longer mentions the removed Get set up list.
 
-- Screenshots retaken 2026-10-14 against the current UI (account Priya Shah, sample site quotes.toscrape.com, the "Little Star" PDF, a local test page served as www.example.com for chapters 9-10). The `setup-guide.pdf` in `public/guide/` predates this and still shows the old screens.
+- Screenshots retaken 2026-10-14 against the current UI (account Priya Shah, sample site quotes.toscrape.com, the "Little Star" PDF, a local test page served as www.example.com for chapters 9-10). `setup-guide.pdf` was regenerated the same day by printing `/guide` in headless Chrome (A4, sidebar and buttons hidden, each chapter on a new page), so it matches the web guide.
