@@ -439,6 +439,14 @@ export const knowledge = {
       'An index is built automatically after sources finish processing, or you can build one now.',
     error: 'Index builds could not be loaded.',
     notBuilt: 'Not built',
+    failure: {
+      embedding: 'The AI service that reads your content was unavailable. Usually temporary.',
+      vector_store: 'The search database could not save your content. Usually temporary.',
+      saving: 'Your content was processed but could not be saved.',
+      unexpected: 'Something went wrong while building.',
+    },
+    latestFailed: 'The latest build (v{number}) failed. {reason}',
+    retry: 'Try again',
     toast: {
       buildStarted: 'Index build started.',
       buildReady: 'Search index v{number} is ready ({chunks} pieces of content).',

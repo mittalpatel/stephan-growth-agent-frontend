@@ -457,6 +457,16 @@ export const knowledge = {
       'Un index est construit automatiquement une fois les sources traitées, ou vous pouvez en construire un maintenant.',
     error: 'Les index n’ont pas pu être chargés.',
     notBuilt: 'Non construit',
+    failure: {
+      embedding:
+        'Le service d’IA qui lit votre contenu était indisponible. C’est généralement temporaire.',
+      vector_store:
+        'La base de recherche n’a pas pu enregistrer votre contenu. C’est généralement temporaire.',
+      saving: 'Votre contenu a été traité mais n’a pas pu être enregistré.',
+      unexpected: 'Un problème est survenu pendant la construction.',
+    },
+    latestFailed: 'La dernière construction (v{number}) a échoué. {reason}',
+    retry: 'Réessayer',
     toast: {
       buildStarted: 'Construction de l’index lancée.',
       buildReady: 'L’index de recherche v{number} est prêt ({chunks} éléments de contenu).',

@@ -827,3 +827,11 @@ All/Selected/Not selected tab, section shortcuts, derived rows) in
 - `useAddPdfSource` reads `KNOWLEDGE_UPLOAD_LIMITS_ENDPOINT` once (`staleTime:
 Infinity`) and returns `limitsHint` and `fileError(file)`; `AddPdfDialog` refuses an
   oversized pick before upload. The backend still enforces the limit.
+
+## Failed index builds explain themselves (2026-10-14)
+
+`IndexVersion.failure_reason` (`embedding` | `vector_store` | `saving` |
+`unexpected`, empty unless failed) is the build step that raised. The status cell
+of a failed row shows `t.knowledge.index.failure[reason]`, and when the newest
+build (page 1, first row) failed, a callout above the table repeats the reason with
+a Try again button that re-runs `buildIndex()`.

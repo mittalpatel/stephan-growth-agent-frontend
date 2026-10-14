@@ -602,12 +602,17 @@ export const agents = {
         clarify: 'Needs clarification',
         fallback: 'Fell back',
         handoff: 'Handed off',
+        unsourced: 'No sources used',
       },
       confidenceHelp: {
         answered: 'Your knowledge had enough to answer this.',
         clarify: 'The agent would ask the visitor to clarify first.',
         fallback: 'Nothing relevant was found, so visitors would get your fallback message.',
         handoff: 'This would be passed to a person on your team.',
+        unsourced:
+          'Not from your knowledge: a greeting, an off-topic question or a refusal. Visitors asking real questions should see sources here.',
+        empty:
+          'The agent returned an empty answer. Visitors would see nothing, so try rephrasing or check your fallback message.',
       },
       citationsLabel: 'Sources',
       citationsCount: { one: '{count} source', other: '{count} sources' },

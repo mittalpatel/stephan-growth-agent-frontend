@@ -610,6 +610,7 @@ export const agents = {
         clarify: 'Précision nécessaire',
         fallback: 'Message de secours',
         handoff: 'Transféré',
+        unsourced: 'Aucune source',
       },
       confidenceHelp: {
         answered: 'Vos connaissances suffisaient pour répondre.',
@@ -617,6 +618,10 @@ export const agents = {
         fallback:
           'Rien de pertinent n’a été trouvé, les visiteurs recevraient donc votre message de secours.',
         handoff: 'Cette question serait transmise à une personne de votre équipe.',
+        unsourced:
+          'Pas tiré de vos connaissances : salutation, question hors sujet ou refus. Les vraies questions des visiteurs devraient afficher des sources ici.',
+        empty:
+          'L’agent a renvoyé une réponse vide. Les visiteurs ne verraient rien : reformulez ou vérifiez votre message de secours.',
       },
       citationsLabel: 'Sources',
       citationsCount: { one: '{count} source', other: '{count} sources' },

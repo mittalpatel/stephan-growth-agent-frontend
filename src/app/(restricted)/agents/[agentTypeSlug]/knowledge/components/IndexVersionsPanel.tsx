@@ -1,6 +1,6 @@
 'use client';
 
-import { Database, Loader2 } from 'lucide-react';
+import { AlertTriangle, Database, Loader2 } from 'lucide-react';
 
 import { usePermissions } from '@/app/(restricted)/context/PermissionsContext';
 import { StatusBadge, type StatusTone } from '@/components/common/StatusBadge';
@@ -38,6 +38,8 @@ export function IndexVersionsPanel({ agentId }: Props) {
     isBuilding,
     buildingVersion,
   } = useIndexVersions(agentId);
+  // Newest first on page 1; a later page's top row is not the latest build.
+  const latest = currentPage === 1 ? versions[0] : undefined;
 
   function renderBody() {
     if (isLoading) {
@@ -93,6 +95,11 @@ export function IndexVersionsPanel({ agentId }: Props) {
                     label={copy.status[version.status]}
                     tone={STATUS_TONE[version.status]}
                   />
+                  {version.status === 'failed' && (
+                    <p className="text-muted-foreground mt-1 max-w-xs text-xs">
+                      {copy.failure[version.failure_reason || 'unexpected']}
+                    </p>
+                  )}
                 </td>
                 <td className="px-3 py-2 text-right font-mono tabular-nums">
                   {formatNumber(version.chunk_count)}
@@ -131,6 +138,32 @@ export function IndexVersionsPanel({ agentId }: Props) {
             <Loader2 className="mt-0.5 size-3.5 shrink-0 animate-spin" aria-hidden />
             {format(copy.buildingNotice, { number: buildingVersion })}
           </p>
+        )}
+        {/* The newest build failing is the one that matters: it says why
+            and offers the retry right there, not only in the header. */}
+        {latest?.status === 'failed' && buildingVersion === null && (
+          <div
+            role="alert"
+            className="border-destructive/40 flex flex-wrap items-center justify-between gap-3 rounded-md border px-3 py-2"
+          >
+            <p className="flex items-start gap-2 text-xs">
+              <AlertTriangle className="text-destructive mt-0.5 size-3.5 shrink-0" aria-hidden />
+              {format(copy.latestFailed, {
+                number: latest.version_number,
+                reason: copy.failure[latest.failure_reason || 'unexpected'],
+              })}
+            </p>
+            {canBuild && (
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => buildIndex()}
+                disabled={isBuilding}
+              >
+                {copy.retry}
+              </Button>
+            )}
+          </div>
         )}
         {renderBody()}
 

@@ -777,3 +777,11 @@ when lead capture is switched off.
   published (publishing clears `draft_version`, which capped the list at 4 of
   5). Done steps keep a "Review" button, and the knowledge step explains what
   completes it.
+
+## Test tab answer label (2026-10-14)
+
+The backend stores `answered` for any reply that is not an explicit "no answer",
+including greetings, off-topic replies and refused prompt injections. `AnswerView`
+therefore shows "No sources used" (warning tone) for `answered` with zero
+citations, and the fallback label for an empty answer. Only the label changes; the
+stored decision is untouched so analytics does not count greetings as unresolved.

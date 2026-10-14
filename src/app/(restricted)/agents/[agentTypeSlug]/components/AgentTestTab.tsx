@@ -348,13 +348,32 @@ function AnswerView({
   answeredAt,
 }: Readonly<{ result: AgentTestAskResult; answeredAt: Date }>) {
   const decision = result.confidence_decision;
+  // The backend calls every reply that is not an explicit "no answer"
+  // answered, including a greeting, an off-topic reply and a refused prompt
+  // injection. Without a source it did not come from the knowledge, so the
+  // Test tab must not say "your knowledge had enough" (client testing,
+  // 14 Oct 2026). Stored decisions stay as they are: analytics must not
+  // count a greeting as an unresolved topic.
+  const isEmpty = result.answer.trim() === '';
+  const unsourced = decision === 'answered' && result.citations.length === 0;
+  const label = isEmpty
+    ? copy.confidence.fallback
+    : unsourced
+      ? copy.confidence.unsourced
+      : copy.confidence[decision];
+  const help = isEmpty
+    ? copy.confidenceHelp.empty
+    : unsourced
+      ? copy.confidenceHelp.unsourced
+      : copy.confidenceHelp[decision];
+  const tone: StatusTone = isEmpty || unsourced ? 'warning' : DECISION_TONE[decision];
   return (
     <AgentBubble label={copy.agentLabel}>
       <Markdown className="text-sm leading-relaxed">{result.answer}</Markdown>
 
       <div className="border-border mt-3 flex flex-wrap items-center gap-2 border-t pt-3">
-        <StatusBadge label={copy.confidence[decision]} tone={DECISION_TONE[decision]} />
-        <p className="text-muted-foreground text-xs">{copy.confidenceHelp[decision]}</p>
+        <StatusBadge label={label} tone={tone} />
+        <p className="text-muted-foreground text-xs">{help}</p>
       </div>
 
       {result.citations.length === 0 ? (

@@ -34,6 +34,9 @@ export type PageDiscoverySource = 'sitemap' | 'robots_crawl' | 'fallback_link_sc
 /** Mirrors `IndexVersionStatus` in `apps/knowledge/constants.py`. */
 export type IndexVersionStatus = 'building' | 'ready' | 'failed';
 
+/** `IndexBuildFailure`: the build step that failed; empty unless `failed`. */
+export type IndexBuildFailure = '' | 'embedding' | 'vector_store' | 'saving' | 'unexpected';
+
 /**
  * Row shape from `GET /knowledge/`. No `agent` field: as of the backend's
  * 2026-09-06 change a source belongs to the organization, and an agent
@@ -176,6 +179,7 @@ export type IndexVersion = {
   version_number: number;
   status: IndexVersionStatus;
   chunk_count: number;
+  failure_reason: IndexBuildFailure;
   built_at: string | null;
   created_at: string;
 };
