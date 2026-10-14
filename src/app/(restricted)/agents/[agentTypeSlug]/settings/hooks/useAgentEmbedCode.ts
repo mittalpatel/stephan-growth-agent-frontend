@@ -1,7 +1,7 @@
 'use client';
 
 import { useQueryClient } from '@tanstack/react-query';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 
 import { usePermissions } from '@/app/(restricted)/context/PermissionsContext';
 import { useAuthMutation } from '@/hooks/useAuthMutation';
@@ -28,7 +28,14 @@ export function useAgentEmbedCode(agentId: string) {
   const [embedCode, setEmbedCode] = useState<AgentEmbedCode | null>(null);
   const generateMutation = useAuthMutation<ApiResponse<AgentEmbedCode>, undefined>();
 
+  // A ref, not `isPending`: a double click fires both handlers before the
+  // re-render that disables the button, and minted two active keys (client
+  // testing, 14 Oct 2026).
+  const inFlight = useRef(false);
+
   const generate = async () => {
+    if (inFlight.current) return;
+    inFlight.current = true;
     try {
       const result = await generateMutation.mutateAsync({
         url: agentEmbedCodeEndpoint(agentId),
@@ -37,6 +44,8 @@ export function useAgentEmbedCode(agentId: string) {
       void queryClient.invalidateQueries({ queryKey: agentKeysKey(agentId) });
     } catch (error) {
       applyApiError(error);
+    } finally {
+      inFlight.current = false;
     }
   };
 

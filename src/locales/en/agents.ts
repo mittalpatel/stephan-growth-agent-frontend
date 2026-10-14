@@ -6,6 +6,7 @@ export const agents = {
     paused: 'Paused',
     archived: 'Archived',
   },
+  notPublished: 'Not published',
   levelBasic: 'Level 1 · Basic',
   freeDuringTrial: 'Free during trial',
   actions: {
@@ -419,7 +420,7 @@ export const agents = {
         'The chat bubble in the corner of this screen is a live preview of your widget, exactly as visitors will see it on your site. Every change here applies to it straight away, before you save.',
       previewOpen: 'Open the widget preview',
       previewClose: 'Close the widget preview',
-      previewInputPlaceholder: 'Type a message…',
+      previewInputPlaceholder: 'Preview only. Chat for real on the Test tab.',
       behaviorRuntimeHeading: 'Answer tuning',
       behaviorRuntimeDescription:
         'Optional. The defaults work well for most agents, so only change these if you know what you need.',
@@ -698,7 +699,7 @@ export const agents = {
       previewHide: 'Hide preview',
       previewLoading: 'Loading the preview…',
       previewHint:
-        'This is your live widget, in the corner of the screen as visitors will see it. Change its look on the Draft tab, then publish.',
+        'This is your live widget, in the corner of the screen as visitors will see it. Click it to open the chat panel. Change its look on the Draft tab, then publish.',
       steps: [
         'Click "Generate embed code" below. It creates a ready-to-paste script tag with its own credential built in.',
         "Copy the snippet right away. It contains a secret key that's only shown once.",
@@ -706,6 +707,13 @@ export const agents = {
         'It only works on a domain you added above.',
       ],
       generate: 'Generate embed code',
+      generateAgainTitle: 'Create another embed code?',
+      generateAgainMessage: {
+        one: 'This agent already has {count} active embed code. A new one works alongside it, and sites using the old one keep working until you revoke it below. If you lost the code, create a new one and revoke the old one.',
+        other:
+          'This agent already has {count} active embed codes. A new one works alongside them, and sites using the old ones keep working until you revoke them below. If you lost the code, create a new one and revoke the old ones.',
+      },
+      generateAgainAction: 'Create new code',
       loadError: 'Could not generate embed code.',
       warning:
         "This snippet contains a new secret key and is only shown once. Copy it now, it can't be shown again.",

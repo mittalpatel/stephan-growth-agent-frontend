@@ -273,6 +273,8 @@ export const knowledge = {
     dropzoneActive: 'Drop to attach this PDF',
     dropzoneWrongType: 'Only PDF files can be uploaded.',
     limitsHint: 'PDF only, up to {size} MB and {pages} pages.',
+    notPdf: 'This file is not a PDF. Choose a .pdf file, for example one saved with "Save as PDF".',
+    uploadFailed: 'The file could not be uploaded. Check that it opens as a PDF and try again.',
     tooLarge:
       'This file is {size}. The limit is {limit} MB. Try a smaller file, or split it into parts.',
     submit: 'Upload',

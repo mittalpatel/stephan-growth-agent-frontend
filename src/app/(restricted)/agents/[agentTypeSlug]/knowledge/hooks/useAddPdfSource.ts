@@ -5,7 +5,7 @@ import { useQueryClient } from '@tanstack/react-query';
 
 import { useAuthMutation } from '@/hooks/useAuthMutation';
 import { useAuthQuery } from '@/hooks/useAuthQuery';
-import { applyApiError, getEnvelope } from '@/lib/apiError';
+import { getEnvelope } from '@/lib/apiError';
 import { getErrorCode } from '@/lib/helper';
 import { format, formatFileSize } from '@/lib/i18n';
 import { t } from '@/locales';
@@ -29,6 +29,18 @@ const BYTES_PER_MB = 1024 * 1024;
  * *narrowed* agent from losing sight of the source it just added — see
  * `useKnowledgeTargets.includeSource`.
  */
+/** A readable reason for a refused upload: the wrong file type in plain
+ * words, else the backend's own field or envelope message, else a generic
+ * line. */
+function uploadErrorMessage(error: unknown): string {
+  if (getErrorCode(error) === 'upload_type_mismatch') return t.knowledge.addPdf.notPdf;
+  const envelope = getEnvelope(error);
+  const fileErrors = (envelope?.errors as { file?: unknown } | undefined)?.file;
+  if (Array.isArray(fileErrors) && typeof fileErrors[0] === 'string') return fileErrors[0];
+  const message = typeof envelope?.message === 'string' ? envelope.message.trim() : '';
+  return message || t.knowledge.addPdf.uploadFailed;
+}
+
 export function useAddPdfSource(onCreated?: (sourceId: string) => void) {
   const queryClient = useQueryClient();
   const { mutateAsync, isPending } = useAuthMutation<ApiResponse<KnowledgeSource>, FormData>();
@@ -36,6 +48,10 @@ export function useAddPdfSource(onCreated?: (sourceId: string) => void) {
    * (matched by checksum), set only by a `duplicate_pdf_document` 409. Same
    * pattern as `useAddWebsiteFlow`'s `duplicateSourceId` (2026-09-12 fix). */
   const [duplicateSourceId, setDuplicateSourceId] = useState<string | null>(null);
+  /** Why the last upload was refused, shown inside the dialog. A toast in
+   * the far corner, worded "The submitted data is invalid" or "detected:
+   * text/plain", was missed or not understood (client testing, 14 Oct 2026). */
+  const [uploadError, setUploadError] = useState<string | null>(null);
 
   // The limit is a platform setting, so it is read rather than hardcoded.
   // Stated up front and checked on pick: it used to surface only after the
@@ -50,6 +66,7 @@ export function useAddPdfSource(onCreated?: (sourceId: string) => void) {
   const upload = useCallback(
     async (file: File) => {
       setDuplicateSourceId(null);
+      setUploadError(null);
       const formData = new FormData();
       formData.append('file', file);
       try {
@@ -66,8 +83,9 @@ export function useAddPdfSource(onCreated?: (sourceId: string) => void) {
             | { existing_source_id?: string }
             | undefined;
           setDuplicateSourceId(existing?.existing_source_id ?? null);
+          return false;
         }
-        applyApiError(error);
+        setUploadError(uploadErrorMessage(error));
         return false;
       }
     },
@@ -78,6 +96,8 @@ export function useAddPdfSource(onCreated?: (sourceId: string) => void) {
     upload,
     isUploading: isPending,
     duplicateSourceId,
+    uploadError,
+    clearUploadError: () => setUploadError(null),
     /** "PDF only, up to 20 MB and 500 pages", or `null` until loaded. */
     limitsHint: limits
       ? format(t.knowledge.addPdf.limitsHint, {

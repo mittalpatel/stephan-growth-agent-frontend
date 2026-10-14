@@ -13,6 +13,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { format, formatDate } from '@/lib/i18n';
 import { t } from '@/locales';
+import { agentStatusBadge } from '@/app/(restricted)/agents/agentStatusBadge';
 import { LEADS_LIST_KEY, buildLeadListParams, leadsListUrl } from '@/services/leads';
 import { useAuthQuery } from '@/hooks/useAuthQuery';
 import type { ApiResponse } from '@/types/api';
@@ -166,10 +167,7 @@ export function DashboardView() {
                         <p className="text-[15px] leading-tight font-semibold">{agent.name}</p>
                       </div>
                     </div>
-                    <StatusBadge
-                      label={t.agents.status[agent.status]}
-                      tone={agent.status === 'active' ? 'success' : 'neutral'}
-                    />
+                    <StatusBadge {...agentStatusBadge(agent.status, agent.is_published)} />
                   </div>
 
                   <div className="grid grid-cols-2 gap-3">

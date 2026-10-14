@@ -4,12 +4,15 @@ import { useState } from 'react';
 import { AlertTriangle, Check, Copy, Eye, EyeOff } from 'lucide-react';
 import { toast } from 'sonner';
 
+import { ConfirmDialog } from '@/components/common/ConfirmDialog';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import { plural } from '@/lib/i18n';
 import { t } from '@/locales';
 import type { Agent } from '@/types/agent';
 
 import { WidgetPreviewView } from '../../components/WidgetPreview';
+import { useAgentDeploymentKeys } from '../hooks/useAgentDeploymentKeys';
 import { useAgentEmbedCode } from '../hooks/useAgentEmbedCode';
 import { usePublishedWidgetPreview } from '../hooks/usePublishedWidgetPreview';
 
@@ -25,6 +28,14 @@ type Props = Readonly<{ agent: Agent }>;
  */
 export function EmbedSnippetSection({ agent }: Props) {
   const { canManage, embedCode, generate, isGenerating } = useAgentEmbedCode(agent.id);
+  const { keys } = useAgentDeploymentKeys(agent.id);
+  const activeKeyCount = keys.filter((key) => !key.revoked_at).length;
+  const [confirmingNew, setConfirmingNew] = useState(false);
+
+  const startGenerate = () => {
+    setCopied(false);
+    void generate();
+  };
   const preview = usePublishedWidgetPreview(agent);
   const [copied, setCopied] = useState(false);
 
@@ -65,10 +76,9 @@ export function EmbedSnippetSection({ agent }: Props) {
             )}
             {canManage && (
               <Button
-                onClick={() => {
-                  setCopied(false);
-                  void generate();
-                }}
+                // Each click mints a new key. With one already active, say so
+                // first: a second key is rarely what was meant.
+                onClick={() => (activeKeyCount > 0 ? setConfirmingNew(true) : startGenerate())}
                 disabled={isGenerating}
               >
                 {copy.generate}
@@ -87,7 +97,6 @@ export function EmbedSnippetSection({ agent }: Props) {
             values={preview.values}
             defaultLanguage={agent.default_language}
             agentName={agent.name}
-            defaultOpen
           />
         )}
 
@@ -122,6 +131,17 @@ export function EmbedSnippetSection({ agent }: Props) {
           </div>
         )}
       </CardContent>
+      <ConfirmDialog
+        open={confirmingNew}
+        title={copy.generateAgainTitle}
+        message={plural(activeKeyCount, copy.generateAgainMessage)}
+        confirmLabel={copy.generateAgainAction}
+        onConfirm={() => {
+          setConfirmingNew(false);
+          startGenerate();
+        }}
+        onOpenChange={setConfirmingNew}
+      />
     </Card>
   );
 }

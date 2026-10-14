@@ -9,6 +9,7 @@ const AGENT = {
   name: 'test',
   slug: 'test',
   status: 'active' as const,
+  is_published: true,
   agent_type: {
     id: 'e1c6f0a2-0000-4000-8000-000000000001',
     slug: 'website_sales_support',
@@ -46,6 +47,13 @@ describe('AgentsGrid', () => {
     render(<AgentsGrid entries={[entry()]} />);
 
     expect(screen.getByText('Active')).toBeInTheDocument();
+  });
+
+  it('says Not published for an active agent no visitor can reach yet', () => {
+    render(<AgentsGrid entries={[entry({ agent: { ...AGENT, is_published: false } })]} />);
+
+    expect(screen.getByText('Not published')).toBeInTheDocument();
+    expect(screen.queryByText('Active')).not.toBeInTheDocument();
   });
 
   it('offers no link for a shipped kind this organization has no agent of', () => {

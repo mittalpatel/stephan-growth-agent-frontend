@@ -24,8 +24,16 @@ export function AddPdfDialog({ onCreated }: Props) {
   const [open, setOpen] = useState(false);
   const [file, setFile] = useState<File | null>(null);
   const [rejection, setRejection] = useState<string | null>(null);
-  const { upload, isUploading, duplicateSourceId, limitsHint, fileError } =
-    useAddPdfSource(onCreated);
+  const {
+    upload,
+    isUploading,
+    duplicateSourceId,
+    uploadError,
+    clearUploadError,
+    limitsHint,
+    fileError,
+  } = useAddPdfSource(onCreated);
+  const problem = rejection ?? uploadError;
   // A PDF source has no detail route to link to (no `website_source_id`, no
   // pages view), so the duplicate is named rather than linked. The org-wide
   // list is already loaded for the sources table, so this is a lookup, not a
@@ -38,12 +46,14 @@ export function AddPdfDialog({ onCreated }: Props) {
   const reset = () => {
     setFile(null);
     setRejection(null);
+    clearUploadError();
   };
 
   // An oversized file is refused on pick, so nothing is sent just to be
   // turned away.
   const selectFile = (candidate: File) => {
     const error = fileError(candidate);
+    clearUploadError();
     setRejection(error);
     setFile(error ? null : candidate);
   };
@@ -90,10 +100,10 @@ export function AddPdfDialog({ onCreated }: Props) {
           onClear={reset}
         />
 
-        {limitsHint && !rejection && <p className="text-muted-foreground text-xs">{limitsHint}</p>}
-        {rejection && (
+        {limitsHint && !problem && <p className="text-muted-foreground text-xs">{limitsHint}</p>}
+        {problem && (
           <p role="alert" className="text-destructive text-sm">
-            {rejection}
+            {problem}
           </p>
         )}
 

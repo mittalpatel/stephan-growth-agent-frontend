@@ -6,6 +6,7 @@ export const agents = {
     paused: 'En pause',
     archived: 'Archivé',
   },
+  notPublished: 'Non publié',
   levelBasic: 'Niveau 1 · Essentiel',
   freeDuringTrial: 'Gratuit pendant l’essai',
   actions: {
@@ -425,7 +426,7 @@ export const agents = {
         'La bulle de discussion dans le coin de l’écran est un aperçu en direct de votre widget, tel que les visiteurs le verront sur votre site. Chaque modification s’y applique immédiatement, avant même l’enregistrement.',
       previewOpen: 'Ouvrir l’aperçu du widget',
       previewClose: 'Fermer l’aperçu du widget',
-      previewInputPlaceholder: 'Écrivez un message…',
+      previewInputPlaceholder: 'Aperçu seulement. Discutez pour de vrai dans l’onglet Test.',
       behaviorRuntimeHeading: 'Réglage des réponses',
       behaviorRuntimeDescription:
         'Facultatif. Les valeurs par défaut conviennent à la plupart des agents : ne les modifiez que si vous savez ce dont vous avez besoin.',
@@ -709,7 +710,7 @@ export const agents = {
       previewHide: 'Masquer l’aperçu',
       previewLoading: 'Chargement de l’aperçu…',
       previewHint:
-        'Voici votre widget en ligne, dans le coin de l’écran, tel que le verront les visiteurs. Modifiez son apparence dans l’onglet Brouillon, puis publiez.',
+        'Voici votre widget en ligne, dans le coin de l’écran, tel que le verront les visiteurs. Cliquez dessus pour ouvrir la fenêtre de discussion. Modifiez son apparence dans l’onglet Brouillon, puis publiez.',
       steps: [
         'Cliquez sur « Générer le code d’intégration » ci-dessous. Une balise script prête à coller est créée, avec son propre identifiant intégré.',
         'Copiez le code tout de suite. Il contient une clé secrète affichée une seule fois.',
@@ -717,6 +718,13 @@ export const agents = {
         'Il ne fonctionne que sur un domaine ajouté ci-dessus.',
       ],
       generate: 'Générer le code d’intégration',
+      generateAgainTitle: 'Créer un autre code d’intégration ?',
+      generateAgainMessage: {
+        one: 'Cet agent a déjà {count} code d’intégration actif. Un nouveau code fonctionne en plus, et les sites qui utilisent l’ancien continuent de fonctionner jusqu’à ce que vous le révoquiez ci-dessous. Si vous avez perdu le code, créez-en un nouveau et révoquez l’ancien.',
+        other:
+          'Cet agent a déjà {count} codes d’intégration actifs. Un nouveau code fonctionne en plus, et les sites qui utilisent les anciens continuent de fonctionner jusqu’à ce que vous les révoquiez ci-dessous. Si vous avez perdu le code, créez-en un nouveau et révoquez les anciens.',
+      },
+      generateAgainAction: 'Créer un nouveau code',
       loadError: 'Impossible de générer le code d’intégration.',
       warning:
         'Ce code contient une nouvelle clé secrète et n’est affiché qu’une fois. Copiez-le maintenant, il ne pourra plus être affiché.',

@@ -9,7 +9,7 @@ import { usePermissions } from '@/app/(restricted)/context/PermissionsContext';
 import { ConversationsListView } from '@/app/(restricted)/conversations/components/ConversationsListView';
 import { LeadsListView } from '@/app/(restricted)/leads/components/LeadsListView';
 import { EmptyState } from '@/components/common/EmptyState';
-import { StatusBadge, type StatusTone } from '@/components/common/StatusBadge';
+import { StatusBadge } from '@/components/common/StatusBadge';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -31,7 +31,7 @@ import {
 } from '@/constants/agentTypes';
 import { cn } from '@/lib/utils';
 import { t } from '@/locales';
-import type { AgentStatus } from '@/types/agent';
+import { agentStatusBadge } from '@/app/(restricted)/agents/agentStatusBadge';
 
 import { useAgentDetail } from '../hooks/useAgentDetail';
 import { KnowledgeSourcesView } from '../knowledge/components/KnowledgeSourcesView';
@@ -42,12 +42,6 @@ import { AgentOverviewTab } from './AgentOverviewTab';
 import { AgentPublishTab } from './AgentPublishTab';
 import { AgentSetupChecklist } from './AgentSetupChecklist';
 import { AgentTestTab } from './AgentTestTab';
-
-const STATUS_TONE: Record<AgentStatus, StatusTone> = {
-  active: 'success',
-  paused: 'warning',
-  archived: 'neutral',
-};
 
 type Props = Readonly<{ agentTypeSlug: string }>;
 
@@ -226,8 +220,7 @@ export function AgentDetailView({ agentTypeSlug }: Props) {
               )}
               <div className="mt-3 flex items-center gap-2">
                 <StatusBadge
-                  label={t.agents.status[agent.status]}
-                  tone={STATUS_TONE[agent.status]}
+                  {...agentStatusBadge(agent.status, agent.published_version !== null)}
                 />
                 <span className="text-muted-foreground text-xs">{t.agents.levelBasic}</span>
               </div>

@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { ArrowRight, Bot, Check } from 'lucide-react';
 
-import { StatusBadge, type StatusTone } from '@/components/common/StatusBadge';
+import { StatusBadge } from '@/components/common/StatusBadge';
 import { Card, CardContent } from '@/components/ui/card';
 import {
   AGENT_TYPE_ACCENT_FALLBACK,
@@ -13,15 +13,9 @@ import {
 } from '@/constants/agentTypes';
 import { cn } from '@/lib/utils';
 import { t } from '@/locales';
-import type { AgentStatus } from '@/types/agent';
+import { agentStatusBadge } from '@/app/(restricted)/agents/agentStatusBadge';
 
 /** Shared with `AgentDetailView`'s header, so one agent reads the same in both. */
-const STATUS_TONE: Record<AgentStatus, StatusTone> = {
-  active: 'success',
-  paused: 'warning',
-  archived: 'neutral',
-};
-
 import type { AgentCatalogEntry } from '../hooks/useAgentCatalog';
 
 type Props = Readonly<{ entries: readonly AgentCatalogEntry[] }>;
@@ -69,8 +63,7 @@ export function AgentsGrid({ entries }: Props) {
                     into one "Coming soon" hides a fixable problem. */}
                 {entry.agent ? (
                   <StatusBadge
-                    label={t.agents.status[entry.agent.status]}
-                    tone={STATUS_TONE[entry.agent.status]}
+                    {...agentStatusBadge(entry.agent.status, entry.agent.is_published)}
                   />
                 ) : (
                   <StatusBadge

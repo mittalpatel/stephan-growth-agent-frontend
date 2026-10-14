@@ -280,6 +280,10 @@ export const knowledge = {
     dropzoneActive: 'Déposez pour joindre ce PDF',
     dropzoneWrongType: 'Seuls les fichiers PDF peuvent être importés.',
     limitsHint: 'PDF uniquement, jusqu’à {size} Mo et {pages} pages.',
+    notPdf:
+      'Ce fichier n’est pas un PDF. Choisissez un fichier .pdf, par exemple enregistré avec « Enregistrer au format PDF ».',
+    uploadFailed:
+      'Le fichier n’a pas pu être envoyé. Vérifiez qu’il s’ouvre comme un PDF et réessayez.',
     tooLarge:
       'Ce fichier fait {size}. La limite est de {limit} Mo. Essayez un fichier plus petit, ou découpez-le en plusieurs parties.',
     submit: 'Importer',

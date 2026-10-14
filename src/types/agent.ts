@@ -161,6 +161,8 @@ export type AgentListItem = {
   name: string;
   slug: string;
   status: AgentStatus;
+  /** False until a version is published: no visitor can reach it yet. */
+  is_published: boolean;
   agent_type: AgentType;
   human_inbox_email: string;
   created_at: string;
