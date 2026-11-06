@@ -47,13 +47,13 @@ export default function LandingPage({ branding }: Readonly<{ branding: PublicBra
             )}
           </div>
           <div className="flex items-center gap-2">
-            <Button variant="ghost" asChild>
+            <Button variant="ghost" className="text-base" asChild>
               <Link href="/guide">{t.marketing.nav.guide}</Link>
             </Button>
-            <Button variant="ghost" asChild>
+            <Button variant="ghost" className="text-base" asChild>
               <Link href="/login">{t.marketing.nav.signIn}</Link>
             </Button>
-            <Button asChild>
+            <Button className="text-base" asChild>
               <Link href="/signup/create">{t.marketing.nav.getStarted}</Link>
             </Button>
           </div>
@@ -66,14 +66,17 @@ export default function LandingPage({ branding }: Readonly<{ branding: PublicBra
             aria-hidden
             className="text-primary/[0.07] pointer-events-none absolute inset-0 bg-[radial-gradient(currentColor_1px,transparent_1px)] bg-size-[24px_24px]"
           />
-          <div className="relative mx-auto max-w-3xl px-4 py-20 text-center sm:px-6 sm:py-28">
+          <div className="relative mx-auto max-w-4xl px-4 py-20 text-center sm:px-6 sm:py-28">
             <span className="border-brand-accent-strong/40 bg-brand-accent/10 text-brand-accent-strong inline-flex items-center rounded-full border px-3 py-1 text-xs font-medium">
               {t.marketing.hero.badge}
             </span>
-            <h1 className="font-display mt-6 text-4xl font-bold tracking-tight text-balance sm:text-5xl">
+            {/* Sizes and rhythm follow growth-agents.com: 60px / 1.2 headings
+                and 1.75 body line height on the marketing pages only. The app
+                UI keeps its denser scale, which reads better in dashboards. */}
+            <h1 className="font-display mt-6 text-4xl leading-[1.2] font-bold tracking-tight text-balance sm:text-5xl lg:text-6xl">
               {t.marketing.hero.heading}
             </h1>
-            <p className="text-muted-foreground mx-auto mt-5 max-w-xl text-lg text-balance">
+            <p className="text-muted-foreground mx-auto mt-5 max-w-2xl text-lg leading-[1.75] text-balance">
               {t.marketing.hero.subheading}
             </p>
             <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
@@ -108,11 +111,11 @@ export default function LandingPage({ branding }: Readonly<{ branding: PublicBra
 
         <section className="bg-muted/40 border-y py-20">
           <div className="mx-auto max-w-6xl px-4 sm:px-6">
-            <div className="mx-auto max-w-2xl text-center">
-              <h2 className="font-display text-3xl font-bold tracking-tight">
+            <div className="mx-auto max-w-3xl text-center">
+              <h2 className="font-display text-3xl leading-[1.2] font-bold tracking-tight text-balance sm:text-4xl">
                 {t.marketing.features.heading}
               </h2>
-              <p className="text-muted-foreground mt-3 text-base">
+              <p className="text-muted-foreground mt-4 text-base leading-[1.75] sm:text-lg">
                 {t.marketing.features.subheading}
               </p>
             </div>
@@ -125,8 +128,12 @@ export default function LandingPage({ branding }: Readonly<{ branding: PublicBra
                       <span className="bg-brand-accent/15 text-brand-accent-strong flex size-10 items-center justify-center rounded-lg">
                         <Icon className="size-5" />
                       </span>
-                      <h3 className="font-display mt-4 text-base font-bold">{feature.title}</h3>
-                      <p className="text-muted-foreground mt-1.5 text-sm">{feature.description}</p>
+                      <h3 className="font-accent mt-4 text-[17px] font-medium tracking-tight">
+                        {feature.title}
+                      </h3>
+                      <p className="text-muted-foreground mt-2 text-[15px] leading-[1.6]">
+                        {feature.description}
+                      </p>
                     </CardContent>
                   </Card>
                 );
@@ -137,7 +144,7 @@ export default function LandingPage({ branding }: Readonly<{ branding: PublicBra
 
         <section className="py-20">
           <div className="mx-auto max-w-5xl px-4 sm:px-6">
-            <h2 className="font-display text-center text-3xl font-bold tracking-tight">
+            <h2 className="font-display text-center text-3xl leading-[1.2] font-bold tracking-tight sm:text-4xl">
               {t.marketing.steps.heading}
             </h2>
             <div className="mt-12 grid gap-8 sm:grid-cols-3">
@@ -146,8 +153,12 @@ export default function LandingPage({ branding }: Readonly<{ branding: PublicBra
                   <span className="bg-primary text-primary-foreground font-display flex size-9 items-center justify-center rounded-full text-sm font-bold">
                     {index + 1}
                   </span>
-                  <h3 className="font-display mt-4 text-base font-bold">{step.title}</h3>
-                  <p className="text-muted-foreground mt-1.5 text-sm">{step.description}</p>
+                  <h3 className="font-accent mt-4 text-[17px] font-medium tracking-tight">
+                    {step.title}
+                  </h3>
+                  <p className="text-muted-foreground mt-2 text-[15px] leading-[1.6]">
+                    {step.description}
+                  </p>
                 </div>
               ))}
             </div>
@@ -156,10 +167,10 @@ export default function LandingPage({ branding }: Readonly<{ branding: PublicBra
 
         <section className="bg-brand-surface text-brand-surface-foreground py-16">
           <div className="mx-auto max-w-2xl px-4 text-center sm:px-6">
-            <h2 className="font-display text-3xl font-bold tracking-tight">
+            <h2 className="font-display text-3xl leading-[1.2] font-bold tracking-tight sm:text-4xl">
               {t.marketing.cta.heading}
             </h2>
-            <p className="text-brand-surface-foreground/80 mt-3 text-base">
+            <p className="text-brand-surface-foreground/80 mt-4 text-base leading-[1.75] sm:text-lg">
               {t.marketing.cta.subheading}
             </p>
             {/* The one deliberate use of the jaune accent as a fill: `cta`

@@ -23,7 +23,9 @@ export function LegalDocument({ title, subtitle, sections }: LegalDocumentProps)
           {t.legal.backToLogin}
         </Link>
 
-        <h1 className="mt-8 text-3xl font-semibold tracking-tight sm:text-4xl">{title}</h1>
+        <h1 className="mt-8 text-3xl leading-[1.2] font-bold tracking-tight sm:text-4xl">
+          {title}
+        </h1>
         <p className="text-muted-foreground mt-2 text-sm">{subtitle}</p>
 
         <div className="mt-10 space-y-8">
@@ -32,7 +34,7 @@ export function LegalDocument({ title, subtitle, sections }: LegalDocumentProps)
               {section.heading && <h2 className="mb-2 text-lg font-semibold">{section.heading}</h2>}
               <div className="space-y-3">
                 {section.body.map((paragraph) => (
-                  <p key={paragraph} className="text-muted-foreground text-sm leading-relaxed">
+                  <p key={paragraph} className="text-muted-foreground text-base leading-[1.75]">
                     {paragraph}
                   </p>
                 ))}

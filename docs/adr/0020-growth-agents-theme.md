@@ -25,6 +25,11 @@ headings, 600 for sub-heads, 500 for accents and buttons, 400 for body text.
 - **Typography:** Inter replaces Work Sans (body) and Poppins (display).
   `--font-display` and `--font-heading` point at Inter, so headings get their
   hierarchy from weight. JetBrains Mono is unchanged.
+- **Marketing typography matches the site; the app stays dense.** The public
+  pages (landing, guide, legal) use the site's rhythm: 60px / 1.2 hero headings,
+  1.75 body line height, 16px nav, and Poppins 500 (`font-accent`) for short
+  card titles. The logged-in app keeps its tighter scale, since that spacing
+  makes dashboards and tables harder to scan.
 - ADR-0018's accent-only principle still holds. Only the values change.
 
 ## Consequences

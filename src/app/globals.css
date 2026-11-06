@@ -278,6 +278,10 @@
      face; the alias keeps both names working. */
   --font-display: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
   --font-heading: var(--font-display);
+  /* Poppins 500, growth-agents.com's face for short card titles ("Marketing &
+     Branding"). An accent, not a heading font: used on the marketing pages'
+     feature and step titles, nowhere in the dense app UI. */
+  --font-accent: var(--font-poppins), var(--font-inter), ui-sans-serif, sans-serif;
 }
 
 @layer base {

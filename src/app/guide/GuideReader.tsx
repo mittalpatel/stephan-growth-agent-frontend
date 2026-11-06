@@ -148,10 +148,12 @@ export function GuideReader({ chapters, checklist }: GuideReaderProps) {
             <p className="text-primary text-xs font-semibold tracking-wide uppercase">
               {format(t.guide.heroEyebrow, { count: chapters.length })}
             </p>
-            <h1 className="font-display mt-3 max-w-[16ch] text-4xl font-bold text-balance sm:text-5xl">
+            <h1 className="font-display mt-3 max-w-[16ch] text-4xl leading-[1.2] font-bold tracking-tight text-balance sm:text-5xl">
               {t.guide.heroTitle}
             </h1>
-            <p className="text-muted-foreground mt-4 max-w-[60ch] text-lg">{t.guide.heroLead}</p>
+            <p className="text-muted-foreground mt-4 max-w-[60ch] text-lg leading-[1.75]">
+              {t.guide.heroLead}
+            </p>
           </header>
 
           <div className="max-w-[70ch] space-y-24">
@@ -187,7 +189,7 @@ export function GuideReader({ chapters, checklist }: GuideReaderProps) {
                         );
                       case 'paragraph':
                         return (
-                          <p key={key} className="text-foreground/90 leading-relaxed">
+                          <p key={key} className="text-foreground/90 leading-[1.75]">
                             {block.text}
                           </p>
                         );
@@ -204,7 +206,7 @@ export function GuideReader({ chapters, checklist }: GuideReaderProps) {
                         return (
                           <ul key={key} className="list-disc space-y-1.5 pl-5">
                             {block.items.map((item) => (
-                              <li key={item} className="text-foreground/90 leading-relaxed">
+                              <li key={item} className="text-foreground/90 leading-[1.75]">
                                 {item}
                               </li>
                             ))}

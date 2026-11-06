@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 
 import { PLATFORM_FAVICON_HREF, PLATFORM_APPLE_ICON_HREF } from '@/lib/constants/brandAssets';
-import { Inter, JetBrains_Mono } from 'next/font/google';
+import { Inter, JetBrains_Mono, Poppins } from 'next/font/google';
 import { cookies, headers } from 'next/headers';
 import { Toaster } from 'sonner';
 
@@ -16,19 +16,27 @@ import ThemeProvider from '@/providers/ThemeProvider';
 
 import './globals.css';
 
-// Two families, both self-hosted by next/font — no external request, no
+// Three families, all self-hosted by next/font — no external request, no
 // render-blocking stylesheet, and no layout shift from a late font swap.
 // Rebranding means changing these lines and nothing else.
 //
 // Inter is the Growth Agents face for body, UI and headings alike (see
 // `--font-sans` and `--font-display` in globals.css); weight, not family,
 // carries the hierarchy: 700 headings, 600 sub-heads, 500 buttons, 400 body.
-// JetBrains Mono carries numerics and data. Weights are pinned to the ones
-// the design actually uses rather than shipping the full variable range.
+// Poppins 500 is the site's accent face for short card titles only
+// (`font-accent`), never body text. JetBrains Mono carries numerics and data.
+// Weights are pinned to the ones the design actually uses rather than
+// shipping the full variable range; Poppins has no variable axis, so its
+// weight array is required.
 const inter = Inter({
   variable: '--font-inter',
   subsets: ['latin'],
   weight: ['400', '500', '600', '700'],
+});
+const poppins = Poppins({
+  variable: '--font-poppins',
+  subsets: ['latin'],
+  weight: ['500'],
 });
 const jetbrainsMono = JetBrains_Mono({
   variable: '--font-jetbrains-mono',
@@ -69,7 +77,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
     <html
       // Also drives screen-reader pronunciation and hyphenation.
       lang={language}
-      className={`${inter.variable} ${jetbrainsMono.variable} h-full`}
+      className={`${inter.variable} ${poppins.variable} ${jetbrainsMono.variable} h-full`}
       // next-themes writes `class="dark"` here before paint. Without this
       // React logs a hydration mismatch on every load, and the real warnings
       // get lost in the noise.

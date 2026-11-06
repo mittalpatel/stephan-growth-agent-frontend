@@ -84,8 +84,11 @@ Growth Agents brand (growth-agents.com): `--primary` is electric blue `#1B1AFF`,
 the secondary/muted/`--accent` surfaces are the cool light `#F5F8FE`, text is ink
 `#181B1F`, borders are `#E7E7E7`, and `--brand-accent` is a pale blue tint (the
 brand has one hue). `--ring` stays neutral. Typography is Inter for body and
-headings, with JetBrains Mono for numerics. Brand colour still appears only on the
-elements it accents, not washed across the UI. See
+headings, with JetBrains Mono for numerics; Poppins 500 (`font-accent`) is
+reserved for short card titles on the marketing pages, which also use the
+site's looser rhythm (1.75 body line height). The app UI keeps its denser scale.
+Brand colour still appears only on the elements it accents, not washed across the
+UI. See
 [ADR-0020](docs/adr/0020-growth-agents-theme.md), which replaces the YB Inspire
 values of [ADR-0018](docs/adr/0018-yb-inspire-accent-only.md) and keeps its
 accent-only principle. The token _names_ are still stock, which is what keeps every
