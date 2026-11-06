@@ -16,7 +16,7 @@ import ImpersonationBanner from './components/ImpersonationBanner';
 
 /**
  * Tab title and icon carry the organization's white-label identity instead of the
- * platform's. Overrides the root layout's `%s | YB Inspire` template for every page
+ * platform's. Overrides the root layout's `%s | Growth Agents` template for every page
  * below this layout. Resolved per request, so a rename shows on the next navigation.
  *
  * `icons` is set here rather than left to `LayoutWrapper`'s effect alone: an explicit

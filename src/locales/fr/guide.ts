@@ -1,5 +1,5 @@
 export const guide = {
-  backToHome: '← YB Inspire',
+  backToHome: '← Growth Agents',
   navEyebrow: 'Guide de démarrage',
   checklistNavLabel: 'Liste de contrôle',
   downloadPdf: 'Télécharger en PDF',

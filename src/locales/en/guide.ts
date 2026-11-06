@@ -1,6 +1,6 @@
 /** Copy for the public setup guide (`/guide`). See `src/app/guide/content.ts` for the chapter body text, which is data rather than UI chrome and lives outside the locale catalog. */
 export const guide = {
-  backToHome: '← YB Inspire',
+  backToHome: '← Growth Agents',
   navEyebrow: 'Setup Guide',
   checklistNavLabel: 'Quick checklist',
   downloadPdf: 'Download as PDF',

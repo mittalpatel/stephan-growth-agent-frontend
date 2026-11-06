@@ -45,7 +45,7 @@ export const getPublicBranding = cache(async (): Promise<PublicBranding | null> 
 
 /**
  * Tab title and favicon for a signed-out page on a branded domain. Overrides the
- * root layout's `%s | YB Inspire` template; empty (so the platform's stands) when
+ * root layout's `%s | Growth Agents` template; empty (so the platform's stands) when
  * there is no branding.
  */
 export function publicBrandingMetadata(branding: PublicBranding | null): Metadata {

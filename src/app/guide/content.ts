@@ -31,8 +31,8 @@ export const guideChapters: readonly GuideChapter[] = [
         text: 'Signing up gives you your own workspace with a ready-made website assistant.',
       },
       { kind: 'heading', text: '1.1 Open the website' },
-      { kind: 'paragraph', text: 'Go to the YB Inspire home page and click Get started free .' },
-      { kind: 'image', src: '/guide/ch01-01.png', caption: 'The YB Inspire home page' },
+      { kind: 'paragraph', text: 'Go to the Growth Agents home page and click Get started free .' },
+      { kind: 'image', src: '/guide/ch01-01.png', caption: 'The Growth Agents home page' },
       { kind: 'heading', text: '1.2 Fill in your details' },
       {
         kind: 'paragraph',
@@ -382,7 +382,7 @@ export const guideChapters: readonly GuideChapter[] = [
     blocks: [
       {
         kind: 'paragraph',
-        text: 'YB Inspire grows with you in four levels. Each level keeps everything from the one before and adds more. In the app you only see the next level up from where you are, so you are never offered something you cannot use yet. This page lists all four.',
+        text: 'Growth Agents grows with you in four levels. Each level keeps everything from the one before and adds more. In the app you only see the next level up from where you are, so you are never offered something you cannot use yet. This page lists all four.',
       },
       { kind: 'heading', text: 'Level 1 · Basic' },
       {

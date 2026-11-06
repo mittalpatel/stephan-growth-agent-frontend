@@ -89,12 +89,12 @@
   --brand-accent-strong: oklch(0.467 0.302 266.4);
 
   /* A large brand-coloured surface (the auth hero panel, the landing page's
-  /* A large brand-coloured surface (the auth hero panel, the landing page's
      closing CTA band). Near-black #101214, the Growth Agents site's own
      contrast-section tone. Deliberately NOT `--primary`: `--primary` is a
      control fill, so dark mode lightens it, which is right for a button and
      wrong for a full-height panel. This pair keeps the same colour in both
      themes, because a brand surface is not theme-dependent. */
+  --brand-surface: oklch(0.181 0.005 248.1);
   --brand-surface-foreground: oklch(1 0 0);
 
   /* Status tones: a surface plus text that actually clears 4.5:1 on it.

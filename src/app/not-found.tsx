@@ -4,10 +4,7 @@ import { NotFoundBackButton } from './not-found-back-button';
 
 export default function NotFound() {
   return (
-    <section
-      className="min-h-screen bg-cover bg-center bg-no-repeat"
-      style={{ backgroundImage: "url('/404-bg.png')" }}
-    >
+    <section className="bg-background min-h-screen">
       <div className="flex min-h-screen items-center justify-center px-4 py-16">
         <div className="relative mx-auto w-full max-w-2xl overflow-hidden rounded-3xl bg-card border px-8 py-14 text-center shadow-sm">
           {/* Decorative blurred blobs */}

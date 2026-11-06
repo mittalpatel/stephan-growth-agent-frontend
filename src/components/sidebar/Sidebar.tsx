@@ -203,8 +203,9 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
     >
       <div className="flex h-16 shrink-0 items-center gap-2.5 border-b px-4">
         {isPlatformBrand(branding) ? (
-          // `ml-4` sets the wordmark 32px in, clear of the sidebar edge.
-          <PlatformLogo className="ml-4 h-10" />
+          // `h-8` keeps the wide (5.7:1) wordmark inside the 256px sidebar with
+          // the header's own padding on both sides.
+          <PlatformLogo className="h-8" />
         ) : (
           <>
             <BrandMark

@@ -108,15 +108,21 @@ export function DashboardView() {
 
       {securityTip.show && (
         <Card>
-          <CardContent className="flex flex-wrap items-center gap-4">
-            <span className="bg-muted flex size-10 shrink-0 items-center justify-center rounded-xl">
-              <ShieldCheck className="size-5" aria-hidden />
-            </span>
-            <div className="min-w-0 flex-1">
-              <p className="font-semibold">{t.dashboard.securityTip.title}</p>
-              <p className="text-muted-foreground text-sm">{t.dashboard.securityTip.description}</p>
+          {/* Stacks below `sm` so the description keeps the card's full width
+              instead of being squeezed into a column beside the buttons. */}
+          <CardContent className="flex flex-col gap-4 sm:flex-row sm:items-center">
+            <div className="flex min-w-0 flex-1 items-center gap-4">
+              <span className="bg-muted flex size-10 shrink-0 items-center justify-center rounded-xl">
+                <ShieldCheck className="size-5" aria-hidden />
+              </span>
+              <div className="min-w-0 flex-1">
+                <p className="font-semibold">{t.dashboard.securityTip.title}</p>
+                <p className="text-muted-foreground text-sm">
+                  {t.dashboard.securityTip.description}
+                </p>
+              </div>
             </div>
-            <div className="flex gap-2">
+            <div className="flex shrink-0 justify-end gap-2">
               <Button variant="ghost" size="sm" onClick={securityTip.dismiss}>
                 {t.dashboard.securityTip.dismiss}
               </Button>

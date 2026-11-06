@@ -5,7 +5,7 @@ export const dateRangePicker = {
 };
 
 export const common = {
-  appName: 'YB Inspire',
+  appName: 'Growth Agents',
   languageLabel: 'Langue',
   appDescription: 'Plateforme d’agents IA pour la vente et le support.',
 

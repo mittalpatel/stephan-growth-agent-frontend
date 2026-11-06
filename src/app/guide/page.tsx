@@ -6,7 +6,7 @@ import { guideChapters, guideChecklist } from './content';
 export const metadata: Metadata = {
   title: 'Setup Guide',
   description:
-    'A step by step walkthrough for setting up your YB Inspire assistant and adding it to your website.',
+    'A step by step walkthrough for setting up your Growth Agents assistant and adding it to your website.',
 };
 
 export default function GuidePage() {
