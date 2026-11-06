@@ -228,7 +228,7 @@ export const guideChapters: readonly GuideChapter[] = [
       {
         kind: 'list',
         items: [
-          '"Which quotes by Albert Einstein are on your website?" was answered from the website. "In the story, who helps the little star fall asleep?" was answered from the PDF. "Can I get pricing for a custom chatbot?" did not make up a price: it showed Fell back and gave your fallback message, which offers to put the visitor in touch with your team.',
+          '"Which quotes by Albert Einstein are on your website?" was answered from the website. "In the story, who helps the little star fall asleep?" was answered from the PDF. "Can I get pricing for a custom chatbot?" did not make up a price: it showed No sources used and offered to collect their contact details so your team can follow up.',
         ],
       },
       { kind: 'image', src: '/guide/ch06-01.png', caption: 'Answer from the website' },
