@@ -7,16 +7,12 @@
  * ─────────────────────────────────────────────────────────────────────────────
  * Design tokens
  *
- * Nexus's neutral theme, carrying two accent colours from the YB Inspire brand
- * (brandbook v1.0): teal `--primary` and jaune `--brand-accent`. Everything else
- * — background, card, borders, hover surfaces, the sidebar chrome — stays the
- * original neutral palette on purpose. An early pass rebranded every token to
- * the full YB Inspire palette (dark-first, teal washed through hovers/rings/
- * charts, a monospace capsule button); client review asked for the opposite:
- * keep the app looking as clear and unchanged as it already did, and let teal
- * and jaune appear only on the specific elements they're meant to accent —
- * primary buttons and the brand-accent mark — not as a wash across the UI.
- * See ADR-0018 for the full record of that revision.
+ * Nexus's neutral theme, carrying the Growth Agents brand (growth-agents.com):
+ * electric blue `--primary` (#1B1AFF), ink text (#181B1F), a cool light surface
+ * (#F5F8FE) for secondary/muted/hover, and a pale blue `--brand-accent` tint.
+ * As with the previous YB Inspire pass, the brand colour appears on the
+ * elements it is meant to accent (primary buttons, the brand mark), not as a
+ * wash across the UI. See ADR-0020 for the record of this change.
  *
  * ## The one rule
  *
@@ -38,31 +34,30 @@
      decision rather than a per-component opinion. */
   --radius: 0.75rem;
 
-  --background: oklch(0.985 0.003 106.4);
-  --foreground: oklch(0.205 0.01 268.2);
+  --background: oklch(1 0 0);
+  --foreground: oklch(0.221 0.009 255.6);
   --card: oklch(1 0 0);
-  --card-foreground: oklch(0.205 0.01 268.2);
+  --card-foreground: oklch(0.221 0.009 255.6);
   --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.205 0.01 268.2);
+  --popover-foreground: oklch(0.221 0.009 255.6);
 
-  /* Teal Inspire, the one place this accent colour lives as a fill. Foreground
-     is bleu nuit, not white: white on this teal is 2.24:1, below AA, and the
-     brandbook names this exact pairing as the one to avoid (p.15). */
-  --primary: oklch(0.737 0.09 191.7);
-  --primary-foreground: oklch(0.227 0.038 233.4);
+  /* Growth Agents electric blue (#1B1AFF), the one place the brand colour
+     lives as a fill. White on it measures 7.96:1, comfortably AA. */
+  --primary: oklch(0.467 0.302 266.4);
+  --primary-foreground: oklch(1 0 0);
 
-  --secondary: oklch(0.963 0.004 106.5);
-  --secondary-foreground: oklch(0.205 0.01 268.2);
-  --muted: oklch(0.963 0.004 106.5);
-  --muted-foreground: oklch(0.53 0.013 264.5);
+  --secondary: oklch(0.979 0.009 264.5);
+  --secondary-foreground: oklch(0.221 0.009 255.6);
+  --muted: oklch(0.979 0.009 264.5);
+  --muted-foreground: oklch(0.517 0.017 235.7);
   /* The hover/active surface, deliberately neutral rather than tinted — this
      appears everywhere (menus, list rows, dropdowns) and a saturated accent
      there is exactly the "washed everywhere" look client review rejected. */
-  --accent: oklch(0.957 0.008 253.9);
-  --accent-foreground: oklch(0.347 0.073 256.7);
+  --accent: oklch(0.979 0.009 264.5);
+  --accent-foreground: oklch(0.467 0.302 266.4);
   --destructive: oklch(0.543 0.174 29.7);
   --destructive-foreground: oklch(0.985 0.003 106.4);
-  --border: oklch(0.922 0.007 88.6);
+  --border: oklch(0.928 0 0);
   /* Darker than --border on purpose: --input is the boundary/fill of an
      interactive control (text input, textarea, select, checkbox, radio,
      switch track), where WCAG 1.4.11 asks for 3:1 against the surface it
@@ -74,46 +69,32 @@
      bug needs. */
   --input: oklch(0.62 0.008 88.6);
   /* Kept neutral rather than tied to `--primary`: a focus ring fires on every
-     interactive element in the app, so tinting it teal would recreate the same
-     "everything is green" impression on a much smaller but far more frequent
-     surface. */
-  --ring: oklch(0.347 0.073 256.7);
+     interactive element in the app, so tinting it blue would wash the brand
+     colour across a small but very frequent surface. */
+  --ring: oklch(0.221 0.009 255.6);
 
-  /* Jaune Action. The other accent colour, kept to a small footprint: the badge
-     square next to the app name, an eyebrow label, and the rare `cta` button
-     variant — never a background or a hover state. Foreground is teal profond,
-     the only text colour the brand uses on a yellow ground. */
-  --brand-accent: oklch(0.911 0.187 104.9);
-  --brand-accent-foreground: oklch(0.375 0.059 201.7);
+  /* The brand highlight, kept to a small footprint: the badge square next to
+     the app name, an eyebrow label, and the rare `cta` button variant, never a
+     background or a hover state. Growth Agents has a single accent colour, so
+     this is a pale blue tint carrying blue text rather than a second hue. */
+  --brand-accent: oklch(0.948 0.025 273.5);
+  --brand-accent-foreground: oklch(0.467 0.302 266.4);
 
-  /* Text-safe variants of the two brand colours.
-     Teal and jaune are *light* colours (L 0.74 and 0.91). That is exactly what
-     makes them good fills behind dark text, and exactly what makes them
-     unreadable AS text on a light surface: teal on a teal-10% tint measures
-     2.0:1 and jaune on white 1.23:1, both far below the 4.5:1 floor. The
-     previous navy/gold palette was dark enough to double as text, so the
-     call sites that use `text-primary` / `text-brand-accent` inherited a
-     contrast bug the moment the values were swapped for the brand's own.
-     Teal survives being darkened. Jaune does not: darkening a yellow drags it
-     through olive, and a 4.5:1 mustard still reads as dirty rather than as the
-     brand. So the light-mode text companion to jaune is not jaune at all, it is
-     teal profond -- the brandbook's own answer to "what colour does text go
-     next to yellow", and the same value as `--brand-accent-foreground`. The
-     jaune stays where it belongs: the fill and the tint behind these labels.
+  /* Text-safe variants of the brand colours. The Growth Agents blue is dark
+     enough (L 0.47) to double as text on white or on the blue tint, so in
+     light mode both `-strong` tokens are simply the blue. They are kept as
+     separate tokens so a future lighter brand colour only changes them here.
      In dark mode the base tokens already read fine, so `-strong` matches them. */
-  --primary-strong: oklch(0.5 0.09 191.7);
-  --brand-accent-strong: oklch(0.375 0.059 201.7);
+  --primary-strong: oklch(0.467 0.302 266.4);
+  --brand-accent-strong: oklch(0.467 0.302 266.4);
 
   /* A large brand-coloured surface (the auth hero panel, the landing page's
-     closing CTA band) — the one full-bleed panel this theme has, so unlike
-     every other token it was left on its original placeholder navy through
-     both prior passes rather than ever being pointed at a YB Inspire colour.
-     Bleu nuit now, the brand's own "section de contraste" tone (brandbook
-     v1.0). Deliberately NOT `--primary`: `--primary` is a control fill, so
-     dark mode lightens it, which is right for a button and wrong for a
-     full-height panel. This pair keeps the same colour in both themes,
-     because a brand surface is not theme-dependent. */
-  --brand-surface: oklch(0.227 0.038 233.4);
+  /* A large brand-coloured surface (the auth hero panel, the landing page's
+     closing CTA band). Near-black #101214, the Growth Agents site's own
+     contrast-section tone. Deliberately NOT `--primary`: `--primary` is a
+     control fill, so dark mode lightens it, which is right for a button and
+     wrong for a full-height panel. This pair keeps the same colour in both
+     themes, because a brand surface is not theme-dependent. */
   --brand-surface-foreground: oklch(1 0 0);
 
   /* Status tones: a surface plus text that actually clears 4.5:1 on it.
@@ -133,20 +114,20 @@
   /* Ordered brand -> gold -> green -> blue -> violet: adjacent pairs differ in
      lightness as well as hue, so the series stays readable in greyscale and to
      a dichromat. */
-  --chart-1: oklch(0.737 0.09 191.7);
-  --chart-2: oklch(0.911 0.187 104.9);
+  --chart-1: oklch(0.467 0.302 266.4);
+  --chart-2: oklch(0.671 0.174 269.3);
   --chart-3: oklch(0.533 0.104 163.8);
   --chart-4: oklch(0.538 0.135 254.2);
   --chart-5: oklch(0.542 0.185 296.2);
 
   --sidebar: oklch(1 0 0);
-  --sidebar-foreground: oklch(0.205 0.01 268.2);
-  --sidebar-primary: oklch(0.737 0.09 191.7);
-  --sidebar-primary-foreground: oklch(0.227 0.038 233.4);
-  --sidebar-accent: oklch(0.957 0.008 253.9);
-  --sidebar-accent-foreground: oklch(0.347 0.073 256.7);
-  --sidebar-border: oklch(0.922 0.007 88.6);
-  --sidebar-ring: oklch(0.347 0.073 256.7);
+  --sidebar-foreground: oklch(0.221 0.009 255.6);
+  --sidebar-primary: oklch(0.467 0.302 266.4);
+  --sidebar-primary-foreground: oklch(1 0 0);
+  --sidebar-accent: oklch(0.979 0.009 264.5);
+  --sidebar-accent-foreground: oklch(0.467 0.302 266.4);
+  --sidebar-border: oklch(0.928 0 0);
+  --sidebar-ring: oklch(0.221 0.009 255.6);
 }
 
 .dark {
@@ -155,22 +136,22 @@
   /* The source design ships light mode only. This block is derived from it
      rather than invented: every token keeps its light-mode hue and swaps
      lightness, so the palette reads as the same theme with the lights off. */
-  --background: oklch(0.185 0.008 268.2);
-  --foreground: oklch(0.965 0.003 106.4);
-  --card: oklch(0.225 0.009 268.2);
-  --card-foreground: oklch(0.965 0.003 106.4);
-  --popover: oklch(0.225 0.009 268.2);
-  --popover-foreground: oklch(0.965 0.003 106.4);
+  --background: oklch(0.181 0.005 248.1);
+  --foreground: oklch(0.979 0.009 264.5);
+  --card: oklch(0.23 0.011 260.7);
+  --card-foreground: oklch(0.979 0.009 264.5);
+  --popover: oklch(0.23 0.011 260.7);
+  --popover-foreground: oklch(0.979 0.009 264.5);
 
-  --primary: oklch(0.72 0.088 191.7);
-  --primary-foreground: oklch(0.205 0.01 268.2);
+  --primary: oklch(0.671 0.174 269.3);
+  --primary-foreground: oklch(0.181 0.005 248.1);
 
-  --secondary: oklch(0.275 0.008 268.2);
-  --secondary-foreground: oklch(0.965 0.003 106.4);
-  --muted: oklch(0.275 0.008 268.2);
+  --secondary: oklch(0.275 0.013 258.4);
+  --secondary-foreground: oklch(0.979 0.009 264.5);
+  --muted: oklch(0.275 0.013 258.4);
   --muted-foreground: oklch(0.715 0.012 264.5);
-  --accent: oklch(0.295 0.021 256.7);
-  --accent-foreground: oklch(0.93 0.02 253.9);
+  --accent: oklch(0.29 0.04 266.4);
+  --accent-foreground: oklch(0.93 0.03 266.4);
   --destructive: oklch(0.704 0.165 29.7);
   --destructive-foreground: oklch(0.985 0.003 106.4);
   /* Borders and inputs are translucent white rather than a flat grey so they
@@ -182,19 +163,19 @@
      absent. */
   --border: oklch(1 0 0 / 10%);
   --input: oklch(1 0 0 / 35%);
-  --ring: oklch(0.62 0.08 256.7);
+  --ring: oklch(0.715 0.012 264.5);
 
-  --brand-accent: oklch(0.78 0.115 78);
-  --brand-accent-foreground: oklch(0.24 0.03 80);
+  --brand-accent: oklch(0.29 0.04 266.4);
+  --brand-accent-foreground: oklch(0.93 0.03 266.4);
 
   /* Identical to the base tokens: on a dark ground the bright brand colours
      already clear 4.5:1 as text, so there is nothing to darken. Declared
      anyway so the utility resolves in both themes. */
-  --primary-strong: oklch(0.72 0.088 191.7);
-  --brand-accent-strong: oklch(0.78 0.115 78);
+  --primary-strong: oklch(0.671 0.174 269.3);
+  --brand-accent-strong: oklch(0.671 0.174 269.3);
 
   /* Intentionally identical to the light-mode values. See the note there. */
-  --brand-surface: oklch(0.227 0.038 233.4);
+  --brand-surface: oklch(0.181 0.005 248.1);
   --brand-surface-foreground: oklch(1 0 0);
 
   /* Inverted: a dim tinted surface with a light tinted text, rather than the
@@ -206,20 +187,20 @@
   --info: oklch(0.3 0.05 254);
   --info-foreground: oklch(0.83 0.1 254);
 
-  --chart-1: oklch(0.72 0.088 191.7);
-  --chart-2: oklch(0.78 0.115 78);
+  --chart-1: oklch(0.671 0.174 269.3);
+  --chart-2: oklch(0.8 0.1 269.3);
   --chart-3: oklch(0.7 0.11 164);
   --chart-4: oklch(0.7 0.12 254);
   --chart-5: oklch(0.68 0.15 296);
 
-  --sidebar: oklch(0.225 0.009 268.2);
-  --sidebar-foreground: oklch(0.965 0.003 106.4);
-  --sidebar-primary: oklch(0.72 0.088 191.7);
-  --sidebar-primary-foreground: oklch(0.205 0.01 268.2);
-  --sidebar-accent: oklch(0.295 0.021 256.7);
-  --sidebar-accent-foreground: oklch(0.93 0.02 253.9);
+  --sidebar: oklch(0.23 0.011 260.7);
+  --sidebar-foreground: oklch(0.979 0.009 264.5);
+  --sidebar-primary: oklch(0.671 0.174 269.3);
+  --sidebar-primary-foreground: oklch(0.181 0.005 248.1);
+  --sidebar-accent: oklch(0.29 0.04 266.4);
+  --sidebar-accent-foreground: oklch(0.93 0.03 266.4);
   --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.62 0.08 256.7);
+  --sidebar-ring: oklch(0.715 0.012 264.5);
 }
 
 @theme inline {
@@ -280,9 +261,10 @@
   --radius-xl: calc(var(--radius) + 4px);
 
   /* Loaded by next/font in src/app/layout.tsx — self-hosted, so no external
-     request and no layout shift. Work Sans and Poppins are the YB Inspire
-     brand's own faces; JetBrains Mono is reserved for numerics, unchanged. */
-  --font-sans: var(--font-work-sans), ui-sans-serif, system-ui, sans-serif;
+     request and no layout shift. Inter is the Growth Agents face for body and
+     headings alike (weight, not family, carries hierarchy); JetBrains Mono is
+     reserved for numerics, unchanged. */
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
   --font-mono: var(--font-jetbrains-mono), ui-monospace, monospace;
   /* Headings, dialog/card titles and metric values. Pairing a display face with
      a text face is most of what separates this look from stock — but used below
@@ -294,7 +276,7 @@
      ever declared, so that utility was inert and those titles silently fell back
      to the body font. Declaring it here is what makes them pick up the display
      face; the alias keeps both names working. */
-  --font-display: var(--font-poppins), var(--font-work-sans), ui-sans-serif, sans-serif;
+  --font-display: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
   --font-heading: var(--font-display);
 }
 

@@ -27,3 +27,4 @@ decisions that live in the other one.
 | [0017](0017-yb-inspire-brand-theme.md) | YB Inspire brand theme, dark-first (superseded)               |
 | [0018](0018-yb-inspire-accent-only.md) | YB Inspire as accent colours only, on the neutral theme       |
 | [0019](0019-per-user-language.md)      | Per-user language through a read-through catalog              |
+| [0020](0020-growth-agents-theme.md)    | Growth Agents colours and Inter typography                    |

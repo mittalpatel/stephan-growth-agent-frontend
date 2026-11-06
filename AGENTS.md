@@ -79,18 +79,17 @@ just as wrong, because they hardcode one theme. This is what makes dark mode fre
 single literal colour renders correctly in one theme and is unreadable in the other,
 and nobody notices until a user screenshots it.
 
-This theme is **no longer** shadcn's stock neutral palette, but only in two places.
-`--primary` (teal) and `--brand-accent` (jaune) carry the client's YB Inspire brand
-colours; every other token — background, card, border, muted, the `--accent` hover
-surface, `--ring` focus colour, sidebar chrome — is the original neutral Nexus palette,
-deliberately left alone. An earlier pass repalleted every token and made dark the
-default theme; client review asked for the opposite — keep the app looking as
-unchanged as possible, with teal/jaune appearing only on the specific elements they
-accent, not washed across the UI. See
-[ADR-0018](docs/adr/0018-yb-inspire-accent-only.md) (which supersedes
-[ADR-0017](docs/adr/0017-yb-inspire-brand-theme.md)) for the full record. The token
-_names_ are still stock, which is what keeps every future `npx shadcn@latest add …`
-matching automatically.
+This theme is **no longer** shadcn's stock neutral palette. It carries the
+Growth Agents brand (growth-agents.com): `--primary` is electric blue `#1B1AFF`,
+the secondary/muted/`--accent` surfaces are the cool light `#F5F8FE`, text is ink
+`#181B1F`, borders are `#E7E7E7`, and `--brand-accent` is a pale blue tint (the
+brand has one hue). `--ring` stays neutral. Typography is Inter for body and
+headings, with JetBrains Mono for numerics. Brand colour still appears only on the
+elements it accents, not washed across the UI. See
+[ADR-0020](docs/adr/0020-growth-agents-theme.md), which replaces the YB Inspire
+values of [ADR-0018](docs/adr/0018-yb-inspire-accent-only.md) and keeps its
+accent-only principle. The token _names_ are still stock, which is what keeps every
+future `npx shadcn@latest add …` matching automatically.
 
 Changing `--primary` and `--brand-accent` in `globals.css` (both `:root` and `.dark`
 blocks), and nothing else, is the way to rebrand further. Do not hand-edit
@@ -100,18 +99,16 @@ next regeneration. If a primitive genuinely cannot be themed through tokens, rai
 rather than patching it in place.
 
 Two token pairs exist beyond the stock set: `--brand-accent` / `--brand-accent-foreground`
-(the jaune highlight, reachable only through the `cta` Button variant, a small badge, or
+(the brand highlight, reachable only through the `cta` Button variant, a small badge, or
 an eyebrow label — never a background or a hover state, and separate from shadcn's
 `--accent`, which is the ordinary hover/active surface and stays neutral) and
 `--brand-surface` / `--brand-surface-foreground` (a full-bleed brand panel that stays the
 same colour in both themes, unlike a control fill). Adding a token means adding it in
 three places: `:root`, `.dark`, and `@theme inline`.
 
-**White never sits on a teal fill.** It is 2.24:1, below AA. `--primary-foreground` is
-dark for this reason — if you add a control that fills with `--primary` and hardcodes
-`text-white` instead of `text-primary-foreground`, you have reintroduced the bug this
-rule exists to prevent. This holds regardless of how sparingly `--primary` itself is
-used.
+**Always pair `--primary` with `text-primary-foreground`, never `text-white`.** White
+happens to pass on the light-mode blue, but dark mode lightens `--primary` and its
+foreground turns dark, so a hardcoded `text-white` breaks one theme.
 
 The one sanctioned exception is `src/app/global-error.tsx`, which renders when the
 root layout (and therefore the stylesheet) may have failed to load. It says so.
