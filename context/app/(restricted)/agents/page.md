@@ -588,13 +588,14 @@ of validation already tracked here.
   `widget.js`, not something this preview should paper over by silently
   degrading too. Unset colors fall back to the backend's own seeded starter
   palette (`apps/agents/seed_data.py`) so a fresh agent's preview matches
-  what it will actually publish with. As of 2026-09-09 that seed is YB
-  Inspire's official brandbook v1.0 (Teal Inspire/Bleu pétrole/Bleu nuit on
-  white text, Work Sans, pill launcher, dark mode), replacing the earlier
-  placeholder palette; `WidgetPreview.tsx`'s `FALLBACK_COLORS`/font/launcher
-  fallbacks were updated to match. The brandbook's CTA yellow (`#F5E723`) has
-  no home in this schema since `colors.accent` was already dropped, a known
-  gap flagged in the backend's own seed comment, not reintroduced here.
+  what it will actually publish with. As of 2026-11-06 (backend branch
+  `growth-agents-whitelabel-2026-11-06`) that seed is the Growth Agents light
+  theme: primary `#1B1AFF`, secondary/text `#181B1F`, background `#FFFFFF`,
+  surface `#F5F8FE`, Inter, pill launcher, light mode. It replaced the YB
+  Inspire brandbook seed, and backend migration `agents/0010` moved agents
+  still on the untouched YB default over. `WidgetPreview.tsx`'s
+  `FALLBACK_COLORS`/font fallbacks and its text-on-surface fallback
+  (`#181B1F`, same as `widget.js`) match.
 
   **Field descriptions**: every theme/behavior field (and `instructions`,
   the disclosure toggle, and the per-language localized-text fields) carries

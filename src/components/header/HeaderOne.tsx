@@ -61,7 +61,7 @@ export default function HeaderOne({ onMenuClick }: Readonly<{ onMenuClick?: () =
         </span>
 
         <a
-          href={`mailto:support@ybinspire.com?subject=${encodeURIComponent(t.header.helpEmailSubject)}`}
+          href={`mailto:hello@growth-agents.com?subject=${encodeURIComponent(t.header.helpEmailSubject)}`}
           aria-label={t.header.help}
           title={t.header.help}
           className="text-muted-foreground hover:bg-accent hover:text-foreground flex size-9 items-center justify-center rounded-full"

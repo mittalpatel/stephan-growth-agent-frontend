@@ -123,8 +123,8 @@ above the sidebar.
   - The trial pill's day count (`TRIAL_DAYS_REMAINING` in `HeaderOne.tsx`) is a
     fixed number — there is no trial system in this app yet. Same category of
     stand-in as `DashboardView`'s mock metrics.
-  - The help icon's `mailto:` address (`support@ybinspire.com`) is unverified.
-    Replace it with the real support inbox before this ships.
+  - The help icon's `mailto:` address is `hello@growth-agents.com`, the contact
+    address growth-agents.com lists. Confirm it is the inbox support should use.
   - The "Explore agents" button is real (`/agents`) and renders on every page,
     not only the dashboard.
 

@@ -32,15 +32,15 @@ import type { AgentDraftFormValues } from '@/lib/schemas/agent';
 
 // Preview-only fallbacks so an in-progress draft with unset colors still
 // renders legibly rather than invisible text-on-text. Match the backend's own
-// seeded starter palette (`apps/agents/seed_data.py`), which as of 2026-09-09
-// is YB Inspire's official brandbook v1.0 system, so a fresh agent's preview
-// looks like what it would actually publish with.
+// seeded starter palette (`apps/agents/seed_data.py`), which as of 2026-11-06
+// is the Growth Agents light theme, so a fresh agent's preview looks like
+// what it would actually publish with.
 const FALLBACK_COLORS = {
-  primary: '#5EBCB8', // Teal Inspire
-  secondary: '#0D4A4E', // Teal profond
-  background: '#0A3D51', // Bleu pétrole
-  surface: '#071F2B', // Bleu nuit
-  text: '#FFFFFF',
+  primary: '#1B1AFF', // brand blue
+  secondary: '#181B1F', // brand near-black
+  background: '#FFFFFF',
+  surface: '#F5F8FE', // brand light surface
+  text: '#181B1F',
   success: '#16A34A',
   warning: '#D97706',
   error: '#DC2626',
@@ -139,7 +139,7 @@ export function WidgetPreviewView({
   const surface = color('surface');
   const text = color('text');
 
-  const fontFamily = (v.typography_font_family as string) || 'Work Sans';
+  const fontFamily = (v.typography_font_family as string) || 'Inter';
   const launcherRadius = pick(
     LAUNCHER_RADIUS_CSS,
     (v.widget_launcher_shape as string) || '',
@@ -166,7 +166,7 @@ export function WidgetPreviewView({
     .filter(Boolean);
 
   const textOnPrimary = checkContrast('#FFFFFF', primary).passesAaNormalText ? '#FFFFFF' : text;
-  const textOnSurface = checkContrast(text, surface).passesAaNormalText ? text : '#0F172A';
+  const textOnSurface = checkContrast(text, surface).passesAaNormalText ? text : '#181B1F';
 
   if (!mounted) return null;
 
