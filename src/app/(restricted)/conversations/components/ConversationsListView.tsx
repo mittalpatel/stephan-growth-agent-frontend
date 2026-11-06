@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useId, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { AlertTriangle, Sparkles, UserRound } from 'lucide-react';
 
@@ -69,14 +69,17 @@ function AssignOperator({ conversationId }: Readonly<{ conversationId: string }>
   const members = membersQuery.data?.data ?? [];
   const { assign, isAssigning } = useConversationActions(conversationId);
   const [operatorId, setOperatorId] = useState<string>('');
+  const selectId = useId();
 
   return (
     // Stacked, not side by side: a 280px column cannot fit a select and a
     // button in one row, which pushed "Assign" out of view behind a scrollbar.
     <div className="flex min-w-0 flex-col gap-2">
-      <label className="text-xs font-medium">{t.conversations.detail.assignOperator}</label>
+      <label htmlFor={selectId} className="text-xs font-medium">
+        {t.conversations.detail.assignOperator}
+      </label>
       <Select value={operatorId} onValueChange={setOperatorId}>
-        <SelectTrigger className="w-full min-w-0">
+        <SelectTrigger id={selectId} className="w-full min-w-0">
           <SelectValue placeholder={t.conversations.detail.assignPlaceholder} />
         </SelectTrigger>
         <SelectContent>
@@ -144,6 +147,7 @@ export function ConversationsListView({ agentId: pinnedAgentId }: Props = {}) {
   // queue an operator watches to find conversations that need a human, and
   // which agent produced one is not how they are triaged.
   const [selectedAgentId, setSelectedAgentId] = useState(ALL_AGENTS);
+  const agentPickerId = useId();
   const agentId = pinnedAgentId ?? (selectedAgentId === ALL_AGENTS ? null : selectedAgentId);
 
   const list = useConversationsList(agentId);
@@ -237,7 +241,7 @@ export function ConversationsListView({ agentId: pinnedAgentId }: Props = {}) {
 
       <div className={pinnedAgentId ? 'hidden' : 'flex flex-wrap items-end gap-3'}>
         <div className="flex flex-col gap-1.5">
-          <label className="text-muted-foreground text-xs font-medium">
+          <label htmlFor={agentPickerId} className="text-muted-foreground text-xs font-medium">
             {t.conversations.agentPicker.label}
           </label>
           <Select
@@ -248,7 +252,7 @@ export function ConversationsListView({ agentId: pinnedAgentId }: Props = {}) {
             }}
             disabled={agentsLoading}
           >
-            <SelectTrigger className="w-56">
+            <SelectTrigger id={agentPickerId} className="w-56">
               <SelectValue placeholder={t.conversations.agentPicker.placeholder} />
             </SelectTrigger>
             <SelectContent>

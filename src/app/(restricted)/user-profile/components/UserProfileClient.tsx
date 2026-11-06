@@ -52,6 +52,8 @@ export function UserProfileClient({
       <Tabs
         defaultValue={initialTab}
         orientation="vertical"
+        // `items-start` would size each panel to its content on a phone, so the
+        // panels carry `w-full min-w-0` to stay inside the viewport.
         className="flex-col items-start sm:flex-row"
       >
         <TabsList className="border-input bg-card w-full shrink-0 gap-1 rounded-lg border p-2 sm:w-56">
@@ -78,7 +80,7 @@ export function UserProfileClient({
           </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="profile" className="flex flex-col gap-6">
+        <TabsContent value="profile" className="flex w-full min-w-0 flex-col gap-6">
           {/* Profile hero — only shown on the Profile tab, not Security/Sessions. */}
           <section className="elevated p-6 sm:p-7">
             <div className="flex flex-wrap items-center gap-5">
@@ -106,7 +108,7 @@ export function UserProfileClient({
           <PersonalInfoForm profile={profile} />
         </TabsContent>
 
-        <TabsContent value="security" className="flex flex-col gap-6">
+        <TabsContent value="security" className="flex w-full min-w-0 flex-col gap-6">
           <ChangePasswordForm profile={profile} />
 
           {/* Shown for every account, LOCAL and EXTERNAL alike. TOTP MFA is a
@@ -121,7 +123,7 @@ export function UserProfileClient({
           <MfaSection />
         </TabsContent>
 
-        <TabsContent value="sessions">
+        <TabsContent value="sessions" className="w-full min-w-0">
           {/* Sessions are JWT refresh tokens, issued for LOCAL and EXTERNAL logins
               alike — unlike MFA, this applies to every account. */}
           <SessionsSection />

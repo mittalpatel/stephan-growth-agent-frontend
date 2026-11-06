@@ -95,7 +95,7 @@ export default function LoginForm() {
 
       <p className="text-muted-foreground text-center text-sm">
         {t.auth.noAccountPrompt}{' '}
-        <Link href="/signup/create" className="text-foreground underline-offset-4 hover:underline">
+        <Link href="/signup/create" className="text-foreground underline underline-offset-4">
           {t.auth.createAccountLink}
         </Link>
       </p>

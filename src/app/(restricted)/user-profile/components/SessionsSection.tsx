@@ -34,9 +34,12 @@ export function SessionsSection() {
               key={session.jti}
               className="flex flex-wrap items-center justify-between gap-3 py-3"
             >
-              <div className="min-w-0">
-                <div className="flex items-center gap-2">
-                  <span className="truncate text-sm font-medium text-foreground">
+              {/* `flex-1` + `min-w-0` on both levels let a long user-agent string
+                  truncate; without them it sets the row's min width and the
+                  whole tab scrolls sideways on a phone. */}
+              <div className="min-w-0 flex-1">
+                <div className="flex min-w-0 items-center gap-2">
+                  <span className="min-w-0 truncate text-sm font-medium text-foreground">
                     {session.user_agent || copy.unknownDevice}
                   </span>
                   {session.is_current && (

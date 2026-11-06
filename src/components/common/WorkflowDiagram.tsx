@@ -23,7 +23,9 @@ type WorkflowDiagramProps = Readonly<{
  */
 export function WorkflowDiagram({ steps, label }: WorkflowDiagramProps) {
   return (
-    <ol aria-label={label} className="flex items-start overflow-x-auto py-2">
+    // `tabIndex` lets keyboard users focus the list and scroll it with the
+    // arrow keys; without it the off-screen steps are mouse-only.
+    <ol aria-label={label} tabIndex={0} className="flex items-start overflow-x-auto py-2">
       {steps.map((step, index) => (
         <li key={step} className="flex shrink-0 items-start">
           <div className="flex w-[132px] flex-col items-center gap-2.5 px-1">

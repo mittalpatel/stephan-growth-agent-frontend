@@ -364,6 +364,8 @@ export function FilterToolbar(props: FilterToolbarProps) {
               type="button"
               onClick={() => setFiltersOpen((o) => !o)}
               aria-expanded={filtersOpen}
+              // The visible text is hidden below `sm`, leaving only the icon.
+              aria-label={t.buttons.filters}
               className={`${CONTROL} ${FOCUS} text-muted-foreground hover:text-foreground hover:bg-accent relative flex items-center gap-2 px-3 py-2 text-sm transition-colors`}
             >
               <SlidersHorizontal className="h-4 w-4" />
